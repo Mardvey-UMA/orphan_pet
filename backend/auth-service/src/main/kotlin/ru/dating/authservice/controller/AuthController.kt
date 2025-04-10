@@ -14,6 +14,7 @@ import ru.dating.authservice.service.interfaces.AuthenticationService
 import ru.dating.authservice.service.LogoutService
 import ru.dating.authservice.service.interfaces.PasswordRecoveryService
 import ru.dating.authservice.service.interfaces.RegistrationService
+
 @Tag(
     name = "Вход и Регистрация",
     description = "Обработка входа и регистрации пользователя")

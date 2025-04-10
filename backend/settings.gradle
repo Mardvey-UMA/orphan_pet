@@ -1,3 +1,6 @@
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
 rootProject.name = 'backend'
 
 includeBuild 'eureka-server'
@@ -7,3 +10,7 @@ includeBuild 'api-gateway'
 includeBuild 'auth-service'
 
 includeBuild 'user-service'
+
+include(":common-dto")
+
+

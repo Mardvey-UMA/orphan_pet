@@ -1,5 +1,4 @@
-package ru.webshop.backend.dto
-
+package ru.dating.authservice.dto
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 import ru.dating.authservice.entity.Role

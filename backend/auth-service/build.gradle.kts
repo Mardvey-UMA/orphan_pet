@@ -32,7 +32,7 @@ ext {
 }
 
 dependencies {
-
+    implementation(project(":common-dto"))
     implementation ("org.springframework.session:spring-session-core")
 
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")

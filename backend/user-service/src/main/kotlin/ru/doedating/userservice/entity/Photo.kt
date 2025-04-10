@@ -6,15 +6,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "_photos")
+@Table(name = "photo")
 @EntityListeners(AuditingEntityListener::class)
-class Photos (
+class Photo (
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long,
-
-    @Column(nullable = false, unique = false)
-    var username: String,
 
     @Column(name = "photo_url", nullable = false, unique = false)
     var photoUrl: String,

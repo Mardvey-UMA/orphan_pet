@@ -1,5 +1,4 @@
 package ru.dating.authservice.dto
-
 import jakarta.validation.constraints.NotBlank
 import org.springframework.validation.annotation.Validated
 

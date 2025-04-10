@@ -24,6 +24,7 @@ ext {
     set("springCloudVersion", "2023.0.3")
 }
 dependencies {
+//    implementation(project(":common-dto"))
     implementation ("org.springframework.session:spring-session-core")
 
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")
@@ -41,7 +42,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     implementation("org.springframework.kafka:spring-kafka")
-
     runtimeOnly("org.postgresql:postgresql")
 }
 

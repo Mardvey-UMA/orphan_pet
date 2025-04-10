@@ -6,16 +6,23 @@ spring:
     name: user-service
   kafka:
     bootstrap-servers: kafka:9092
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      group-id: database-group
-      auto-offset-reset: earliest
       properties:
+        spring.json.value.default.type: ru.doedating.userservice.dto.UserCreatedEvent
         spring.json.trusted.packages: "*"
+#  kafka:
+#    bootstrap-servers: kafka:9092
+#    producer:
+#      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+#      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+#    consumer:
+#      #key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+#      #value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      group-id: user-service-group
+#      auto-offset-reset: earliest
+#      #properties:
+#        #spring.json.trusted.packages: "ru.doedating.userservice.dto,ru.dating.authservice.dto"
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://users_db/users_db
@@ -23,7 +30,7 @@ spring:
     password: postgres
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     show-sql: false
     properties:
       hibernate:

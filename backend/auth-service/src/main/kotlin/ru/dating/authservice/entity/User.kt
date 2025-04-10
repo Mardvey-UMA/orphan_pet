@@ -12,7 +12,7 @@ import java.security.Principal
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "_user")
+@Table(name = "users")
 @EntityListeners(AuditingEntityListener::class) // Чтобы дата создания и обновления сразу вбивались при создании юзера
 class User(
     @Id
@@ -27,12 +27,11 @@ class User(
     @Column(nullable = true)
     private var password: String,
 
-    // Используется LAZY чтобы не было N + 1
     @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
     var roles: MutableSet<Role> = mutableSetOf(),
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    private var token: MutableSet<Token> = mutableSetOf(),
+    private var tokens: MutableSet<Token> = mutableSetOf(),
 
     @Column(nullable = true) var vkId: Long? = null,
 
@@ -44,8 +43,7 @@ class User(
     private var accountLocked: Boolean,
 
     @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private var createdAt: LocalDateTime? = null,
+    @Column(name = "created_at", nullable = false, updatable = false) var createdAt: LocalDateTime? = null,
 
     @LastModifiedDate
     @Column(name = "updated_at")

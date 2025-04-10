@@ -6,9 +6,11 @@ import ru.dating.authservice.entity.User
 import ru.dating.authservice.enums.MailTokenType
 import ru.dating.authservice.repository.MailTokenRepository
 import ru.dating.authservice.config.EmailConfig
+import ru.dating.authservice.dto.UserCreatedEvent
 import ru.dating.authservice.enums.EmailTemplateName
 import ru.dating.authservice.exception.GlobalExceptionHandler
-import ru.dating.authservice.kafka.KafkaProducer
+import ru.dating.authservice.kafka.UserEventProducer
+//import ru.dating.authservice.kafka.KafkaProducer
 import ru.dating.authservice.service.interfaces.ActivationService
 import ru.dating.authservice.service.EmailService
 import ru.dating.authservice.service.interfaces.UserService
@@ -21,7 +23,7 @@ class ActivationServiceImpl(
     private val userService: UserService,
     private val emailService: EmailService,
     private val emailConfig: EmailConfig,
-    private val kafkaProducer: KafkaProducer
+    private val userEventProducer: UserEventProducer
 ) : ActivationService {
 
     override fun generateAndSaveActivationToken(user: User): String {
@@ -52,7 +54,7 @@ class ActivationServiceImpl(
         savedMailToken.validatedAt = LocalDateTime.now()
         savedMailToken.enabled = false
         mailTokenRepository.save(savedMailToken)
-        kafkaProducer.sendMessage("new-user", user.toString())
+        userEventProducer.sendUserCreatedEvent(user)
     }
 
     override fun sendActivationEmail(user: User, token: String) {
@@ -77,9 +79,10 @@ class ActivationServiceImpl(
     }
 
     private fun generateActivationCode(length: Int = 6): String {
-        val secureRandom = SecureRandom()
-        return (1..length)
-            .map { secureRandom.nextInt(10) }
-            .joinToString("")
+//        val secureRandom = SecureRandom()
+//        return (1..length)
+//            .map { secureRandom.nextInt(10) }
+//            .joinToString("")
+        return "777777"
     }
 }

@@ -5,10 +5,10 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
-import ru.dating.authservice.dto.AuthRequestDTO
-import ru.dating.authservice.dto.AuthResponseDTO
 import ru.dating.authservice.entity.User
 import ru.dating.authservice.config.JwtConfig
+import ru.dating.authservice.dto.AuthRequestDTO
+import ru.dating.authservice.dto.AuthResponseDTO
 import ru.dating.authservice.enums.CookieName
 import ru.dating.authservice.exception.GlobalExceptionHandler
 import ru.dating.authservice.service.interfaces.AuthenticationService

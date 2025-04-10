@@ -8,12 +8,12 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 
 @Entity
-@Table(name = "_user")
+@Table(name = "users")
 @EntityListeners(AuditingEntityListener::class)
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long,
+    var id: Long? = 0,
 
     @Column(nullable = false, unique = true)
     var email: String,
@@ -68,7 +68,7 @@ class User(
         cascade = [CascadeType.ALL],
         orphanRemoval = true
     )
-    val photos: MutableList<Photos> = mutableListOf(),
+    val photos: MutableList<Photo> = mutableListOf(),
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

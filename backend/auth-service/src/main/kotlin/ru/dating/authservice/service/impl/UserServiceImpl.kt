@@ -4,7 +4,6 @@ import jakarta.transaction.Transactional
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import ru.dating.authservice.dto.UserRequestDTO
-import ru.dating.authservice.dto.UserResponseDTO
 import ru.dating.authservice.entity.Role
 import ru.dating.authservice.entity.User
 import ru.dating.authservice.enums.Provider
