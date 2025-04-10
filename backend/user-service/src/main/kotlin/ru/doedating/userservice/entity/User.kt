@@ -72,9 +72,9 @@ class User(
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
-    private var createdAt: LocalDateTime? = null,
+    private var createdAt: LocalDateTime? = LocalDateTime.now(),
 
     @LastModifiedDate
     @Column(name = "updated_at")
-    private var updatedAt: LocalDateTime? = null
+    private var updatedAt: LocalDateTime? = LocalDateTime.now()
 )

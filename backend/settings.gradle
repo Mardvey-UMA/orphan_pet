@@ -3,14 +3,14 @@ plugins {
 }
 rootProject.name = 'backend'
 
-includeBuild 'eureka-server'
+include(
+        ':auth-service',
+        ':user-service',
+        ':api-gateway',
+        ':eureka-server'
+)
 
-includeBuild 'api-gateway'
-
-includeBuild 'auth-service'
-
-includeBuild 'user-service'
-
-include(":common-dto")
-
-
+project(':auth-service').projectDir = file('auth-service')
+project(':user-service').projectDir = file('user-service')
+project(':api-gateway').projectDir = file('api-gateway')
+project(':eureka-server').projectDir = file('eureka-server')

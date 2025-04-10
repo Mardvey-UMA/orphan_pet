@@ -6,7 +6,7 @@ plugins {
     kotlin("plugin.jpa") version "1.9.25"
 }
 
-group = "ru.dating"
+group = "ru.doedating"
 version = "0.0.1-SNAPSHOT"
 
 java {
@@ -32,7 +32,6 @@ ext {
 }
 
 dependencies {
-    implementation(project(":common-dto"))
     implementation ("org.springframework.session:spring-session-core")
 
     implementation("org.springframework.cloud:spring-cloud-starter-netflix-eureka-client")

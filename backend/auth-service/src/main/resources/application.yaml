@@ -22,9 +22,8 @@ spring:
   kafka:
     bootstrap-servers: kafka:9092
     producer:
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    properties:
-      spring.json.value.default.type: ru.doedating.userservice.dto.UserCreatedEvent
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
   datasource:
     driver-class-name: org.postgresql.Driver
