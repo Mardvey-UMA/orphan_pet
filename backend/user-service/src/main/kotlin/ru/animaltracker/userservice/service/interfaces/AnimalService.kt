@@ -15,4 +15,15 @@ interface AnimalService {
     suspend fun getAnimal(username: String, animalId: Long): AnimalResponse
     suspend fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse>
     suspend fun deleteAnimal(username: String, animalId: Long)
+    suspend fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse
+    suspend fun updateStatusLog(username: String, animalId: Long, statusLogId: Long, request: StatusLogUpdateRequest): StatusLogResponse
+    suspend fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long)
+    suspend fun updateAttribute(username: String, animalId: Long, attributeId: Short, request: AttributeUpdateRequest): AttributeResponse
+    suspend fun addAttribute(username: String, animalId: Long, request: AttributeRequest): AttributeResponse
+    suspend fun deleteAttribute(username: String, animalId: Long, attributeId: Short)
+    suspend fun deleteAnimalPhoto(username: String, photoId: Long)
+    suspend fun deleteAnimalDocument(username: String, documentId: Long)
+    suspend fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse>
+    suspend fun exportAnimalToPdf(username: String, animalId: Long): ByteArray
 }
+

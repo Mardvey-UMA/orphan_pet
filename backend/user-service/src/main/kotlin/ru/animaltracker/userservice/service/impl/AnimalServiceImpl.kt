@@ -3,11 +3,13 @@ package ru.animaltracker.userservice.service.impl
 import jakarta.persistence.EntityNotFoundException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import ru.animaltracker.userservice.dto.*
 import ru.animaltracker.userservice.entity.*
+import ru.animaltracker.userservice.pdfexport.PdfExporter
 import ru.animaltracker.userservice.repository.*
 import ru.animaltracker.userservice.service.interfaces.AnimalMapper
 import ru.animaltracker.userservice.service.interfaces.AnimalService
@@ -29,6 +31,16 @@ class AnimalServiceImpl(
     private val s3Service: S3Service,
     private val mapper: AnimalMapper
 ) : AnimalService {
+
+    @Autowired
+    private lateinit var pdfExporter: PdfExporter
+
+    override suspend fun exportAnimalToPdf(username: String, animalId: Long): ByteArray {
+        val (_, animal) = validateUserAndAnimal(username, animalId)
+        return withContext(Dispatchers.IO) {
+            pdfExporter.exportAnimal(animal)
+        }
+    }
 
     override suspend fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse {
         val user = withContext(Dispatchers.IO) {
@@ -254,6 +266,202 @@ class AnimalServiceImpl(
 
         withContext(Dispatchers.IO) {
             animalRepository.delete(animal)
+        }
+    }
+
+    override suspend fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse {
+        val (_, animal) = validateUserAndAnimal(username, animalId)
+
+        request.name?.let { animal.name = it }
+        request.description?.let { animal.description = it }
+        request.birthDate?.let { animal.birthDate = it }
+        request.mass?.let { animal.mass = it }
+
+        val updatedAnimal = withContext(Dispatchers.IO) {
+            animalRepository.save(animal)
+        }
+
+        return mapper.toResponse(updatedAnimal)
+    }
+
+    override suspend fun updateStatusLog(
+        username: String,
+        animalId: Long,
+        statusLogId: Long,
+        request: StatusLogUpdateRequest
+    ): StatusLogResponse {
+        val (_, _, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
+
+        request.notes?.let { statusLog.notes = it }
+        request.logDate?.let { statusLog.logDate = it }
+
+        val updatedLog = withContext(Dispatchers.IO) {
+            statusLogRepository.save(statusLog)
+        }
+
+        return mapper.toStatusLogResponse(updatedLog)
+    }
+
+    override suspend fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long) {
+        val (_, _, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
+
+        statusLog.statusLogPhotos.forEach {
+            it.photo?.objectKey?.let { key -> s3Service.deleteFile(key) }
+        }
+
+        statusLog.statusLogDocuments.forEach {
+            it.document?.objectKey?.let { key -> s3Service.deleteFile(key) }
+        }
+
+        withContext(Dispatchers.IO) {
+            statusLogRepository.delete(statusLog)
+        }
+    }
+
+    override suspend fun updateAttribute(
+        username: String,
+        animalId: Long,
+        attributeId: Short,
+        request: AttributeUpdateRequest
+    ): AttributeResponse {
+        val (user, animal) = validateUserAndAnimal(username, animalId)
+        val attribute = withContext(Dispatchers.IO) {
+            attributeRepository.findById(attributeId)
+        }
+            .orElseThrow { EntityNotFoundException("Attribute not found") }
+
+        if (attribute.animal?.id != animalId) {
+            throw AccessDeniedException("Attribute doesn't belong to this animal")
+        }
+
+        request.name?.let { attribute.name = it }
+        if (request.value != null) {
+            val value = attribute.values.firstOrNull() ?: Value(attribute = attribute)
+            value.value = request.value
+            attribute.values.clear()
+            attribute.values.add(value)
+
+            val history = AttributeValueHistory(
+                value = request.value,
+                recordedAt = LocalDate.now(),
+                user = user,
+                animal = animal,
+                attribute = attribute
+            )
+            attribute.attributeValueHistories.add(history)
+        }
+
+        val updatedAttr = withContext(Dispatchers.IO) {
+            attributeRepository.save(attribute)
+        }
+
+        return mapper.toAttributeResponse(updatedAttr)
+    }
+
+    override suspend fun addAttribute(
+        username: String,
+        animalId: Long,
+        request: AttributeRequest
+    ): AttributeResponse {
+        val (user, animal) = validateUserAndAnimal(username, animalId)
+
+        val attribute = Attribute(
+            name = request.name,
+            animal = animal
+        ).apply {
+            values.add(Value(value = request.value, attribute = this))
+        }
+
+        val savedAttr = withContext(Dispatchers.IO) {
+            attributeRepository.save(attribute)
+        }
+
+        return mapper.toAttributeResponse(savedAttr)
+    }
+
+    override suspend fun deleteAttribute(
+        username: String,
+        animalId: Long,
+        attributeId: Short
+    ) {
+        val (_, animal) = validateUserAndAnimal(username, animalId)
+        val attribute = withContext(Dispatchers.IO) {
+            attributeRepository.findById(attributeId)
+        }
+            .orElseThrow { EntityNotFoundException("Attribute not found") }
+
+        if (attribute.animal?.id != animalId) {
+            throw AccessDeniedException("Attribute doesn't belong to this animal")
+        }
+
+        withContext(Dispatchers.IO) {
+            attributeRepository.delete(attribute)
+        }
+    }
+
+    override suspend fun deleteAnimalPhoto(username: String, photoId: Long) {
+        val photo = withContext(Dispatchers.IO) {
+            photoRepository.findById(photoId)
+        }.orElseThrow { EntityNotFoundException("Photo not found") }
+
+        val animalPhoto = photo.animalPhotos.firstOrNull()
+            ?: throw AccessDeniedException("Photo not linked to animal")
+
+        validateUserAndAnimal(username, animalPhoto.animal?.id ?: throw IllegalStateException())
+
+        withContext(Dispatchers.IO) {
+            photo.objectKey?.let { s3Service.deleteFile(it) }
+            photoRepository.delete(photo)
+        }
+    }
+
+    override suspend fun deleteAnimalDocument(username: String, documentId: Long) {
+        val document = withContext(Dispatchers.IO) {
+            documentRepository.findById(documentId)
+        }.orElseThrow { EntityNotFoundException("Document not found") }
+
+        validateUserAndAnimal(username, document.animal?.id ?: throw IllegalStateException())
+
+        withContext(Dispatchers.IO) {
+            document.objectKey?.let { s3Service.deleteFile(it) }
+            documentRepository.delete(document)
+        }
+    }
+
+    override suspend fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
+        val attributes = withContext(Dispatchers.IO) {
+            attributeRepository.findByAnimalId(animalId)
+        }
+
+        return attributes.map { attribute ->
+            val histories = attribute.attributeValueHistories
+                .sortedBy { it.recordedAt }
+                .map { history ->
+                    AttributeChange(
+                        date = history.recordedAt ?: LocalDate.now(),
+                        value = history.value ?: "",
+                        changedBy = history.user.username ?: ""
+                    )
+                }
+
+            val numericValues = histories
+                .mapNotNull { it.value.toDoubleOrNull() }
+
+            val stats = if (numericValues.isNotEmpty()) {
+                AttributeStats(
+                    minValue = numericValues.min().toString(),
+                    maxValue = numericValues.max().toString(),
+                    avgValue = numericValues.average()
+                )
+            } else {
+                null
+            }
+
+            AnimalAnalyticsResponse(
+                attributeName = attribute.name ?: "Unknown",
+                changes = histories,
+                stats = stats
+            )
         }
     }
 }

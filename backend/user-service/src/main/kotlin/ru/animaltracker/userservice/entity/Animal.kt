@@ -12,19 +12,19 @@ data class Animal(
     val id: Long = 0,
 
     @Column(name = "body_mass")
-    val mass: BigDecimal? = null,
+    var mass: BigDecimal? = null,
 
     @Column(name = "birth_date")
-    val birthDate: LocalDate? = null,
+    var birthDate: LocalDate? = null,
 
     @Column(name = "created_at")
     val createdAt: LocalDate? = null,
 
     @Column(length = 255)
-    val name: String? = null,
+    var name: String? = null,
 
     @Column(columnDefinition = "text")
-    val description: String? = null,
+    var description: String? = null,
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
     val attributes: MutableSet<Attribute> = mutableSetOf(),

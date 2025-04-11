@@ -9,10 +9,10 @@ data class AnimalStatusLog(
     val id: Long = 0,
 
     @Column(name = "log_date")
-    val logDate: LocalDate? = null,
+    var logDate: LocalDate? = null,
 
     @Column(columnDefinition = "text")
-    val notes: String? = null,
+    var notes: String? = null,
 
     @Column(name = "updated_at")
     val updatedAt: LocalDate? = null,

@@ -9,7 +9,7 @@ data class Attribute(
     val id: Short = 0,
 
     @Column(length = 255)
-    val name: String? = null,
+    var name: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "animal_id")

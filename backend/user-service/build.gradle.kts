@@ -58,6 +58,11 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
 
+    // PDF
+
+    implementation("com.itextpdf:itext7-core:7.2.5")
+    implementation("org.apache.pdfbox:pdfbox:2.0.27")
+
     implementation("org.mapstruct:mapstruct:1.5.5.Final")
 }
 

@@ -10,7 +10,7 @@ data class Value(
     val id: Long = 0,
 
     @Column(length = 1024)
-    val value: String? = null,
+    var value: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attribute_id")

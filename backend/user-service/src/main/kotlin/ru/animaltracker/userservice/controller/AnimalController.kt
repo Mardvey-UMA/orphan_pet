@@ -1,6 +1,7 @@
 package ru.animaltracker.userservice.controller
 
 import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -9,7 +10,7 @@ import ru.animaltracker.userservice.service.interfaces.AnimalService
 
 @RestController
 @RequestMapping("/api/v1/animals")
-class AnimalController<StatusLogResponse : Any?>(
+class AnimalController(
     private val animalService: AnimalService
 ) {
 
@@ -33,7 +34,7 @@ class AnimalController<StatusLogResponse : Any?>(
     suspend fun getAnimalStatusLogs(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
-    ): ResponseEntity<List<ru.animaltracker.userservice.dto.StatusLogResponse>>{
+    ): ResponseEntity<List<StatusLogResponse>>{
         return ResponseEntity.ok(animalService.getStatusLogs(username, animalId))
     }
 
@@ -70,7 +71,7 @@ class AnimalController<StatusLogResponse : Any?>(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @Valid @RequestBody request: StatusLogCreateRequest
-    ): ResponseEntity<ru.animaltracker.userservice.dto.StatusLogResponse> {
+    ): ResponseEntity<StatusLogResponse> {
         return ResponseEntity.ok(animalService.addStatusLog(username, animalId, request))
     }
 
@@ -101,5 +102,107 @@ class AnimalController<StatusLogResponse : Any?>(
         @PathVariable animalId: Long
     ): ResponseEntity<List<AttributeHistoryResponse>> {
         return ResponseEntity.ok(animalService.getAnimalAttributesHistory(animalId))
+    }
+
+    @PatchMapping("/{animalId}")
+    suspend fun updateAnimal(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long,
+        @Valid @RequestBody request: AnimalUpdateRequest
+    ): ResponseEntity<AnimalResponse> {
+        return ResponseEntity.ok(animalService.updateAnimal(username, animalId, request))
+    }
+
+    @PutMapping("/{animalId}/status-logs/{statusLogId}")
+    suspend fun updateStatusLog(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long,
+        @PathVariable statusLogId: Long,
+        @Valid @RequestBody request: StatusLogUpdateRequest
+    ): ResponseEntity<StatusLogResponse> {
+        return ResponseEntity.ok(
+            animalService.updateStatusLog(username, animalId, statusLogId, request)
+        )
+    }
+
+    @DeleteMapping("/{animalId}/status-logs/{statusLogId}")
+    suspend fun deleteStatusLog(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long,
+        @PathVariable statusLogId: Long
+    ): ResponseEntity<Void> {
+        animalService.deleteStatusLog(username, animalId, statusLogId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @PatchMapping("/{animalId}/attributes/{attributeId}")
+    suspend fun updateAttribute(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long,
+        @PathVariable attributeId: Short,
+        @Valid @RequestBody request: AttributeUpdateRequest
+    ): ResponseEntity<AttributeResponse> {
+        return ResponseEntity.ok(
+            animalService.updateAttribute(username, animalId, attributeId, request)
+        )
+    }
+
+    @PostMapping("/{animalId}/attributes")
+    suspend fun addAttribute(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long,
+        @Valid @RequestBody request: AttributeRequest
+    ): ResponseEntity<AttributeResponse> {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(animalService.addAttribute(username, animalId, request))
+    }
+
+    @DeleteMapping("/{animalId}/attributes/{attributeId}")
+    suspend fun deleteAttribute(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long,
+        @PathVariable attributeId: Short
+    ): ResponseEntity<Void> {
+        animalService.deleteAttribute(username, animalId, attributeId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/photos/{photoId}")
+    suspend fun deleteAnimalPhoto(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable photoId: Long
+    ): ResponseEntity<Void> {
+        animalService.deleteAnimalPhoto(username, photoId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/documents/{documentId}")
+    suspend fun deleteAnimalDocument(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable documentId: Long
+    ): ResponseEntity<Void> {
+        animalService.deleteAnimalDocument(username, documentId)
+        return ResponseEntity.noContent().build()
+    }
+
+    @GetMapping("/{animalId}/analytics")
+    suspend fun getAnimalAnalytics(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long
+    ): ResponseEntity<List<AnimalAnalyticsResponse>> {
+        return ResponseEntity.ok(animalService.getAnimalAnalytics(animalId))
+    }
+
+    @GetMapping("/{animalId}/export/pdf")
+    suspend fun exportAnimalToPdf(
+        @RequestHeader("X-User-Name") username: String,
+        @PathVariable animalId: Long
+    ): ResponseEntity<ByteArray> {
+        val pdfBytes = animalService.exportAnimalToPdf(username, animalId)
+
+        return ResponseEntity.ok()
+            .header("Content-Type", "application/pdf")
+            .header("Content-Disposition", "attachment; filename=animal_${animalId}.pdf")
+            .body(pdfBytes)
     }
 }
