@@ -20,7 +20,7 @@ class MessageConsumerService(
             email = dto.email,
             username = dto.username,
         )
-        userRepository.findByEmail(gitler.email)
+        gitler.email?.let { userRepository.findByEmail(it) }
             ?: userRepository.save(gitler)
         return
     }

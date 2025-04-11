@@ -1,80 +1,39 @@
 package ru.doedating.userservice.entity
 
 import jakarta.persistence.*
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.annotation.LastModifiedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDate
-import java.time.LocalDateTime
 
 @Entity
 @Table(name = "users")
-@EntityListeners(AuditingEntityListener::class)
-class User(
+data class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long? = 0,
+    val id: Long = 0,
 
-    @Column(nullable = false, unique = true)
-    var email: String,
+    @Column(length = 255)
+    val email: String? = null,
 
-    @Column(nullable = false, unique = true)
-    var username: String,
+    @Column(length = 255)
+    val username: String? = null,
 
-    @Column(nullable = true)
-    var vkId: Long? = null,
-
-    @Column(nullable = true)
+    @Column(name = "first_name", length = 255)
     var firstName: String? = null,
 
-    @Column(nullable = true)
+    @Column(name = "last_name", length = 255)
     var lastName: String? = null,
 
-    @Column(nullable = true)
-    var birthday: LocalDate? = null,
-
-    @Column(nullable = true)
-    var age: Int? = null,
-
-    @Column(nullable = true)
-    var gender: String? = null,
-
-    @Column(nullable = true)
+    @Column(length = 255)
     var city: String? = null,
 
-    @Column(nullable = true)
-    var country: String? = null,
-
-    @Column(nullable = true)
-    var job: String? = null,
-
-    @Column(nullable = true)
-    var education: String? = null,
-
-    @Column(nullable = true)
+    @Column(name = "about_me", length = 255)
     var aboutMe: String? = null,
 
-    @Column(nullable = true)
-    var theme: String? = null,
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val userPhotos: MutableSet<UserPhoto> = mutableSetOf(),
 
-    @Column(nullable = true)
-    var chatId: Long? = null,
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val animalUsers: MutableSet<AnimalUser> = mutableSetOf(),
 
-    @Column(nullable = true)
-    var telegramId: Long? = null,
-
-    @OneToMany(
-        mappedBy = "user",
-        cascade = [CascadeType.ALL],
-        orphanRemoval = true
-    )
-    val photos: MutableList<Photo> = mutableListOf(),
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private var createdAt: LocalDateTime? = LocalDateTime.now(),
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private var updatedAt: LocalDateTime? = LocalDateTime.now()
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
 )

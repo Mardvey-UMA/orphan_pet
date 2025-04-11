@@ -1,9 +1,19 @@
 server:
   port: 8082
+s3:
+  accessKeyId: KM2S7GR01BUER3FKDN0U
+  secretAccessKey: MXG3weJGL25Uk3RLkktsZNt1AXwG7pI6tiq7FMnR
+  minioUrl: https://s3.twcstorage.ru
+  region: ru-1
+  bucket: 242358d3-goods-bucket
 
 spring:
   application:
     name: user-service
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
   kafka:
     bootstrap-servers: kafka:9092
     consumer:

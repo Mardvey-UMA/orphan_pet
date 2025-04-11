@@ -40,8 +40,18 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+
+    // Kafka
+
     implementation("org.springframework.kafka:spring-kafka")
+
+    // S3
+
+    implementation("software.amazon.awssdk:s3:2.20.0")
+
+
     runtimeOnly("org.postgresql:postgresql")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 }
 
 kotlin {

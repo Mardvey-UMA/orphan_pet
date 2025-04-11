@@ -5,6 +5,5 @@ import ru.doedating.userservice.entity.User
 
 interface UserRepository: JpaRepository<User, Long> {
     fun findByEmail(email: String): User?
-
     fun findByUsername(username: String): User?
 }

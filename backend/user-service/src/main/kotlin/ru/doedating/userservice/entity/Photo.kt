@@ -4,30 +4,27 @@ import jakarta.persistence.*
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import java.time.LocalDateTime
-
+import jakarta.persistence.*
+import java.time.LocalDate
 @Entity
 @Table(name = "photo")
-@EntityListeners(AuditingEntityListener::class)
-class Photo (
+data class Photo(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long,
+    val id: Long = 0,
 
-    @Column(name = "photo_url", nullable = false, unique = false)
-    var photoUrl: String,
+    @Column(name = "object_key", length = 512)
+    val objectKey: String? = null,
 
-    @Column(name = "object_key", nullable = false, unique = false)
-    var objectKey: String,
+    @Column(name = "created_at")
+    val createdAt: LocalDate? = null,
 
-    @Column(nullable = false, unique = false)
-    var mimetype: String,
+    @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val userPhotos: MutableSet<UserPhoto> = mutableSetOf(),
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "username")
-    val user: User,
-    
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private var createdAt: LocalDateTime? = null
+    @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf(),
 
-    )
+    @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
+    val statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf()
+)
