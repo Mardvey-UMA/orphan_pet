@@ -3,10 +3,9 @@ package ru.animaltracker.userservice.service
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
-import ru.doedating.userservice.dto.UserCreatedEvent
-import ru.doedating.userservice.entity.User
-import ru.doedating.userservice.repository.UserRepository
-
+import ru.animaltracker.userservice.dto.UserCreatedEvent
+import ru.animaltracker.userservice.entity.User
+import ru.animaltracker.userservice.repository.UserRepository
 @Service
 class MessageConsumerService(
     private val objectMapper: ObjectMapper,

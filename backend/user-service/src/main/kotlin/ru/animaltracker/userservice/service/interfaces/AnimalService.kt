@@ -1,19 +1,18 @@
 package ru.animaltracker.userservice.service.interfaces
 
 import org.springframework.web.multipart.MultipartFile
-import ru.doedating.userservice.dto.*
-import ru.doedating.userservice.entity.Animal
-import ru.doedating.userservice.entity.AnimalStatusLog
+import ru.animaltracker.userservice.dto.*
 
 interface AnimalService {
-    fun createAnimal(username: String, animalDto: AnimalDto): Animal
-    fun getAnimalsByUser(username: String): List<Animal>
-    fun uploadAnimalPhoto(username: String, animalId: Long, file: MultipartFile): FileResponseDto
-    fun getAnimalPhotos(username: String, animalId: Long): List<FileResponseDto>
-    fun uploadAnimalDocument(username: String, animalId: Long, file: MultipartFile): FileResponseDto
-    fun getAnimalDocuments(username: String, animalId: Long): List<FileResponseDto>
-    fun addStatusLog(username: String, statusLogDto: AnimalStatusLogDto): AnimalStatusLog
-    fun uploadStatusLogPhoto(username: String, statusLogId: Long, file: MultipartFile): FileResponseDto
-    fun uploadStatusLogDocument(username: String, statusLogId: Long, file: MultipartFile): FileResponseDto
-    fun getAnimalAttributeHistory(animalId: Long): Map<String, List<AttributeHistoryDto>>
+    suspend fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse
+    suspend fun addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse
+    suspend fun addAnimalDocument(username: String, animalId: Long, file: MultipartFile, type: String): S3FileResponse
+    suspend fun addStatusLog(username: String, animalId: Long, request: StatusLogCreateRequest): StatusLogResponse
+    suspend fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse
+    suspend fun addStatusLogDocument(username: String, animalId: Long, statusLogId: Long, file: MultipartFile, type: String): S3FileResponse
+    suspend fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse>
+    suspend fun getUserAnimals(username: String): List<AnimalResponse>
+    suspend fun getAnimal(username: String, animalId: Long): AnimalResponse
+    suspend fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse>
+    suspend fun deleteAnimal(username: String, animalId: Long)
 }

@@ -48,10 +48,17 @@ dependencies {
     // S3
 
     implementation("software.amazon.awssdk:s3:2.20.0")
-
+    implementation("software.amazon.awssdk:auth:2.20.0")
 
     runtimeOnly("org.postgresql:postgresql")
+
+    // Korutines
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
+
+    implementation("org.mapstruct:mapstruct:1.5.5.Final")
 }
 
 kotlin {

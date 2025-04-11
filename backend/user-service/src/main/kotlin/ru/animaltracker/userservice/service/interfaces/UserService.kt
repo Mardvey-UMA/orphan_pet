@@ -1,15 +1,12 @@
 package ru.animaltracker.userservice.service.interfaces
 
 import org.springframework.web.multipart.MultipartFile
-import ru.doedating.userservice.dto.FileResponseDto
-import ru.doedating.userservice.dto.UserDto
-import ru.doedating.userservice.dto.UserUpdateDto
-import ru.doedating.userservice.entity.User
+import ru.animaltracker.userservice.dto.S3FileResponse
+import ru.animaltracker.userservice.dto.UserResponse
+import ru.animaltracker.userservice.dto.UserUpdateRequest
 
 interface UserService {
-    fun getUserInfo(username: String): UserDto
-    fun updateUserInfo(username: String, updateDto: UserUpdateDto): UserDto
-    fun uploadUserPhoto(username: String, file: MultipartFile): FileResponseDto
-    fun getUserPhotos(username: String): List<FileResponseDto>
-    fun deleteUserPhoto(username: String, photoId: Long)
+    fun updateUser(username: String, request: UserUpdateRequest): UserResponse
+    fun getUser(username: String): UserResponse
+    suspend fun uploadUserPhoto(username: String, file: MultipartFile): S3FileResponse
 }

@@ -15,4 +15,9 @@ data class StatusLogDocument(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "animal_status_log_id")
     val animalStatusLog: AnimalStatusLog? = null
-)
+){
+    constructor(statusLog: AnimalStatusLog, document: Document) : this(
+        document = document,
+        animalStatusLog = statusLog
+    )
+}

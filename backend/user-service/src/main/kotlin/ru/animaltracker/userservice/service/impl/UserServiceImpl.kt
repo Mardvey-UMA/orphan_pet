@@ -1,98 +1,80 @@
 package ru.animaltracker.userservice.service.impl
 
 import jakarta.persistence.EntityNotFoundException
-import jakarta.transaction.Transactional
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import ru.doedating.userservice.dto.FileResponseDto
-import ru.doedating.userservice.dto.UserDto
-import ru.doedating.userservice.dto.UserUpdateDto
-import ru.doedating.userservice.entity.Photo
-import ru.doedating.userservice.entity.UserPhoto
-import ru.doedating.userservice.repository.UserRepository
-import ru.doedating.userservice.service.interfaces.UserService
-import java.time.LocalDate
-import java.util.*
+import ru.animaltracker.userservice.dto.S3FileResponse
+import ru.animaltracker.userservice.dto.UserResponse
+import ru.animaltracker.userservice.dto.UserUpdateRequest
+import ru.animaltracker.userservice.entity.Photo
+import ru.animaltracker.userservice.entity.UserPhoto
+import ru.animaltracker.userservice.repository.PhotoRepository
+import ru.animaltracker.userservice.repository.UserPhotoRepository
+import ru.animaltracker.userservice.repository.UserRepository
+import ru.animaltracker.userservice.service.interfaces.S3Service
+import ru.animaltracker.userservice.service.interfaces.UserMapper
+import ru.animaltracker.userservice.service.interfaces.UserService
 
 @Service
 class UserServiceImpl(
     private val userRepository: UserRepository,
+    private val s3Service: S3Service,
     private val photoRepository: PhotoRepository,
     private val userPhotoRepository: UserPhotoRepository,
-    private val s3Service: S3Service,
     private val mapper: UserMapper
 ) : UserService {
 
-    override fun getUserInfo(username: String): UserDto {
+    @Transactional
+    override fun updateUser(username: String, request: UserUpdateRequest): UserResponse {
         val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
-        return mapper.toDto(user)
+
+        request.firstName?.let { user.firstName = it }
+        request.lastName?.let { user.lastName = it }
+        request.city?.let { user.city = it }
+        request.aboutMe?.let { user.aboutMe = it }
+
+        return mapper.toResponse(userRepository.save(user))
+    }
+
+    @Transactional(readOnly = true)
+    override fun getUser(username: String): UserResponse {
+        val user = userRepository.findByUsername(username)
+            ?: throw EntityNotFoundException("User not found")
+
+        return mapper.toResponse(user)
     }
 
     @Transactional
-    override fun updateUserInfo(username: String, updateDto: UserUpdateDto): UserDto {
-        val user = userRepository.findByUsername(username)
+    override suspend fun uploadUserPhoto(username: String, file: MultipartFile): S3FileResponse {
+        val user = withContext(Dispatchers.IO) {
+            userRepository.findByUsername(username)
+        }
             ?: throw EntityNotFoundException("User not found")
 
-        user.apply {
-            firstName = updateDto.firstName ?: firstName
-            lastName = updateDto.lastName ?: lastName
-            city = updateDto.city ?: city
-            aboutMe = updateDto.aboutMe ?: aboutMe
+        user.userPhotos.firstOrNull()?.let {
+            photoRepository.deleteById(it.photo?.id!!)
+            s3Service.deleteFile(it.photo.objectKey!!)
         }
 
-        return mapper.toDto(userRepository.save(user))
-    }
+        val objectKey = s3Service.uploadFile(file, "users/$username/photos")
+        val photo = withContext(Dispatchers.IO) {
+            photoRepository.save(Photo(objectKey = objectKey))
+        }
 
-    @Transactional
-    override fun uploadUserPhoto(username: String, file: MultipartFile): FileResponseDto {
-        val user = userRepository.findByUsername(username)
-            ?: throw EntityNotFoundException("User not found")
+        withContext(Dispatchers.IO) {
+            userPhotoRepository.deleteAllByUser(user)
+        }
+        withContext(Dispatchers.IO) {
+            userPhotoRepository.save(UserPhoto(user = user, photo = photo))
+        }
 
-        val key = "users/$username/photos/${UUID.randomUUID()}"
-        val s3Key = s3Service.uploadFile(key, file)
-
-        val photo = photoRepository.save(
-            Photo(
-                objectKey = s3Key,
-                createdAt = LocalDate.now()
-            )
+        return S3FileResponse(
+            objectKey = objectKey,
+            presignedUrl = s3Service.generatePresignedUrl(objectKey)
         )
-
-        userPhotoRepository.save(
-            UserPhoto(
-                user = user,
-                photo = photo
-            )
-        )
-
-        return FileResponseDto(
-            id = photo.id,
-            url = s3Service.getFileUrl(s3Key),
-            description = null,
-            createdAt = photo.createdAt
-        )
-    }
-
-    override fun getUserPhotos(username: String): List<FileResponseDto> {
-        return userPhotoRepository.findAllByUserUsername(username)
-            .map { it.photo!! }
-            .map { photo ->
-                FileResponseDto(
-                    id = photo.id,
-                    url = s3Service.getFileUrl(photo.objectKey!!),
-                    description = null,
-                    createdAt = photo.createdAt
-                )
-            }
-    }
-
-    @Transactional
-    override fun deleteUserPhoto(username: String, photoId: Long) {
-        val userPhoto = userPhotoRepository.findByUserUsernameAndPhotoId(username, photoId)
-            ?: throw EntityNotFoundException("Photo not found")
-
-        s3Service.deleteFile(userPhoto.photo!!.objectKey!!)
-        photoRepository.deleteById(photoId)
     }
 }

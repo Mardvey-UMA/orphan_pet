@@ -1,38 +1,50 @@
 package ru.animaltracker.userservice.controller
 
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-import ru.doedating.userservice.repository.UserRepository
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import ru.animaltracker.userservice.dto.AnimalResponse
+import ru.animaltracker.userservice.dto.S3FileResponse
+import ru.animaltracker.userservice.dto.UserResponse
+import ru.animaltracker.userservice.dto.UserUpdateRequest
+import ru.animaltracker.userservice.service.interfaces.AnimalService
+import ru.animaltracker.userservice.service.interfaces.UserService
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 class UserController(
-    private val userRepository: UserRepository
+    private val userService: UserService,
+    private val animalService: AnimalService
 ) {
-    @GetMapping("/check")
-    fun checkUserExists(@RequestHeader("X-User-Name") username: String?): ResponseEntity<Boolean> {
-        val exists = username?.let { userRepository.findByUsername(it) } != null
-        return ResponseEntity.ok(exists)
+
+    @GetMapping("/me")
+    suspend fun getCurrentUser(
+        @RequestHeader("X-User-Name") username: String
+    ): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.getUser(username))
     }
 
-    @GetMapping
-    fun getUser(
-        @RequestHeader("X-User-Name") username: String?
-    ): ResponseEntity<Any> {
-        if (username.isNullOrBlank()) {
-            return ResponseEntity.badRequest().body(
-                mapOf("error" to "Header X-User-Name is required")
-            )
-        }
+    @PatchMapping("/me")
+    suspend fun updateUser(
+        @RequestHeader("X-User-Name") username: String,
+        @Valid @RequestBody request: UserUpdateRequest
+    ): ResponseEntity<UserResponse> {
+        return ResponseEntity.ok(userService.updateUser(username, request))
+    }
 
-        return ResponseEntity.ok(
-            mapOf(
-                "username" to username,
-                "message" to "Hello, $username"
-            )
-        )
+    @PostMapping("/me/photo")
+    suspend fun uploadUserPhoto(
+        @RequestHeader("X-User-Name") username: String,
+        @RequestParam file: MultipartFile
+    ): ResponseEntity<S3FileResponse> {
+        return ResponseEntity.ok(userService.uploadUserPhoto(username, file))
+    }
+
+    @GetMapping("/me/animals")
+    suspend fun getUserAnimals(
+        @RequestHeader("X-User-Name") username: String
+    ): ResponseEntity<List<AnimalResponse>> {
+        return ResponseEntity.ok(animalService.getUserAnimals(username))
     }
 }

@@ -42,5 +42,22 @@ data class Animal(
     val statusLogs: MutableSet<AnimalStatusLog> = mutableSetOf(),
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
-)
+    val attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf(),
+){
+    fun addStatusLog(statusLog: AnimalStatusLog) {
+        statusLogs.add(statusLog)
+        statusLog.animal = this
+    }
+
+    fun addPhoto(photo: Photo): AnimalPhoto {
+        val animalPhoto = AnimalPhoto(animal = this, photo = photo)
+        animalPhotos.add(animalPhoto)
+        photo.animalPhotos.add(animalPhoto)
+        return animalPhoto
+    }
+
+    fun addDocument(document: Document) {
+        documents.add(document)
+        document.animal = this
+    }
+}

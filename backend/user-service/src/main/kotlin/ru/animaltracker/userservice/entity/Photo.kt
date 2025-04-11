@@ -13,7 +13,7 @@ data class Photo(
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0,
 
-    @Column(name = "object_key", length = 512)
+    @Column(name = "object_key", length = 512, unique = true)
     val objectKey: String? = null,
 
     @Column(name = "created_at")

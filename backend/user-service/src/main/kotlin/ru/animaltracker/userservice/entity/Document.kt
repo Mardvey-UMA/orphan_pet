@@ -19,7 +19,7 @@ data class Document(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "animal_id")
-    val animal: Animal? = null,
+    var animal: Animal? = null,
 
     @OneToMany(mappedBy = "document", cascade = [CascadeType.ALL], orphanRemoval = true)
     val statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf()

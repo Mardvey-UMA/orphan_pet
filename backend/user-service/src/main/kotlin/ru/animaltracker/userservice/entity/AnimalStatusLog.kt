@@ -19,11 +19,34 @@ data class AnimalStatusLog(
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "animal_id")
-    val animal: Animal,
+    var animal: Animal,
 
     @OneToMany(mappedBy = "animalStatusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
     val statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf(),
 
     @OneToMany(mappedBy = "animalStatusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf()
-)
+    val statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf(),
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    val user: User
+){
+    constructor(notes: String?, logDate: LocalDate?, animal: Animal, user: User) : this(
+        logDate = logDate,
+        notes = notes,
+        animal = animal,
+        user = user,
+        updatedAt = LocalDate.now()
+    )
+    fun addPhoto(photo: Photo): StatusLogPhoto {
+        val statusLogPhoto = StatusLogPhoto(this, photo)
+        statusLogPhotos.add(statusLogPhoto)
+        return statusLogPhoto
+    }
+
+    fun addDocument(document: Document): StatusLogDocument {
+        val statusLogDocument = StatusLogDocument(this, document)
+        statusLogDocuments.add(statusLogDocument)
+        return statusLogDocument
+    }
+}

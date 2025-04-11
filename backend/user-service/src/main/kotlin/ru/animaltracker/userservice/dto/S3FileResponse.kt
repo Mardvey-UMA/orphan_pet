@@ -1,6 +1,6 @@
 package ru.animaltracker.userservice.dto
 
-data class UserPhotoResponse(
-    val photoId: Long,
+data class S3FileResponse(
+    val objectKey: String,
     val presignedUrl: String
 )
