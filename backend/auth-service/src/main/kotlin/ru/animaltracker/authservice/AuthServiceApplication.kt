@@ -7,11 +7,11 @@ import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.scheduling.annotation.EnableAsync
-import ru.doedating.authservice.config.EmailConfig
+import ru.animaltracker.authservice.config.EmailConfig
 import ru.animaltracker.authservice.config.JwtConfig
-import ru.doedating.authservice.config.KafkaConfigProps
-import ru.doedating.authservice.entity.Role
-import ru.doedating.authservice.repository.RoleRepository
+import ru.animaltracker.authservice.config.KafkaConfigProps
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.repository.RoleRepository
 
 @EnableJpaAuditing
 @EnableAsync

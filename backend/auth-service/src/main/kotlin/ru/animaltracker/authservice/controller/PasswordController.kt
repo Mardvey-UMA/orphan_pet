@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import ru.doedating.authservice.dto.PasswordRecoveryRequestDTO
-import ru.doedating.authservice.dto.PasswordResetRequestDTO
-import ru.doedating.authservice.service.impl.PasswordRecoveryServiceImpl
+import ru.animaltracker.authservice.dto.PasswordRecoveryRequestDTO
+import ru.animaltracker.authservice.dto.PasswordResetRequestDTO
+import ru.animaltracker.authservice.service.impl.PasswordRecoveryServiceImpl
 
 @Tag(
     name = "Восстановление пароля",

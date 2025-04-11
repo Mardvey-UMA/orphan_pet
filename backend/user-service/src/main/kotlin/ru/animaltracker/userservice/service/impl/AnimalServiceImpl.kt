@@ -11,7 +11,6 @@ import ru.animaltracker.userservice.dto.*
 import ru.animaltracker.userservice.entity.*
 import ru.animaltracker.userservice.pdfexport.PdfExporter
 import ru.animaltracker.userservice.repository.*
-import ru.animaltracker.userservice.service.interfaces.AnimalMapper
 import ru.animaltracker.userservice.service.interfaces.AnimalService
 import ru.animaltracker.userservice.service.interfaces.S3Service
 import java.nio.file.AccessDeniedException
@@ -29,7 +28,6 @@ class AnimalServiceImpl(
     private val animalPhotoRepository: AnimalPhotoRepository,
     private val statusLogRepository: AnimalStatusLogRepository,
     private val s3Service: S3Service,
-    private val mapper: AnimalMapper
 ) : AnimalService {
 
     @Autowired
@@ -69,7 +67,7 @@ class AnimalServiceImpl(
             animalRepository.save(animal)
         }
 
-        return mapper.toResponse(animal)
+        return animal.toDto()
     }
 
     override suspend fun addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse {
@@ -134,7 +132,7 @@ class AnimalServiceImpl(
             animalRepository.save(animal)
         }
 
-        return mapper.toStatusLogResponse(statusLog)
+        return statusLog.toDto()
     }
 
     override suspend fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse {
@@ -244,17 +242,24 @@ class AnimalServiceImpl(
         }
             ?: throw EntityNotFoundException("User not found")
 
-        return user.getAnimals().map { mapper.toResponse(it) }
+        return user.getAnimals().map { it.toDto() }
     }
 
     override suspend fun getAnimal(username: String, animalId: Long): AnimalResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        return mapper.toResponse(animal)
+        return animal.toDto()
+    }
+
+    override suspend fun getStatusLog(id: Long): StatusLogResponse {
+        val log = withContext(Dispatchers.IO) {
+            statusLogRepository.findById(id)
+        }.orElseThrow { EntityNotFoundException("Status log not found") }
+        return log.toDto()
     }
 
     override suspend fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse> {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        return animal.statusLogs.map { mapper.toStatusLogResponse(it) }
+        return animal.statusLogs.map { it.toDto() }
     }
 
     @Transactional
@@ -281,7 +286,7 @@ class AnimalServiceImpl(
             animalRepository.save(animal)
         }
 
-        return mapper.toResponse(updatedAnimal)
+        return updatedAnimal.toDto()
     }
 
     override suspend fun updateStatusLog(
@@ -299,7 +304,7 @@ class AnimalServiceImpl(
             statusLogRepository.save(statusLog)
         }
 
-        return mapper.toStatusLogResponse(updatedLog)
+        return updatedLog.toDto()
     }
 
     override suspend fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long) {
@@ -355,7 +360,7 @@ class AnimalServiceImpl(
             attributeRepository.save(attribute)
         }
 
-        return mapper.toAttributeResponse(updatedAttr)
+        return updatedAttr.toDto()
     }
 
     override suspend fun addAttribute(
@@ -376,7 +381,7 @@ class AnimalServiceImpl(
             attributeRepository.save(attribute)
         }
 
-        return mapper.toAttributeResponse(savedAttr)
+        return savedAttr.toDto()
     }
 
     override suspend fun deleteAttribute(

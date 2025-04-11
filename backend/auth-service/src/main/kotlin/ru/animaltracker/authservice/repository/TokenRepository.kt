@@ -2,8 +2,8 @@ package ru.animaltracker.authservice.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
-import ru.doedating.authservice.entity.Token
-import ru.doedating.authservice.enums.TokenType
+import ru.animaltracker.authservice.entity.Token
+import ru.animaltracker.authservice.enums.TokenType
 
 interface TokenRepository : JpaRepository<Token, Long> {
     @Query(

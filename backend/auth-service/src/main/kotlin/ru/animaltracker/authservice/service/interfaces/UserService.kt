@@ -1,10 +1,10 @@
 package ru.animaltracker.authservice.service.interfaces
 
-import ru.doedating.authservice.dto.UserRequestDTO
-import ru.doedating.authservice.dto.UserResponseDTO
-import ru.doedating.authservice.entity.Role
-import ru.doedating.authservice.entity.User
-import ru.doedating.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.dto.UserResponseDTO
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
 
 interface UserService {
 

@@ -75,7 +75,7 @@ services:
       - animals-network
 
   main_db:
-    container_name: main_db
+    container_name: main-db
     image: postgres:16.0
     restart: always
     environment:

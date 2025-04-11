@@ -1,9 +1,9 @@
 package ru.animaltracker.authservice.service.interfaces
 
 import jakarta.servlet.http.HttpServletResponse
-import ru.doedating.authservice.dto.AuthResponseDTO
-import ru.doedating.authservice.entity.Token
-import ru.doedating.authservice.entity.User
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.entity.Token
+import ru.animaltracker.authservice.entity.User
 
 interface TokenService {
     fun saveRefreshToken(user: User, refreshToken: String)

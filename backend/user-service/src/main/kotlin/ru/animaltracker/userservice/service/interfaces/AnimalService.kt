@@ -25,5 +25,6 @@ interface AnimalService {
     suspend fun deleteAnimalDocument(username: String, documentId: Long)
     suspend fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse>
     suspend fun exportAnimalToPdf(username: String, animalId: Long): ByteArray
+    suspend fun getStatusLog(id: Long): StatusLogResponse
 }
 

@@ -7,8 +7,8 @@ import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.logout.LogoutHandler
 import org.springframework.stereotype.Service
-import ru.doedating.authservice.enums.CookieName
-import ru.doedating.authservice.repository.TokenRepository
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.repository.TokenRepository
 
 @Service
 class LogoutService(

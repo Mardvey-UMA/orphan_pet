@@ -1,7 +1,7 @@
 package ru.animaltracker.authservice.service.interfaces
 
-import ru.doedating.authservice.dto.UserRequestDTO
-import ru.doedating.authservice.dto.UserResponseDTO
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.dto.UserResponseDTO
 
 
 interface RegistrationService {

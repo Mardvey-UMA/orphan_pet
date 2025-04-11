@@ -4,11 +4,11 @@ import java.math.BigDecimal
 import java.time.LocalDate
 
 data class AnimalResponse(
-    val id: Long,
-    val name: String?,
-    val description: String?,
-    val birthDate: LocalDate?,
-    val mass: BigDecimal?,
-    val attributes: List<AttributeResponse>,
-    val photos: List<String>
+    var id: Long = 0,
+    var name: String? = null,
+    var description: String? = null,
+    var birthDate: LocalDate? = null,
+    var mass: BigDecimal? = null,
+    var attributes: List<AttributeResponse> = emptyList(),
+    var photos: List<String> = emptyList()
 )

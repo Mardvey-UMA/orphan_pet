@@ -7,8 +7,8 @@ import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.thymeleaf.context.Context
 import org.thymeleaf.spring6.SpringTemplateEngine
-import ru.doedating.authservice.config.EmailConfig
-import ru.doedating.authservice.enums.EmailTemplateName
+import ru.animaltracker.authservice.config.EmailConfig
+import ru.animaltracker.authservice.enums.EmailTemplateName
 
 @Service
 class EmailService(

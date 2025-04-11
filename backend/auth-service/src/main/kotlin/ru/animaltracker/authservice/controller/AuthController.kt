@@ -9,11 +9,11 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.*
-import ru.doedating.authservice.dto.*
-import ru.doedating.authservice.service.interfaces.AuthenticationService
-import ru.doedating.authservice.service.LogoutService
-import ru.doedating.authservice.service.interfaces.PasswordRecoveryService
-import ru.doedating.authservice.service.interfaces.RegistrationService
+import ru.animaltracker.authservice.dto.*
+import ru.animaltracker.authservice.service.interfaces.AuthenticationService
+import ru.animaltracker.authservice.service.LogoutService
+import ru.animaltracker.authservice.service.interfaces.PasswordRecoveryService
+import ru.animaltracker.authservice.service.interfaces.RegistrationService
 
 @Tag(
     name = "Вход и Регистрация",

@@ -1,11 +1,11 @@
 package ru.animaltracker.authservice.service.impl
 
 import org.springframework.stereotype.Service
-import ru.doedating.authservice.entity.User
-import ru.doedating.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
 import ru.animaltracker.authservice.service.PasswordRecoveryHelper
-import ru.doedating.authservice.service.interfaces.PasswordRecoveryService
-import ru.doedating.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.service.interfaces.PasswordRecoveryService
+import ru.animaltracker.authservice.service.interfaces.UserService
 
 @Service
 class PasswordRecoveryServiceImpl(

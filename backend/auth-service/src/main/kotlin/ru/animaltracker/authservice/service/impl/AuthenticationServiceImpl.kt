@@ -5,23 +5,23 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.stereotype.Service
-import ru.doedating.authservice.entity.User
+import ru.animaltracker.authservice.entity.User
 import ru.animaltracker.authservice.config.JwtConfig
-import ru.doedating.authservice.dto.AuthRequestDTO
-import ru.doedating.authservice.dto.AuthResponseDTO
-import ru.doedating.authservice.enums.CookieName
-import ru.doedating.authservice.exception.GlobalExceptionHandler
-import ru.doedating.authservice.service.interfaces.AuthenticationService
-import ru.doedating.authservice.service.JwtService
-import ru.doedating.authservice.service.interfaces.TokenService
-import ru.doedating.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.dto.AuthRequestDTO
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.service.interfaces.AuthenticationService
+import ru.animaltracker.authservice.service.JwtService
+import ru.animaltracker.authservice.service.interfaces.TokenService
+import ru.animaltracker.authservice.service.interfaces.UserService
 import java.time.LocalDateTime
 
 @Service
 class AuthenticationServiceImpl(
     private val authenticationManager: AuthenticationManager,
     private val userService: UserService,
-    private val jwtService: ru.doedating.authservice.service.JwtService,
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
     private val tokenService: TokenService,
     private val jwtConfig: ru.animaltracker.authservice.config.JwtConfig
 ) : AuthenticationService {

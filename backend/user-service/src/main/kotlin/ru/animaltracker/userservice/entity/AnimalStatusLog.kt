@@ -1,5 +1,6 @@
 package ru.animaltracker.userservice.entity
 import jakarta.persistence.*
+import ru.animaltracker.userservice.dto.StatusLogResponse
 import java.time.LocalDate
 @Entity
 @Table(name = "animal_status_log")
@@ -48,5 +49,15 @@ data class AnimalStatusLog(
         val statusLogDocument = StatusLogDocument(this, document)
         statusLogDocuments.add(statusLogDocument)
         return statusLogDocument
+    }
+
+    fun toDto(): StatusLogResponse {
+        return StatusLogResponse(
+            id = id,
+            logDate = logDate ?: LocalDate.now(),
+            notes = notes,
+            photos = statusLogPhotos.mapNotNull { it.photo?.objectKey },
+            documents = statusLogDocuments.mapNotNull { it.document?.objectKey }
+        )
     }
 }

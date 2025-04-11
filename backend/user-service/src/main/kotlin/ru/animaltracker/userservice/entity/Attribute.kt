@@ -1,5 +1,6 @@
 package ru.animaltracker.userservice.entity
 import jakarta.persistence.*
+import ru.animaltracker.userservice.dto.AttributeResponse
 import java.time.LocalDate
 @Entity
 @Table(name = "attribute")
@@ -20,4 +21,12 @@ data class Attribute(
 
     @OneToMany(mappedBy = "attribute", cascade = [CascadeType.ALL], orphanRemoval = true)
     val attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
-)
+){
+    fun toDto(): AttributeResponse {
+        return AttributeResponse(
+            id = id,
+            name = name,
+            value = values.firstOrNull()?.value
+        )
+    }
+}

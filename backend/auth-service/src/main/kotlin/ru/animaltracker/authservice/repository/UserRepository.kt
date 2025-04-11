@@ -2,7 +2,7 @@ package ru.animaltracker.authservice.repository
 
 import org.springframework.data.jpa.repository.EntityGraph
 import org.springframework.data.jpa.repository.JpaRepository
-import ru.doedating.authservice.entity.User
+import ru.animaltracker.authservice.entity.User
 
 interface UserRepository: JpaRepository<User, Long> {
     @EntityGraph(attributePaths = ["roles"])

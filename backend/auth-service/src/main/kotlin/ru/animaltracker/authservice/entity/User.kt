@@ -7,7 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
-import ru.doedating.authservice.enums.Provider
+import ru.animaltracker.authservice.enums.Provider
 import java.security.Principal
 import java.time.LocalDateTime
 

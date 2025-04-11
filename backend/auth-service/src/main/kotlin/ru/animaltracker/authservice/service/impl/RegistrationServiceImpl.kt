@@ -1,12 +1,12 @@
 package ru.animaltracker.authservice.service.impl
 
 import org.springframework.stereotype.Service
-//import ru.doedating.authservice.kafka.KafkaProducer
-import ru.doedating.authservice.service.interfaces.ActivationService
-import ru.doedating.authservice.service.interfaces.RegistrationService
-import ru.doedating.authservice.service.interfaces.UserService
-import ru.doedating.authservice.dto.UserRequestDTO
-import ru.doedating.authservice.dto.UserResponseDTO
+//import ru.animaltracker.authservice.kafka.KafkaProducer
+import ru.animaltracker.authservice.service.interfaces.ActivationService
+import ru.animaltracker.authservice.service.interfaces.RegistrationService
+import ru.animaltracker.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.dto.UserResponseDTO
 import java.time.LocalDateTime
 
 @Service

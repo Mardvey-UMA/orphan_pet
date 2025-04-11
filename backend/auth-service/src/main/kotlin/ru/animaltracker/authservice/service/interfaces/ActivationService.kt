@@ -1,6 +1,6 @@
 package ru.animaltracker.authservice.service.interfaces
 
-import ru.doedating.authservice.entity.User
+import ru.animaltracker.authservice.entity.User
 
 interface ActivationService {
     fun generateAndSaveActivationToken(user: User): String

@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import ru.doedating.authservice.dto.AuthResponseDTO
-import ru.doedating.authservice.service.OAuthService
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.service.OAuthService
 
 @Tag(
     name = "VK OAuth",

@@ -1,6 +1,7 @@
 package ru.animaltracker.userservice.entity
 
 import jakarta.persistence.*
+import ru.animaltracker.userservice.dto.UserResponse
 import java.time.LocalDate
 
 @Entity
@@ -47,4 +48,15 @@ data class User(
     }
 
     fun getAnimals(): List<Animal> = animalUsers.mapNotNull { it.animal }
+
+    fun toDto(): UserResponse {
+        return UserResponse(
+            username = username ?: "",
+            firstName = firstName,
+            lastName = lastName,
+            city = city,
+            aboutMe = aboutMe,
+            photoUrl = userPhotos.firstOrNull()?.photo?.objectKey
+        )
+    }
 }

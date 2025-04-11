@@ -9,16 +9,16 @@ import org.springframework.http.HttpMethod
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.http.HttpStatus
 
-import ru.doedating.authservice.config.VkApiConfig
-import ru.doedating.authservice.dto.AuthResponseDTO
-import ru.doedating.authservice.dto.UserRequestDTO
-import ru.doedating.authservice.entity.User
-import ru.doedating.authservice.enums.CookieName
-import ru.doedating.authservice.enums.Provider
+import ru.animaltracker.authservice.config.VkApiConfig
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.enums.Provider
 
-import ru.doedating.authservice.repository.UserRepository
-import ru.doedating.authservice.service.interfaces.TokenService
-import ru.doedating.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.repository.UserRepository
+import ru.animaltracker.authservice.service.interfaces.TokenService
+import ru.animaltracker.authservice.service.interfaces.UserService
 import java.net.URI
 import java.time.LocalDateTime
 
@@ -26,7 +26,7 @@ import java.time.LocalDateTime
 class OAuthService(
     private val restTemplate: RestTemplate,
     private val userRepository: UserRepository,
-    private val jwtService: ru.doedating.authservice.service.JwtService,
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
     private val userService: UserService,
     private val objectMapper: ObjectMapper,
     private val vkApiConfig: VkApiConfig,

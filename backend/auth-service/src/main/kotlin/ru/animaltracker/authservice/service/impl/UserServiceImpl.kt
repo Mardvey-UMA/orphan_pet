@@ -3,15 +3,15 @@ package ru.animaltracker.authservice.service.impl
 import jakarta.transaction.Transactional
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
-import ru.doedating.authservice.dto.UserRequestDTO
-import ru.doedating.authservice.entity.Role
-import ru.doedating.authservice.entity.User
-import ru.doedating.authservice.enums.Provider
-import ru.doedating.authservice.enums.UserRole
-import ru.doedating.authservice.exception.GlobalExceptionHandler
-import ru.doedating.authservice.repository.RoleRepository
-import ru.doedating.authservice.repository.UserRepository
-import ru.doedating.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.Provider
+import ru.animaltracker.authservice.enums.UserRole
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.repository.RoleRepository
+import ru.animaltracker.authservice.repository.UserRepository
+import ru.animaltracker.authservice.service.interfaces.UserService
 import java.time.LocalDateTime
 
 @Service

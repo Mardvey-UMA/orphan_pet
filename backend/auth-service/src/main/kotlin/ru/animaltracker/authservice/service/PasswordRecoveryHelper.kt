@@ -1,14 +1,14 @@
 package ru.animaltracker.authservice.service
 
 import org.springframework.stereotype.Service
-import ru.doedating.authservice.entity.MailToken
-import ru.doedating.authservice.entity.User
-import ru.doedating.authservice.enums.MailTokenType
-import ru.doedating.authservice.repository.MailTokenRepository
-import ru.doedating.authservice.config.EmailConfig
-import ru.doedating.authservice.enums.EmailTemplateName
-import ru.doedating.authservice.exception.GlobalExceptionHandler
-import ru.doedating.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.entity.MailToken
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.MailTokenType
+import ru.animaltracker.authservice.repository.MailTokenRepository
+import ru.animaltracker.authservice.config.EmailConfig
+import ru.animaltracker.authservice.enums.EmailTemplateName
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.service.interfaces.UserService
 import java.security.SecureRandom
 import java.time.LocalDateTime
 

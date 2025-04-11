@@ -6,5 +6,5 @@ data class UserResponse(
     val lastName: String?,
     val city: String?,
     val aboutMe: String?,
-    val photoUrl: String?
+    var photoUrl: String?
 )

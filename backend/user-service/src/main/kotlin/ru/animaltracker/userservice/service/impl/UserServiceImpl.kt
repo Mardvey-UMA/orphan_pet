@@ -15,7 +15,6 @@ import ru.animaltracker.userservice.repository.PhotoRepository
 import ru.animaltracker.userservice.repository.UserPhotoRepository
 import ru.animaltracker.userservice.repository.UserRepository
 import ru.animaltracker.userservice.service.interfaces.S3Service
-import ru.animaltracker.userservice.service.interfaces.UserMapper
 import ru.animaltracker.userservice.service.interfaces.UserService
 
 @Service
@@ -23,8 +22,7 @@ class UserServiceImpl(
     private val userRepository: UserRepository,
     private val s3Service: S3Service,
     private val photoRepository: PhotoRepository,
-    private val userPhotoRepository: UserPhotoRepository,
-    private val mapper: UserMapper
+    private val userPhotoRepository: UserPhotoRepository
 ) : UserService {
 
     @Transactional
@@ -36,8 +34,8 @@ class UserServiceImpl(
         request.lastName?.let { user.lastName = it }
         request.city?.let { user.city = it }
         request.aboutMe?.let { user.aboutMe = it }
-
-        return mapper.toResponse(userRepository.save(user))
+        val savedUser = userRepository.save(user)
+        return savedUser.toDto()
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +43,7 @@ class UserServiceImpl(
         val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
 
-        return mapper.toResponse(user)
+        return user.toDto()
     }
 
     @Transactional

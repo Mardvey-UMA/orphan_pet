@@ -13,11 +13,11 @@ import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Service
 import org.springframework.web.filter.OncePerRequestFilter
-import ru.doedating.authservice.repository.TokenRepository
-import ru.doedating.authservice.service.JwtService
+import ru.animaltracker.authservice.repository.TokenRepository
+import ru.animaltracker.authservice.service.JwtService
 @Service
 class JwtFilter(
-    private val jwtService: ru.doedating.authservice.service.JwtService,
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
     private val userDetailsService: UserDetailsService,
     private val tokenRepository: TokenRepository
 ): OncePerRequestFilter() {

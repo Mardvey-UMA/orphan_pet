@@ -8,7 +8,7 @@ import jakarta.servlet.http.Cookie
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import ru.animaltracker.authservice.config.JwtConfig
-import ru.doedating.authservice.entity.User
+import ru.animaltracker.authservice.entity.User
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

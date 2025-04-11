@@ -9,7 +9,7 @@ import org.springframework.security.core.Authentication
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import ru.doedating.authservice.service.LogoutService
+import ru.animaltracker.authservice.service.LogoutService
 @Tag(
     name = "Выход пользователя",
     description = "Обработка выхода пользователя")

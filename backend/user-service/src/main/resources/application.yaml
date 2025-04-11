@@ -5,7 +5,7 @@ s3:
   secretAccessKey: MXG3weJGL25Uk3RLkktsZNt1AXwG7pI6tiq7FMnR
   s3Url: https://s3.twcstorage.ru
   region: ru-1
-  bucket: 242358d3-bucket
+  bucket: 242358d3-2ebecc78-2588-458f-9f57-d47bfd2ce148
 
 spring:
   application:
@@ -29,7 +29,7 @@ spring:
     password: postgres
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create
     show-sql: false
     properties:
       hibernate:

@@ -1,7 +1,7 @@
 package ru.animaltracker.authservice.entity
 
 import jakarta.persistence.*
-import ru.doedating.authservice.enums.MailTokenType
+import ru.animaltracker.authservice.enums.MailTokenType
 import java.time.LocalDateTime
 
 @Entity

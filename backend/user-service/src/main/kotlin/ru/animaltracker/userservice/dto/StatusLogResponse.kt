@@ -3,9 +3,9 @@ package ru.animaltracker.userservice.dto
 import java.time.LocalDate
 
 data class StatusLogResponse(
-    val id: Long,
-    val logDate: LocalDate,
-    val notes: String?,
-    val photos: List<String>,
-    val documents: List<String>
+    var id: Long = 0,
+    var logDate: LocalDate = LocalDate.now(),
+    var notes: String? = null,
+    var photos: List<String> = emptyList(),
+    var documents: List<String> = emptyList()
 )

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.CookieValue
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
-import ru.doedating.authservice.dto.AuthResponseDTO
-import ru.doedating.authservice.service.interfaces.TokenService
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.service.interfaces.TokenService
 
 @Tag(
     name = "Токен",

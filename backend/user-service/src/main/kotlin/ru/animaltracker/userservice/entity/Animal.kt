@@ -1,6 +1,7 @@
 package ru.animaltracker.userservice.entity
 
 import jakarta.persistence.*
+import ru.animaltracker.userservice.dto.AnimalResponse
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -59,5 +60,16 @@ data class Animal(
     fun addDocument(document: Document) {
         documents.add(document)
         document.animal = this
+    }
+    fun toDto(): AnimalResponse {
+        return AnimalResponse(
+            id = id,
+            name = name,
+            description = description,
+            birthDate = birthDate,
+            mass = mass,
+            attributes = attributes.map { it.toDto() },
+            photos = animalPhotos.mapNotNull { it.photo?.objectKey }
+        )
     }
 }
