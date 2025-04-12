@@ -3,26 +3,36 @@ import jakarta.persistence.*
 import java.time.LocalDate
 @Entity
 @Table(name = "attribute_value_history")
-data class AttributeValueHistory(
+class AttributeValueHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0
 
     @Column(length = 1024)
-    val value: String? = null,
+    var value: String? = null
 
     @Column(name = "recorded_at")
-    val recordedAt: LocalDate? = null,
+    var recordedAt: LocalDate? = null
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
-    val user: User,
+    lateinit var user: User
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "animal_id")
-    val animal: Animal,
+    lateinit var animal: Animal
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attribute_id")
     var attribute: Attribute? = null
-)
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AttributeValueHistory) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "AttributeValueHistory(id=$id)"
+}

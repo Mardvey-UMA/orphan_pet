@@ -8,23 +8,33 @@ import jakarta.persistence.*
 import java.time.LocalDate
 @Entity
 @Table(name = "photo")
-data class Photo(
+class Photo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0
 
     @Column(name = "object_key", length = 512, unique = true)
-    val objectKey: String? = null,
+    var objectKey: String? = null
 
     @Column(name = "created_at")
-    val createdAt: LocalDate? = null,
+    var createdAt: LocalDate? = null
 
     @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val userPhotos: MutableSet<UserPhoto> = mutableSetOf(),
+    var userPhotos: MutableSet<UserPhoto> = mutableSetOf()
 
     @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf(),
+    var animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf()
 
     @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf()
-)
+    var statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Photo) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "Photo(id=$id)"
+}

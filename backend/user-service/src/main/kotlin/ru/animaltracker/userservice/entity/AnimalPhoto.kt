@@ -4,16 +4,26 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "animal_photo")
-data class AnimalPhoto(
+class AnimalPhoto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "animal_id")
-    val animal: Animal? = null,
+    var animal: Animal? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "photo_id")
-    val photo: Photo? = null
-)
+    var photo: Photo? = null
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AnimalPhoto) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "AnimalPhoto(id=$id)"
+}

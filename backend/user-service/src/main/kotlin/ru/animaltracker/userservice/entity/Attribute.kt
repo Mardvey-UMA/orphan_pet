@@ -5,28 +5,27 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "attribute")
-class Attribute(
+class Attribute {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Short = 0
+
     @Column(length = 255)
-    var name: String? = null,
+    var name: String? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "animal_id")
-    var animal: Animal? = null,
-){
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Short = 0
+    var animal: Animal? = null
 
     @OneToMany(mappedBy = "attribute", cascade = [CascadeType.ALL], orphanRemoval = true)
     var values: MutableSet<Value> = mutableSetOf()
-        protected set
 
     @OneToMany(mappedBy = "attribute")
     var valueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
-        protected set
 
     fun addValue(valueStr: String) {
-        val value = Value(valueStr).apply {
+        val value = Value().apply {
+            this.value = valueStr
             this.attribute = this@Attribute
         }
         values.add(value)
@@ -44,4 +43,14 @@ class Attribute(
             value = values.firstOrNull()?.value
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Attribute) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "Attribute(id=$id)"
 }

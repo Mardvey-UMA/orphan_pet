@@ -7,51 +7,54 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "animal")
-data class Animal(
+class Animal {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0
 
     @Column(name = "body_mass")
-    var mass: BigDecimal? = null,
+    var mass: BigDecimal? = null
 
     @Column(name = "birth_date")
-    var birthDate: LocalDate? = null,
+    var birthDate: LocalDate? = null
 
     @Column(name = "created_at")
-    val createdAt: LocalDate? = null,
+    var createdAt: LocalDate? = null
 
     @Column(length = 255)
-    var name: String? = null,
+    var name: String? = null
 
     @Column(columnDefinition = "text")
-    var description: String? = null,
+    var description: String? = null
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val attributes: MutableSet<Attribute> = mutableSetOf(),
+    var attributes: MutableSet<Attribute> = mutableSetOf()
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf(),
+    var animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf()
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val animalUsers: MutableSet<AnimalUser> = mutableSetOf(),
+    var animalUsers: MutableSet<AnimalUser> = mutableSetOf()
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val documents: MutableSet<Document> = mutableSetOf(),
+    var documents: MutableSet<Document> = mutableSetOf()
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val statusLogs: MutableSet<AnimalStatusLog> = mutableSetOf(),
+    var statusLogs: MutableSet<AnimalStatusLog> = mutableSetOf()
 
     @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf(),
-){
+    var attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
+
     fun addStatusLog(statusLog: AnimalStatusLog) {
         statusLogs.add(statusLog)
         statusLog.animal = this
     }
 
     fun addPhoto(photo: Photo): AnimalPhoto {
-        val animalPhoto = AnimalPhoto(animal = this, photo = photo)
+        val animalPhoto = AnimalPhoto().apply {
+            this.animal = this@Animal
+            this.photo = photo
+        }
         animalPhotos.add(animalPhoto)
         photo.animalPhotos.add(animalPhoto)
         return animalPhoto
@@ -61,6 +64,7 @@ data class Animal(
         documents.add(document)
         document.animal = this
     }
+
     fun toDto(): AnimalResponse {
         return AnimalResponse(
             id = id,
@@ -72,4 +76,14 @@ data class Animal(
             photos = animalPhotos.mapNotNull { it.photo?.objectKey }
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Animal) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "Animal(id=$id, name=$name)"
 }

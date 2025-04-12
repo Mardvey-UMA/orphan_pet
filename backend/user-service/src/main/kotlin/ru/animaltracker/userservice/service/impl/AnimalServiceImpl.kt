@@ -16,7 +16,6 @@ import java.time.LocalDate
 
 
 @Service
-@Transactional
 class AnimalServiceImpl(
     private val userRepository: UserRepository,
     private val animalRepository: AnimalRepository,
@@ -25,12 +24,16 @@ class AnimalServiceImpl(
     private val photoRepository: PhotoRepository,
     private val animalPhotoRepository: AnimalPhotoRepository,
     private val statusLogRepository: AnimalStatusLogRepository,
+    private val statusLogPhotoRepository: StatusLogPhotoRepository,
+    private val statusLogDocumentRepository: StatusLogDocumentRepository,
+    private val attributeValueHistoryRepository: AttributeValueHistoryRepository,
     private val s3Service: S3Service,
 ) : AnimalService {
 
     @Autowired
     private lateinit var pdfExporter: PdfExporter
 
+    @Transactional(readOnly = true)
     override  fun exportAnimalToPdf(username: String, animalId: Long): ByteArray {
         val (_, animal) = validateUserAndAnimal(username, animalId)
 
@@ -49,125 +52,108 @@ class AnimalServiceImpl(
             mass = request.mass
         }
 
+        val savedAnimal = animalRepository.save(animal)
+
         request.attributes.forEach { attrRequest ->
             val attribute = Attribute().apply {
                 name = attrRequest.name
-                this.animal = animal
+                this.animal = savedAnimal
                 addValue(attrRequest.value)
             }
             attributeRepository.save(attribute)
         }
 
-        val savedAnimal = animalRepository.save(animal)
         user.addAnimal(savedAnimal)
         userRepository.save(user)
 
         return savedAnimal.toDto()
     }
 
+    @Transactional
     override fun addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/photos")
-        val photo = photoRepository.save(Photo(objectKey = objectKey))
+        val photo = photoRepository.save(Photo().apply {
+            this.objectKey = objectKey
+        })
 
-        val animalPhoto = AnimalPhoto(animal = animal, photo = photo)
-        animalPhotoRepository.save(animalPhoto)
+        animalPhotoRepository.save(AnimalPhoto().apply {
+            this.animal = animal
+            this.photo = photo
+        })
 
         return S3FileResponse(objectKey, s3Service.generatePresignedUrl(objectKey))
     }
 
-    override  fun addAnimalDocument(username: String, animalId: Long, file: MultipartFile, type: String): S3FileResponse {
-        val (user, animal) = validateUserAndAnimal(username, animalId)
+    @Transactional
+    override fun addAnimalDocument(username: String, animalId: Long, file: MultipartFile, type: String): S3FileResponse {
+        val (_, animal) = validateUserAndAnimal(username, animalId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/documents")
-        val document = Document(
-            type = type,
-            objectKey = objectKey,
-            documentName = file.originalFilename,
-            animal = animal
-        )
+        val document = documentRepository.save(Document().apply {
+            this.type = type
+            this.objectKey = objectKey
+            this.documentName = file.originalFilename
+            this.animal = animal
+        })
 
-
-            documentRepository.save(document)
-
-        animal.addDocument(document)
-
-            animalRepository.save(animal)
-
-
-        return S3FileResponse(
-            objectKey = objectKey,
-            presignedUrl = s3Service.generatePresignedUrl(objectKey)
-        )
+        return S3FileResponse(objectKey, s3Service.generatePresignedUrl(objectKey))
     }
 
+    @Transactional
     override fun addStatusLog(username: String, animalId: Long, request: StatusLogCreateRequest): StatusLogResponse {
         val (user, animal) = validateUserAndAnimal(username, animalId)
 
-        val statusLog = AnimalStatusLog(
-            notes = request.notes,
-            logDate = request.logDate ?: LocalDate.now(),
-            animal = animal,
-            user = user
-        )
-
-        statusLogRepository.save(statusLog)
-        animal.addStatusLog(statusLog)
-        animalRepository.save(animal)
+        val statusLog = statusLogRepository.save(AnimalStatusLog().apply {
+            notes = request.notes
+            logDate = request.logDate ?: LocalDate.now()
+            this.animal = animal
+            this.user = user
+        })
 
         return statusLog.toDto()
     }
 
-    override  fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse {
-        val (user, animal, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
+    @Transactional
+    override fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse {
+        val (_, _, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/status-logs/$statusLogId/photos")
-        val photo = photoRepository.save(Photo(objectKey = objectKey))
+        val photo = photoRepository.save(Photo().apply {
+            this.objectKey = objectKey
+        })
 
+        statusLogPhotoRepository.save(StatusLogPhoto().apply {
+            this.animalStatusLog = statusLog
+            this.photo = photo
+        })
 
-        val statusLogPhoto = StatusLogPhoto(statusLog = statusLog, photo = photo)
-        statusLog.statusLogPhotos.add(statusLogPhoto)
-
-            statusLogRepository.save(statusLog)
-
-        return S3FileResponse(
-            objectKey = objectKey,
-            presignedUrl = s3Service.generatePresignedUrl(objectKey)
-        )
+        return S3FileResponse(objectKey, s3Service.generatePresignedUrl(objectKey))
     }
 
-    override  fun addStatusLogDocument(username: String, animalId: Long, statusLogId: Long, file: MultipartFile, type: String): S3FileResponse {
-        val (user, animal, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
+    @Transactional
+    override fun addStatusLogDocument(username: String, animalId: Long, statusLogId: Long, file: MultipartFile, type: String): S3FileResponse {
+        val (_, animal, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/status-logs/$statusLogId/documents")
-        val document = Document(
-            type = type,
-            objectKey = objectKey,
-            documentName = file.originalFilename,
-            animal = animal
-        )
+        val document = documentRepository.save(Document().apply {
+            this.type = type
+            this.objectKey = objectKey
+            this.documentName = file.originalFilename
+            this.animal = animal
+        })
 
+        statusLogDocumentRepository.save(StatusLogDocument().apply {
+            this.animalStatusLog = statusLog
+            this.document = document
+        })
 
-            documentRepository.save(document)
-
-
-        val statusLogDocument = StatusLogDocument(statusLog = statusLog, document = document)
-        statusLog.statusLogDocuments.add(statusLogDocument)
-
-            statusLogRepository.save(statusLog)
-
-
-        return S3FileResponse(
-            objectKey = objectKey,
-            presignedUrl = s3Service.generatePresignedUrl(objectKey)
-        )
+        return S3FileResponse(objectKey, s3Service.generatePresignedUrl(objectKey))
     }
-
-    override  fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
-        val animal =
-            animalRepository.findById(animalId)
-
+    @Transactional(readOnly = true)
+    override fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
+        val animal = animalRepository.findById(animalId)
             .orElseThrow { EntityNotFoundException("Animal not found") }
 
         return attributeRepository.findByAnimalId(animalId)
@@ -183,32 +169,26 @@ class AnimalServiceImpl(
             }
     }
 
-    @Transactional
-     fun validateUserAndAnimal(username: String, animalId: Long): Pair<User, Animal> {
-        val user =
-            userRepository.findByUsername(username)
-
+    @Transactional(readOnly = true)
+    fun validateUserAndAnimal(username: String, animalId: Long): Pair<User, Animal> {
+        val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
 
-        val animal =
-            animalRepository.findById(animalId)
-
+        val animal = animalRepository.findById(animalId)
             .orElseThrow { EntityNotFoundException("Animal not found") }
 
-        if (!user.getAnimals().contains(animal)) {
+        if (animal.animalUsers.none { it.user?.id == user.id }) {
             throw AccessDeniedException("User doesn't have access to this animal")
         }
 
         return user to animal
     }
 
-    @Transactional
-     fun validateUserAndStatusLog(username: String, animalId: Long, statusLogId: Long): Triple<User, Animal, AnimalStatusLog> {
+    @Transactional(readOnly = true)
+    fun validateUserAndStatusLog(username: String, animalId: Long, statusLogId: Long): Triple<User, Animal, AnimalStatusLog> {
         val (user, animal) = validateUserAndAnimal(username, animalId)
 
-        val statusLog =
-            statusLogRepository.findById(statusLogId)
-
+        val statusLog = statusLogRepository.findById(statusLogId)
             .orElseThrow { EntityNotFoundException("Status log not found") }
 
         if (statusLog.animal.id != animalId) {
@@ -217,46 +197,49 @@ class AnimalServiceImpl(
 
         return Triple(user, animal, statusLog)
     }
-
-    override  fun getUserAnimals(username: String): List<AnimalResponse> {
-        val user =
-            userRepository.findByUsername(username)
-
+    @Transactional(readOnly = true)
+    override fun getUserAnimals(username: String): List<AnimalResponse> {
+        val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
 
-        return user.getAnimals().map { it.toDto() }
+        return user.animalUsers.mapNotNull { it.animal?.toDto() }
     }
-
-    override  fun getAnimal(username: String, animalId: Long): AnimalResponse {
+    @Transactional(readOnly = true)
+    override fun getAnimal(username: String, animalId: Long): AnimalResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
         return animal.toDto()
     }
-
-    override  fun getStatusLog(id: Long): StatusLogResponse {
-        val log =
-            statusLogRepository.findById(id)
-        .orElseThrow { EntityNotFoundException("Status log not found") }
+    @Transactional(readOnly = true)
+    override fun getStatusLog(id: Long): StatusLogResponse {
+        val log = statusLogRepository.findById(id)
+            .orElseThrow { EntityNotFoundException("Status log not found") }
         return log.toDto()
     }
-
-    override  fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse> {
+    @Transactional(readOnly = true)
+    override fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse> {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        return animal.statusLogs.map { it.toDto() }
+        return statusLogRepository.findByAnimalId(animalId).map { it.toDto() }
     }
 
     @Transactional
-    override  fun deleteAnimal(username: String, animalId: Long) {
-        val (user, animal) = validateUserAndAnimal(username, animalId)
+    override fun deleteAnimal(username: String, animalId: Long) {
+        val (_, animal) = validateUserAndAnimal(username, animalId)
 
-        animal.documents.forEach { s3Service.deleteFile(it.objectKey!!) }
-        animal.animalPhotos.forEach { s3Service.deleteFile(it.photo?.objectKey!!) }
+        animal.documents.forEach {
+            it.objectKey?.let { key -> s3Service.deleteFile(key) }
+            documentRepository.delete(it)
+        }
 
+        animal.animalPhotos.forEach {
+            it.photo?.objectKey?.let { key -> s3Service.deleteFile(key) }
+            it.photo?.let { photo -> photoRepository.delete(photo) }
+        }
 
-            animalRepository.delete(animal)
-
+        animalRepository.delete(animal)
     }
 
-    override  fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse {
+    @Transactional
+    override fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
 
         request.name?.let { animal.name = it }
@@ -264,14 +247,11 @@ class AnimalServiceImpl(
         request.birthDate?.let { animal.birthDate = it }
         request.mass?.let { animal.mass = it }
 
-        val updatedAnimal =
-            animalRepository.save(animal)
-
-
-        return updatedAnimal.toDto()
+        return animalRepository.save(animal).toDto()
     }
 
-    override  fun updateStatusLog(
+    @Transactional
+    override fun updateStatusLog(
         username: String,
         animalId: Long,
         statusLogId: Long,
@@ -282,39 +262,35 @@ class AnimalServiceImpl(
         request.notes?.let { statusLog.notes = it }
         request.logDate?.let { statusLog.logDate = it }
 
-        val updatedLog =
-            statusLogRepository.save(statusLog)
-
-
-        return updatedLog.toDto()
+        return statusLogRepository.save(statusLog).toDto()
     }
 
-    override  fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long) {
+    @Transactional
+    override fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long) {
         val (_, _, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
 
         statusLog.statusLogPhotos.forEach {
             it.photo?.objectKey?.let { key -> s3Service.deleteFile(key) }
+            it.photo?.let { photo -> photoRepository.delete(photo) }
         }
 
         statusLog.statusLogDocuments.forEach {
             it.document?.objectKey?.let { key -> s3Service.deleteFile(key) }
+            it.document?.let { doc -> documentRepository.delete(doc) }
         }
 
-
-            statusLogRepository.delete(statusLog)
-
+        statusLogRepository.delete(statusLog)
     }
 
-    override  fun updateAttribute(
+    @Transactional
+    override fun updateAttribute(
         username: String,
         animalId: Long,
         attributeId: Short,
         request: AttributeUpdateRequest
     ): AttributeResponse {
         val (user, animal) = validateUserAndAnimal(username, animalId)
-        val attribute =
-            attributeRepository.findById(attributeId)
-
+        val attribute = attributeRepository.findById(attributeId)
             .orElseThrow { EntityNotFoundException("Attribute not found") }
 
         if (attribute.animal?.id != animalId) {
@@ -322,103 +298,88 @@ class AnimalServiceImpl(
         }
 
         request.name?.let { attribute.name = it }
+
         if (request.value != null) {
-            val value = attribute.values.firstOrNull() ?: Value(attribute = attribute)
+            val value = attribute.values.firstOrNull() ?: Value().apply {
+                this.attribute = attribute
+            }
             value.value = request.value
             attribute.values.clear()
             attribute.values.add(value)
 
-            val history = AttributeValueHistory(
-                value = request.value,
-                recordedAt = LocalDate.now(),
-                user = user,
-                animal = animal,
-                attribute = attribute
-            )
-            attribute.valueHistories.add(history)
+            attributeValueHistoryRepository.save(AttributeValueHistory().apply {
+                this.value = request.value
+                this.recordedAt = LocalDate.now()
+                this.user = user
+                this.animal = animal
+                this.attribute = attribute
+            })
         }
 
-        val updatedAttr =
-            attributeRepository.save(attribute)
-
-
-        return updatedAttr.toDto()
+        return attributeRepository.save(attribute).toDto()
     }
 
-    override  fun addAttribute(
+    @Transactional
+    override fun addAttribute(
         username: String,
         animalId: Long,
         request: AttributeRequest
     ): AttributeResponse {
-        val (user, animal) = validateUserAndAnimal(username, animalId)
+        val (_, animal) = validateUserAndAnimal(username, animalId)
 
-        val attribute = Attribute(
-            name = request.name,
-            animal = animal
-        ).apply {
-            values.add(Value(value = request.value, attribute = this))
+        val attribute = Attribute().apply {
+            name = request.name
+            this.animal = animal
+        }.also { attr ->
+            attr.values.add(Value().apply {
+                value = request.value
+                attribute = attr
+            })
         }
 
-        val savedAttr =
-            attributeRepository.save(attribute)
-
-
-        return savedAttr.toDto()
+        return attributeRepository.save(attribute).toDto()
     }
 
-    override  fun deleteAttribute(
-        username: String,
-        animalId: Long,
-        attributeId: Short
-    ) {
-        val (_, animal) = validateUserAndAnimal(username, animalId)
-        val attribute =
-            attributeRepository.findById(attributeId)
-
+    @Transactional
+    override fun deleteAttribute(username: String, animalId: Long, attributeId: Short) {
+        val (_, _) = validateUserAndAnimal(username, animalId)
+        val attribute = attributeRepository.findById(attributeId)
             .orElseThrow { EntityNotFoundException("Attribute not found") }
 
         if (attribute.animal?.id != animalId) {
             throw AccessDeniedException("Attribute doesn't belong to this animal")
         }
 
-
-            attributeRepository.delete(attribute)
-
+        attributeRepository.delete(attribute)
     }
 
-    override  fun deleteAnimalPhoto(username: String, photoId: Long) {
-        val photo =
-            photoRepository.findById(photoId)
-        .orElseThrow { EntityNotFoundException("Photo not found") }
+    @Transactional
+    override fun deleteAnimalPhoto(username: String, photoId: Long) {
+        val photo = photoRepository.findById(photoId)
+            .orElseThrow { EntityNotFoundException("Photo not found") }
 
-        val animalPhoto = photo.animalPhotos.firstOrNull()
+        val animalPhoto = animalPhotoRepository.findByPhotoId(photoId)
             ?: throw AccessDeniedException("Photo not linked to animal")
 
         validateUserAndAnimal(username, animalPhoto.animal?.id ?: throw IllegalStateException())
 
-
-            photo.objectKey?.let { s3Service.deleteFile(it) }
-            photoRepository.delete(photo)
-
+        photo.objectKey?.let { s3Service.deleteFile(it) }
+        photoRepository.delete(photo)
     }
 
-    override  fun deleteAnimalDocument(username: String, documentId: Long) {
-        val document =
-            documentRepository.findById(documentId)
-        .orElseThrow { EntityNotFoundException("Document not found") }
+    @Transactional
+    override fun deleteAnimalDocument(username: String, documentId: Long) {
+        val document = documentRepository.findById(documentId)
+            .orElseThrow { EntityNotFoundException("Document not found") }
 
         validateUserAndAnimal(username, document.animal?.id ?: throw IllegalStateException())
 
-
-            document.objectKey?.let { s3Service.deleteFile(it) }
-            documentRepository.delete(document)
-
+        document.objectKey?.let { s3Service.deleteFile(it) }
+        documentRepository.delete(document)
     }
-
-    override  fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
-        val attributes =
-            attributeRepository.findByAnimalId(animalId)
-
+    @Transactional(readOnly = true)
+    override fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
+        val attributes = attributeRepository.findByAnimalId(animalId)
 
         return attributes.map { attribute ->
             val histories = attribute.valueHistories

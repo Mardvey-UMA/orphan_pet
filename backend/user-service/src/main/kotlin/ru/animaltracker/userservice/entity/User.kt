@@ -6,38 +6,38 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "users")
-data class User(
+class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0
 
     @Column(length = 255)
-    val email: String? = null,
+    var email: String? = null
 
     @Column(length = 255)
-    val username: String? = null,
+    var username: String? = null
 
     @Column(name = "first_name", length = 255)
-    var firstName: String? = null,
+    var firstName: String? = null
 
     @Column(name = "last_name", length = 255)
-    var lastName: String? = null,
+    var lastName: String? = null
 
     @Column(length = 255)
-    var city: String? = null,
+    var city: String? = null
 
     @Column(name = "about_me", length = 255)
-    var aboutMe: String? = null,
+    var aboutMe: String? = null
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val userPhotos: MutableSet<UserPhoto> = mutableSetOf(),
+    var userPhotos: MutableSet<UserPhoto> = mutableSetOf()
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val animalUsers: MutableSet<AnimalUser> = mutableSetOf(),
+    var animalUsers: MutableSet<AnimalUser> = mutableSetOf()
 
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
-) {
+    var attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
+
     fun addAnimal(animal: Animal) {
         val animalUser = AnimalUser().apply {
             this.user = this@User
@@ -59,4 +59,14 @@ data class User(
             photoUrl = userPhotos.firstOrNull()?.photo?.objectKey
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is User) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "User(id=$id, username=$username)"
 }

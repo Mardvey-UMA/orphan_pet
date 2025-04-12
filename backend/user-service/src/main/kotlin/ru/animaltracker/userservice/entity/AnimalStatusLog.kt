@@ -4,49 +4,58 @@ import ru.animaltracker.userservice.dto.StatusLogResponse
 import java.time.LocalDate
 @Entity
 @Table(name = "animal_status_log")
-data class AnimalStatusLog(
+class AnimalStatusLog {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
+    var id: Long = 0
 
     @Column(name = "log_date")
-    var logDate: LocalDate? = null,
+    var logDate: LocalDate? = null
 
     @Column(columnDefinition = "text")
-    var notes: String? = null,
+    var notes: String? = null
 
     @Column(name = "updated_at")
-    val updatedAt: LocalDate? = null,
+    var updatedAt: LocalDate? = null
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "animal_id")
-    var animal: Animal,
+    lateinit var animal: Animal
 
     @OneToMany(mappedBy = "animalStatusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf(),
+    var statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf()
 
     @OneToMany(mappedBy = "animalStatusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
-    val statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf(),
+    var statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf()
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
-    val user: User
-){
-    constructor(notes: String?, logDate: LocalDate?, animal: Animal, user: User) : this(
-        logDate = logDate,
-        notes = notes,
-        animal = animal,
-        user = user,
-        updatedAt = LocalDate.now()
-    )
+    lateinit var user: User
+
+    constructor()
+
+    constructor(notes: String?, logDate: LocalDate?, animal: Animal, user: User) : this() {
+        this.notes = notes
+        this.logDate = logDate
+        this.animal = animal
+        this.user = user
+        this.updatedAt = LocalDate.now()
+    }
+
     fun addPhoto(photo: Photo): StatusLogPhoto {
-        val statusLogPhoto = StatusLogPhoto(this, photo)
+        val statusLogPhoto = StatusLogPhoto().apply {
+            this.animalStatusLog = this@AnimalStatusLog
+            this.photo = photo
+        }
         statusLogPhotos.add(statusLogPhoto)
         return statusLogPhoto
     }
 
     fun addDocument(document: Document): StatusLogDocument {
-        val statusLogDocument = StatusLogDocument(this, document)
+        val statusLogDocument = StatusLogDocument().apply {
+            this.animalStatusLog = this@AnimalStatusLog
+            this.document = document
+        }
         statusLogDocuments.add(statusLogDocument)
         return statusLogDocument
     }
@@ -60,4 +69,14 @@ data class AnimalStatusLog(
             documents = statusLogDocuments.mapNotNull { it.document?.objectKey }
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is AnimalStatusLog) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    override fun toString(): String = "AnimalStatusLog(id=$id)"
 }
