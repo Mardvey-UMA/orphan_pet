@@ -1,8 +1,6 @@
 package ru.animaltracker.userservice.service.impl
 
 import jakarta.persistence.EntityNotFoundException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -33,63 +31,53 @@ class AnimalServiceImpl(
     @Autowired
     private lateinit var pdfExporter: PdfExporter
 
-    override suspend fun exportAnimalToPdf(username: String, animalId: Long): ByteArray {
+    override  fun exportAnimalToPdf(username: String, animalId: Long): ByteArray {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        return withContext(Dispatchers.IO) {
-            pdfExporter.exportAnimal(animal)
-        }
+
+        return pdfExporter.exportAnimal(animal)
     }
 
-    override suspend fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse {
-        val user = withContext(Dispatchers.IO) {
-            userRepository.findByUsername(username)
-        }
+    @Transactional
+    override fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse {
+        val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
 
-        val animal = Animal(
-            name = request.name,
-            description = request.description,
-            birthDate = request.birthDate,
+        val animal = Animal().apply {
+            name = request.name
+            description = request.description
+            birthDate = request.birthDate
             mass = request.mass
-        )
+        }
 
         request.attributes.forEach { attrRequest ->
-            val attribute = Attribute(
-                name = attrRequest.name,
-                animal = animal
-            )
-            attribute.values.add(Value(value = attrRequest.value, attribute = attribute))
-            animal.attributes.add(attribute)
+            val attribute = Attribute().apply {
+                name = attrRequest.name
+                this.animal = animal
+                addValue(attrRequest.value)
+            }
+            attributeRepository.save(attribute)
         }
 
-        user.addAnimal(animal)
-        withContext(Dispatchers.IO) {
-            animalRepository.save(animal)
-        }
+        val savedAnimal = animalRepository.save(animal)
+        user.addAnimal(savedAnimal)
+        userRepository.save(user)
 
-        return animal.toDto()
+        return savedAnimal.toDto()
     }
 
-    override suspend fun addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse {
-        val (user, animal) = validateUserAndAnimal(username, animalId)
+    override fun addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse {
+        val (_, animal) = validateUserAndAnimal(username, animalId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/photos")
-        val photo = withContext(Dispatchers.IO) {
-            photoRepository.save(Photo(objectKey = objectKey))
-        }
+        val photo = photoRepository.save(Photo(objectKey = objectKey))
 
-        animal.addPhoto(photo)
-        withContext(Dispatchers.IO) {
-            animalRepository.save(animal)
-        }
+        val animalPhoto = AnimalPhoto(animal = animal, photo = photo)
+        animalPhotoRepository.save(animalPhoto)
 
-        return S3FileResponse(
-            objectKey = objectKey,
-            presignedUrl = s3Service.generatePresignedUrl(objectKey)
-        )
+        return S3FileResponse(objectKey, s3Service.generatePresignedUrl(objectKey))
     }
 
-    override suspend fun addAnimalDocument(username: String, animalId: Long, file: MultipartFile, type: String): S3FileResponse {
+    override  fun addAnimalDocument(username: String, animalId: Long, file: MultipartFile, type: String): S3FileResponse {
         val (user, animal) = validateUserAndAnimal(username, animalId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/documents")
@@ -100,13 +88,13 @@ class AnimalServiceImpl(
             animal = animal
         )
 
-        withContext(Dispatchers.IO) {
+
             documentRepository.save(document)
-        }
+
         animal.addDocument(document)
-        withContext(Dispatchers.IO) {
+
             animalRepository.save(animal)
-        }
+
 
         return S3FileResponse(
             objectKey = objectKey,
@@ -114,7 +102,7 @@ class AnimalServiceImpl(
         )
     }
 
-    override suspend fun addStatusLog(username: String, animalId: Long, request: StatusLogCreateRequest): StatusLogResponse {
+    override fun addStatusLog(username: String, animalId: Long, request: StatusLogCreateRequest): StatusLogResponse {
         val (user, animal) = validateUserAndAnimal(username, animalId)
 
         val statusLog = AnimalStatusLog(
@@ -124,30 +112,24 @@ class AnimalServiceImpl(
             user = user
         )
 
-        withContext(Dispatchers.IO) {
-            statusLogRepository.save(statusLog)
-        }
+        statusLogRepository.save(statusLog)
         animal.addStatusLog(statusLog)
-        withContext(Dispatchers.IO) {
-            animalRepository.save(animal)
-        }
+        animalRepository.save(animal)
 
         return statusLog.toDto()
     }
 
-    override suspend fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse {
+    override  fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse {
         val (user, animal, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/status-logs/$statusLogId/photos")
-        val photo = withContext(Dispatchers.IO) {
-            photoRepository.save(Photo(objectKey = objectKey))
-        }
+        val photo = photoRepository.save(Photo(objectKey = objectKey))
+
 
         val statusLogPhoto = StatusLogPhoto(statusLog = statusLog, photo = photo)
         statusLog.statusLogPhotos.add(statusLogPhoto)
-        withContext(Dispatchers.IO) {
+
             statusLogRepository.save(statusLog)
-        }
 
         return S3FileResponse(
             objectKey = objectKey,
@@ -155,7 +137,7 @@ class AnimalServiceImpl(
         )
     }
 
-    override suspend fun addStatusLogDocument(username: String, animalId: Long, statusLogId: Long, file: MultipartFile, type: String): S3FileResponse {
+    override  fun addStatusLogDocument(username: String, animalId: Long, statusLogId: Long, file: MultipartFile, type: String): S3FileResponse {
         val (user, animal, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
 
         val objectKey = s3Service.uploadFile(file, "animals/$animalId/status-logs/$statusLogId/documents")
@@ -166,15 +148,15 @@ class AnimalServiceImpl(
             animal = animal
         )
 
-        withContext(Dispatchers.IO) {
+
             documentRepository.save(document)
-        }
+
 
         val statusLogDocument = StatusLogDocument(statusLog = statusLog, document = document)
         statusLog.statusLogDocuments.add(statusLogDocument)
-        withContext(Dispatchers.IO) {
+
             statusLogRepository.save(statusLog)
-        }
+
 
         return S3FileResponse(
             objectKey = objectKey,
@@ -182,17 +164,15 @@ class AnimalServiceImpl(
         )
     }
 
-    override suspend fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
-        val animal = withContext(Dispatchers.IO) {
+    override  fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
+        val animal =
             animalRepository.findById(animalId)
-        }
+
             .orElseThrow { EntityNotFoundException("Animal not found") }
 
-        return withContext(Dispatchers.IO) {
-            attributeRepository.findByAnimalId(animalId)
-        }
+        return attributeRepository.findByAnimalId(animalId)
             .flatMap { attribute ->
-                attribute.attributeValueHistories.map { history ->
+                attribute.valueHistories.map { history ->
                     AttributeHistoryResponse(
                         attributeName = attribute.name ?: "",
                         oldValue = history.value,
@@ -203,15 +183,16 @@ class AnimalServiceImpl(
             }
     }
 
-    private suspend fun validateUserAndAnimal(username: String, animalId: Long): Pair<User, Animal> {
-        val user = withContext(Dispatchers.IO) {
+    @Transactional
+     fun validateUserAndAnimal(username: String, animalId: Long): Pair<User, Animal> {
+        val user =
             userRepository.findByUsername(username)
-        }
+
             ?: throw EntityNotFoundException("User not found")
 
-        val animal = withContext(Dispatchers.IO) {
+        val animal =
             animalRepository.findById(animalId)
-        }
+
             .orElseThrow { EntityNotFoundException("Animal not found") }
 
         if (!user.getAnimals().contains(animal)) {
@@ -221,12 +202,13 @@ class AnimalServiceImpl(
         return user to animal
     }
 
-    private suspend fun validateUserAndStatusLog(username: String, animalId: Long, statusLogId: Long): Triple<User, Animal, AnimalStatusLog> {
+    @Transactional
+     fun validateUserAndStatusLog(username: String, animalId: Long, statusLogId: Long): Triple<User, Animal, AnimalStatusLog> {
         val (user, animal) = validateUserAndAnimal(username, animalId)
 
-        val statusLog = withContext(Dispatchers.IO) {
+        val statusLog =
             statusLogRepository.findById(statusLogId)
-        }
+
             .orElseThrow { EntityNotFoundException("Status log not found") }
 
         if (statusLog.animal.id != animalId) {
@@ -236,45 +218,45 @@ class AnimalServiceImpl(
         return Triple(user, animal, statusLog)
     }
 
-    override suspend fun getUserAnimals(username: String): List<AnimalResponse> {
-        val user = withContext(Dispatchers.IO) {
+    override  fun getUserAnimals(username: String): List<AnimalResponse> {
+        val user =
             userRepository.findByUsername(username)
-        }
+
             ?: throw EntityNotFoundException("User not found")
 
         return user.getAnimals().map { it.toDto() }
     }
 
-    override suspend fun getAnimal(username: String, animalId: Long): AnimalResponse {
+    override  fun getAnimal(username: String, animalId: Long): AnimalResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
         return animal.toDto()
     }
 
-    override suspend fun getStatusLog(id: Long): StatusLogResponse {
-        val log = withContext(Dispatchers.IO) {
+    override  fun getStatusLog(id: Long): StatusLogResponse {
+        val log =
             statusLogRepository.findById(id)
-        }.orElseThrow { EntityNotFoundException("Status log not found") }
+        .orElseThrow { EntityNotFoundException("Status log not found") }
         return log.toDto()
     }
 
-    override suspend fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse> {
+    override  fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse> {
         val (_, animal) = validateUserAndAnimal(username, animalId)
         return animal.statusLogs.map { it.toDto() }
     }
 
     @Transactional
-    override suspend fun deleteAnimal(username: String, animalId: Long) {
+    override  fun deleteAnimal(username: String, animalId: Long) {
         val (user, animal) = validateUserAndAnimal(username, animalId)
 
         animal.documents.forEach { s3Service.deleteFile(it.objectKey!!) }
         animal.animalPhotos.forEach { s3Service.deleteFile(it.photo?.objectKey!!) }
 
-        withContext(Dispatchers.IO) {
+
             animalRepository.delete(animal)
-        }
+
     }
 
-    override suspend fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse {
+    override  fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
 
         request.name?.let { animal.name = it }
@@ -282,14 +264,14 @@ class AnimalServiceImpl(
         request.birthDate?.let { animal.birthDate = it }
         request.mass?.let { animal.mass = it }
 
-        val updatedAnimal = withContext(Dispatchers.IO) {
+        val updatedAnimal =
             animalRepository.save(animal)
-        }
+
 
         return updatedAnimal.toDto()
     }
 
-    override suspend fun updateStatusLog(
+    override  fun updateStatusLog(
         username: String,
         animalId: Long,
         statusLogId: Long,
@@ -300,14 +282,14 @@ class AnimalServiceImpl(
         request.notes?.let { statusLog.notes = it }
         request.logDate?.let { statusLog.logDate = it }
 
-        val updatedLog = withContext(Dispatchers.IO) {
+        val updatedLog =
             statusLogRepository.save(statusLog)
-        }
+
 
         return updatedLog.toDto()
     }
 
-    override suspend fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long) {
+    override  fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long) {
         val (_, _, statusLog) = validateUserAndStatusLog(username, animalId, statusLogId)
 
         statusLog.statusLogPhotos.forEach {
@@ -318,21 +300,21 @@ class AnimalServiceImpl(
             it.document?.objectKey?.let { key -> s3Service.deleteFile(key) }
         }
 
-        withContext(Dispatchers.IO) {
+
             statusLogRepository.delete(statusLog)
-        }
+
     }
 
-    override suspend fun updateAttribute(
+    override  fun updateAttribute(
         username: String,
         animalId: Long,
         attributeId: Short,
         request: AttributeUpdateRequest
     ): AttributeResponse {
         val (user, animal) = validateUserAndAnimal(username, animalId)
-        val attribute = withContext(Dispatchers.IO) {
+        val attribute =
             attributeRepository.findById(attributeId)
-        }
+
             .orElseThrow { EntityNotFoundException("Attribute not found") }
 
         if (attribute.animal?.id != animalId) {
@@ -353,17 +335,17 @@ class AnimalServiceImpl(
                 animal = animal,
                 attribute = attribute
             )
-            attribute.attributeValueHistories.add(history)
+            attribute.valueHistories.add(history)
         }
 
-        val updatedAttr = withContext(Dispatchers.IO) {
+        val updatedAttr =
             attributeRepository.save(attribute)
-        }
+
 
         return updatedAttr.toDto()
     }
 
-    override suspend fun addAttribute(
+    override  fun addAttribute(
         username: String,
         animalId: Long,
         request: AttributeRequest
@@ -377,69 +359,69 @@ class AnimalServiceImpl(
             values.add(Value(value = request.value, attribute = this))
         }
 
-        val savedAttr = withContext(Dispatchers.IO) {
+        val savedAttr =
             attributeRepository.save(attribute)
-        }
+
 
         return savedAttr.toDto()
     }
 
-    override suspend fun deleteAttribute(
+    override  fun deleteAttribute(
         username: String,
         animalId: Long,
         attributeId: Short
     ) {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        val attribute = withContext(Dispatchers.IO) {
+        val attribute =
             attributeRepository.findById(attributeId)
-        }
+
             .orElseThrow { EntityNotFoundException("Attribute not found") }
 
         if (attribute.animal?.id != animalId) {
             throw AccessDeniedException("Attribute doesn't belong to this animal")
         }
 
-        withContext(Dispatchers.IO) {
+
             attributeRepository.delete(attribute)
-        }
+
     }
 
-    override suspend fun deleteAnimalPhoto(username: String, photoId: Long) {
-        val photo = withContext(Dispatchers.IO) {
+    override  fun deleteAnimalPhoto(username: String, photoId: Long) {
+        val photo =
             photoRepository.findById(photoId)
-        }.orElseThrow { EntityNotFoundException("Photo not found") }
+        .orElseThrow { EntityNotFoundException("Photo not found") }
 
         val animalPhoto = photo.animalPhotos.firstOrNull()
             ?: throw AccessDeniedException("Photo not linked to animal")
 
         validateUserAndAnimal(username, animalPhoto.animal?.id ?: throw IllegalStateException())
 
-        withContext(Dispatchers.IO) {
+
             photo.objectKey?.let { s3Service.deleteFile(it) }
             photoRepository.delete(photo)
-        }
+
     }
 
-    override suspend fun deleteAnimalDocument(username: String, documentId: Long) {
-        val document = withContext(Dispatchers.IO) {
+    override  fun deleteAnimalDocument(username: String, documentId: Long) {
+        val document =
             documentRepository.findById(documentId)
-        }.orElseThrow { EntityNotFoundException("Document not found") }
+        .orElseThrow { EntityNotFoundException("Document not found") }
 
         validateUserAndAnimal(username, document.animal?.id ?: throw IllegalStateException())
 
-        withContext(Dispatchers.IO) {
+
             document.objectKey?.let { s3Service.deleteFile(it) }
             documentRepository.delete(document)
-        }
+
     }
 
-    override suspend fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
-        val attributes = withContext(Dispatchers.IO) {
+    override  fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
+        val attributes =
             attributeRepository.findByAnimalId(animalId)
-        }
+
 
         return attributes.map { attribute ->
-            val histories = attribute.attributeValueHistories
+            val histories = attribute.valueHistories
                 .sortedBy { it.recordedAt }
                 .map { history ->
                     AttributeChange(

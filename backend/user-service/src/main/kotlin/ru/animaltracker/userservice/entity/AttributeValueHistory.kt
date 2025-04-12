@@ -24,5 +24,5 @@ data class AttributeValueHistory(
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attribute_id")
-    val attribute: Attribute? = null
+    var attribute: Attribute? = null
 )

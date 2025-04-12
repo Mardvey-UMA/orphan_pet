@@ -9,13 +9,13 @@ import ru.animaltracker.userservice.dto.*
 import ru.animaltracker.userservice.service.interfaces.AnimalService
 
 @RestController
-@RequestMapping("/api/v1/animals")
+@RequestMapping("/api/animals")
 class AnimalController(
     private val animalService: AnimalService
 ) {
 
     @PostMapping
-    suspend fun createAnimal(
+     fun createAnimal(
         @RequestHeader("X-User-Name") username: String,
         @Valid @RequestBody request: AnimalCreateRequest
     ): ResponseEntity<AnimalResponse> {
@@ -23,7 +23,7 @@ class AnimalController(
     }
 
     @GetMapping("/{animalId}")
-    suspend fun getAnimal(
+     fun getAnimal(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<AnimalResponse> {
@@ -31,7 +31,7 @@ class AnimalController(
     }
 
     @GetMapping("/{animalId}/status-logs")
-    suspend fun getAnimalStatusLogs(
+     fun getAnimalStatusLogs(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<List<StatusLogResponse>>{
@@ -39,7 +39,7 @@ class AnimalController(
     }
 
     @DeleteMapping("/{animalId}")
-    suspend fun deleteAnimal(
+     fun deleteAnimal(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<Void> {
@@ -48,7 +48,7 @@ class AnimalController(
     }
 
     @PostMapping("/{animalId}/photos")
-    suspend fun uploadAnimalPhoto(
+     fun uploadAnimalPhoto(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @RequestParam file: MultipartFile
@@ -57,7 +57,7 @@ class AnimalController(
     }
 
     @PostMapping("/{animalId}/documents")
-    suspend fun uploadAnimalDocument(
+     fun uploadAnimalDocument(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @RequestParam file: MultipartFile,
@@ -67,7 +67,7 @@ class AnimalController(
     }
 
     @PostMapping("/{animalId}/status-logs")
-    suspend fun addStatusLog(
+     fun addStatusLog(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @Valid @RequestBody request: StatusLogCreateRequest
@@ -76,7 +76,7 @@ class AnimalController(
     }
 
     @PostMapping("/{animalId}/status-logs/{statusLogId}/photos")
-    suspend fun uploadStatusLogPhoto(
+     fun uploadStatusLogPhoto(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable statusLogId: Long,
@@ -86,7 +86,7 @@ class AnimalController(
     }
 
     @PostMapping("/{animalId}/status-logs/{statusLogId}/documents")
-    suspend fun uploadStatusLogDocument(
+     fun uploadStatusLogDocument(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable statusLogId: Long,
@@ -97,7 +97,7 @@ class AnimalController(
     }
 
     @GetMapping("/{animalId}/attributes/history")
-    suspend fun getAttributesHistory(
+     fun getAttributesHistory(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<List<AttributeHistoryResponse>> {
@@ -105,7 +105,7 @@ class AnimalController(
     }
 
     @PatchMapping("/{animalId}")
-    suspend fun updateAnimal(
+     fun updateAnimal(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @Valid @RequestBody request: AnimalUpdateRequest
@@ -114,7 +114,7 @@ class AnimalController(
     }
 
     @PutMapping("/{animalId}/status-logs/{statusLogId}")
-    suspend fun updateStatusLog(
+     fun updateStatusLog(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable statusLogId: Long,
@@ -126,7 +126,7 @@ class AnimalController(
     }
 
     @DeleteMapping("/{animalId}/status-logs/{statusLogId}")
-    suspend fun deleteStatusLog(
+     fun deleteStatusLog(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable statusLogId: Long
@@ -136,7 +136,7 @@ class AnimalController(
     }
 
     @PatchMapping("/{animalId}/attributes/{attributeId}")
-    suspend fun updateAttribute(
+     fun updateAttribute(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable attributeId: Short,
@@ -148,7 +148,7 @@ class AnimalController(
     }
 
     @PostMapping("/{animalId}/attributes")
-    suspend fun addAttribute(
+     fun addAttribute(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @Valid @RequestBody request: AttributeRequest
@@ -158,7 +158,7 @@ class AnimalController(
     }
 
     @DeleteMapping("/{animalId}/attributes/{attributeId}")
-    suspend fun deleteAttribute(
+     fun deleteAttribute(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable attributeId: Short
@@ -168,7 +168,7 @@ class AnimalController(
     }
 
     @DeleteMapping("/photos/{photoId}")
-    suspend fun deleteAnimalPhoto(
+     fun deleteAnimalPhoto(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable photoId: Long
     ): ResponseEntity<Void> {
@@ -177,7 +177,7 @@ class AnimalController(
     }
 
     @DeleteMapping("/documents/{documentId}")
-    suspend fun deleteAnimalDocument(
+     fun deleteAnimalDocument(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable documentId: Long
     ): ResponseEntity<Void> {
@@ -186,7 +186,7 @@ class AnimalController(
     }
 
     @GetMapping("/{animalId}/analytics")
-    suspend fun getAnimalAnalytics(
+     fun getAnimalAnalytics(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<List<AnimalAnalyticsResponse>> {
@@ -194,7 +194,7 @@ class AnimalController(
     }
 
     @GetMapping("/{animalId}/export/pdf")
-    suspend fun exportAnimalToPdf(
+     fun exportAnimalToPdf(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<ByteArray> {

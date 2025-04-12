@@ -26,13 +26,7 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/api/users, /api/users/**
-            - Method=GET, POST, PUT, PATCH, DELETE
-
-        - id: photo-service
-          uri: lb://photo-service
-          predicates:
-            - Path=/api/photos, /api/photos/**
+            - Path=/api/users, /api/users/**, /api/animals/**, /api/animals/
             - Method=GET, POST, PUT, PATCH, DELETE
 
         - id: openapi

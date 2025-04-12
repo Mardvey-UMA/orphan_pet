@@ -1,8 +1,6 @@
 package ru.animaltracker.userservice.service.impl
 
 import jakarta.persistence.EntityNotFoundException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -47,10 +45,10 @@ class UserServiceImpl(
     }
 
     @Transactional
-    override suspend fun uploadUserPhoto(username: String, file: MultipartFile): S3FileResponse {
-        val user = withContext(Dispatchers.IO) {
+    override  fun uploadUserPhoto(username: String, file: MultipartFile): S3FileResponse {
+        val user = 
             userRepository.findByUsername(username)
-        }
+        
             ?: throw EntityNotFoundException("User not found")
 
         user.userPhotos.firstOrNull()?.let {
@@ -59,16 +57,16 @@ class UserServiceImpl(
         }
 
         val objectKey = s3Service.uploadFile(file, "users/$username/photos")
-        val photo = withContext(Dispatchers.IO) {
+        val photo = 
             photoRepository.save(Photo(objectKey = objectKey))
-        }
+        
 
-        withContext(Dispatchers.IO) {
+        
             userPhotoRepository.deleteAllByUser(user)
-        }
-        withContext(Dispatchers.IO) {
+        
+        
             userPhotoRepository.save(UserPhoto(user = user, photo = photo))
-        }
+        
 
         return S3FileResponse(
             objectKey = objectKey,

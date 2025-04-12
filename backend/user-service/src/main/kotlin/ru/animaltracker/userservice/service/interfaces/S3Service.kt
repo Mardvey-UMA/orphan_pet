@@ -4,14 +4,14 @@ import org.springframework.web.multipart.MultipartFile
 import java.time.Duration
 
 interface S3Service {
-    suspend fun uploadFile(
+     fun uploadFile(
         file: MultipartFile,
         prefix: String,
         metadata: Map<String, String> = emptyMap()
     ): String
 
-    suspend fun generatePresignedUrl(objectKey: String, duration: Duration): String
-    suspend fun generatePresignedUrl(objectKey: String): String
-    suspend fun deleteFile(objectKey: String)
-    suspend fun getFileMetadata(objectKey: String): Map<String, String>
+     fun generatePresignedUrl(objectKey: String, duration: Duration): String
+     fun generatePresignedUrl(objectKey: String): String
+     fun deleteFile(objectKey: String)
+     fun getFileMetadata(objectKey: String): Map<String, String>
 }

@@ -8,5 +8,5 @@ import ru.animaltracker.userservice.dto.UserUpdateRequest
 interface UserService {
     fun updateUser(username: String, request: UserUpdateRequest): UserResponse
     fun getUser(username: String): UserResponse
-    suspend fun uploadUserPhoto(username: String, file: MultipartFile): S3FileResponse
+     fun uploadUserPhoto(username: String, file: MultipartFile): S3FileResponse
 }

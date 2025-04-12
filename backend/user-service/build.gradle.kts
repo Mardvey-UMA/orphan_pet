@@ -52,12 +52,6 @@ dependencies {
 
     runtimeOnly("org.postgresql:postgresql")
 
-    // Korutines
-
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.8.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.8.1")
-
     // PDF
 
     implementation("com.itextpdf:itext7-core:7.2.5")

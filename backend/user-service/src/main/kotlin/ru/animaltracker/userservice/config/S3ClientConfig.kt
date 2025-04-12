@@ -19,10 +19,10 @@ class S3ClientConfig(
     @Value("\${s3.secretAccessKey}") val secretAccessKey: String
 ) {
     @Bean
-    fun s3AsyncClient(): S3AsyncClient {
+    fun s3Client(): S3Client {
         val credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey)
 
-        return S3AsyncClient.builder()
+        return S3Client.builder()
             .apply {
                 if (s3Url.isNotEmpty()) {
                     endpointOverride(URI.create(s3Url))

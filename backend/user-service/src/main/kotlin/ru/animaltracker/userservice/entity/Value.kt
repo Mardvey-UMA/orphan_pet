@@ -4,15 +4,15 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "value")
-data class Value(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long = 0,
-
+class Value(
     @Column(length = 1024)
     var value: String? = null,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "attribute_id")
-    val attribute: Attribute? = null
-)
+    var attribute: Attribute? = null
+) {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0
+}

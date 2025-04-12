@@ -12,21 +12,21 @@ import ru.animaltracker.userservice.service.interfaces.AnimalService
 import ru.animaltracker.userservice.service.interfaces.UserService
 
 @RestController
-@RequestMapping("/api/v1/users")
+@RequestMapping("/api/users")
 class UserController(
     private val userService: UserService,
     private val animalService: AnimalService
 ) {
 
     @GetMapping("/me")
-    suspend fun getCurrentUser(
+     fun getCurrentUser(
         @RequestHeader("X-User-Name") username: String
     ): ResponseEntity<UserResponse> {
         return ResponseEntity.ok(userService.getUser(username))
     }
 
     @PatchMapping("/me")
-    suspend fun updateUser(
+     fun updateUser(
         @RequestHeader("X-User-Name") username: String,
         @Valid @RequestBody request: UserUpdateRequest
     ): ResponseEntity<UserResponse> {
@@ -34,7 +34,7 @@ class UserController(
     }
 
     @PostMapping("/me/photo")
-    suspend fun uploadUserPhoto(
+     fun uploadUserPhoto(
         @RequestHeader("X-User-Name") username: String,
         @RequestParam file: MultipartFile
     ): ResponseEntity<S3FileResponse> {
@@ -42,7 +42,7 @@ class UserController(
     }
 
     @GetMapping("/me/animals")
-    suspend fun getUserAnimals(
+     fun getUserAnimals(
         @RequestHeader("X-User-Name") username: String
     ): ResponseEntity<List<AnimalResponse>> {
         return ResponseEntity.ok(animalService.getUserAnimals(username))
