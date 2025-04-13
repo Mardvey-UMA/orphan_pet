@@ -1,0 +1,93 @@
+.container {
+	padding: 20px;
+	max-width: 1200px;
+	margin: 0 auto;
+}
+
+.backButton {
+	margin-bottom: 20px;
+}
+
+.calendarSection {
+	margin-bottom: 24px;
+
+	.calendar {
+		border: 1px solid #f0f0f0;
+		border-radius: 8px;
+		padding: 10px;
+		background: white;
+	}
+}
+
+.entryCard {
+	margin-bottom: 24px;
+}
+
+.actions {
+	margin-top: 16px;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.photosSection {
+	margin-top: 24px;
+
+	h3 {
+		margin-bottom: 16px;
+	}
+}
+
+.photosGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	gap: 16px;
+	margin-top: 16px;
+}
+
+.photoWrapper {
+	position: relative;
+	cursor: pointer;
+	transition: transform 0.2s;
+
+	&:hover {
+		transform: scale(1.05);
+	}
+}
+
+.noEntry {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	padding: 20px 0;
+}
+
+.photoModal {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	.photoNavigation {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		padding: 16px;
+		background: rgba(0, 0, 0, 0.5);
+		color: white;
+		position: absolute;
+		bottom: 0;
+		left: 0;
+	}
+}
+
+.calendarDayWithEntry {
+	position: absolute;
+	bottom: 2px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #1890ff;
+}

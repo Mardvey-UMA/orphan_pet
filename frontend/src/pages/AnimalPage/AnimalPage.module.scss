@@ -18,10 +18,16 @@
 	margin-bottom: 20px;
 }
 
+.cardTitleWithButton {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
 .attributesList {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-	gap: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 	margin-top: 15px;
 }
 
@@ -32,6 +38,10 @@
 	padding: 8px;
 	border: 1px solid #f0f0f0;
 	border-radius: 4px;
+}
+
+.attributeContent {
+	flex-grow: 1;
 }
 
 .newAttribute {
@@ -45,12 +55,14 @@
 .tip {
 	grid-column: 1 / -1;
 	font-size: 0.8em;
+	color: #666;
 }
 
 .photosGrid {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 	gap: 15px;
+	margin-top: 15px;
 }
 
 .photoWrapper {
@@ -61,27 +73,46 @@
 	height: 150px;
 }
 
-.viewIcon {
+.photoActions {
 	position: absolute;
 	bottom: 5px;
 	right: 5px;
+	display: flex;
+	gap: 5px;
+}
+
+.viewIcon,
+.deleteIcon {
 	background: rgba(0, 0, 0, 0.5);
 	color: white;
 	padding: 5px;
 	border-radius: 50%;
 	cursor: pointer;
+	font-size: 16px;
+}
+
+.deleteIcon:hover {
+	color: #ff4d4f;
 }
 
 .documentsList {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	margin-top: 15px;
 }
 
 .documentItem {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 	padding: 8px;
 	border: 1px solid #f0f0f0;
 	border-radius: 4px;
+}
+
+.darkIcon {
+	color: rgba(0, 0, 0, 0.85);
 }
 
 .photoModal {
@@ -90,7 +121,12 @@
 	align-items: center;
 	gap: 15px;
 }
-
+.pageHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
 .photoNavigation {
 	display: flex;
 	justify-content: center;

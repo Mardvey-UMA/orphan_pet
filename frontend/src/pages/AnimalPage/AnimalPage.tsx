@@ -1,13 +1,16 @@
 import { FileUpload } from '@/components/FileUpload/FileUpload'
 import { animalApi } from '@/features/animal/api/animalApi'
+import { exportApi } from '@/features/animal/api/exportApi'
 import {
+	AnimalResponse,
 	AnimalUpdateRequest,
-	AttributeResponse,
 } from '@/features/animal/api/types'
 import {
+	BookOutlined,
 	DeleteOutlined,
 	EditOutlined,
 	EyeOutlined,
+	FilePdfOutlined,
 	PlusOutlined,
 	UploadOutlined,
 } from '@ant-design/icons'
@@ -28,6 +31,7 @@ import dayjs from 'dayjs'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './AnimalPage.module.scss'
+
 const { Title, Text } = Typography
 
 export const AnimalPage = () => {
@@ -38,18 +42,21 @@ export const AnimalPage = () => {
 	const [isEditing, setIsEditing] = useState(false)
 	const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false)
 	const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
-	const [newAttribute, setNewAttribute] = useState({ name: '', value: '' })
+	const [newAttribute, setNewAttribute] = useState<{
+		name: string
+		value: string
+	}>({ name: '', value: '' })
 
 	// Получение данных животного
-	const { data: animal } = useQuery({
+	const { data: animal, isPending } = useQuery<AnimalResponse>({
 		queryKey: ['animal', id],
-		queryFn: () => animalApi.getAnimal(Number(id)),
+		queryFn: () => animalApi.getAnimal(Number(id!)),
 	})
 
-	// Мутации для обновления данных
+	// Мутации
 	const updateAnimal = useMutation({
 		mutationFn: (data: AnimalUpdateRequest) =>
-			animalApi.updateAnimal(Number(id), data),
+			animalApi.updateAnimal(Number(id!), data),
 		onSuccess: () => {
 			message.success('Данные обновлены!')
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
@@ -58,25 +65,42 @@ export const AnimalPage = () => {
 	})
 
 	const addPhoto = useMutation({
-		mutationFn: (file: File) => animalApi.uploadAnimalPhoto(Number(id), file),
+		mutationFn: (file: File) => animalApi.uploadAnimalPhoto(Number(id!), file),
 		onSuccess: () => {
 			message.success('Фото добавлено!')
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
 		},
 	})
 
+	const deletePhoto = useMutation({
+		mutationFn: (photoUrl: string) => animalApi.deleteAnimalPhoto(photoUrl),
+		onSuccess: () => {
+			message.success('Фото удалено!')
+			queryClient.invalidateQueries({ queryKey: ['animal', id] })
+		},
+	})
+
 	const addDocument = useMutation({
 		mutationFn: ({ file, type }: { file: File; type: string }) =>
-			animalApi.uploadAnimalDocument(Number(id), file, type),
+			animalApi.uploadAnimalDocument(Number(id!), file, type),
 		onSuccess: () => {
 			message.success('Документ добавлен!')
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
 		},
 	})
 
+	const deleteDocument = useMutation({
+		mutationFn: (documentUrl: string) =>
+			animalApi.deleteAnimalDocument(documentUrl),
+		onSuccess: () => {
+			message.success('Документ удален!')
+			queryClient.invalidateQueries({ queryKey: ['animal', id] })
+		},
+	})
+
 	const addAttribute = useMutation({
 		mutationFn: (data: { name: string; value: string }) =>
-			animalApi.addAttribute(Number(id), data),
+			animalApi.addAttribute(Number(id!), data),
 		onSuccess: () => {
 			message.success('Атрибут добавлен!')
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
@@ -86,13 +110,46 @@ export const AnimalPage = () => {
 
 	const deleteAttribute = useMutation({
 		mutationFn: (attributeId: number) =>
-			animalApi.deleteAttribute(Number(id), attributeId),
+			animalApi.deleteAttribute(Number(id!), attributeId),
 		onSuccess: () => {
 			message.success('Атрибут удален!')
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
 		},
 	})
+	const exportToPdf = useMutation({
+		mutationFn: () => exportApi.exportAnimalToPdf(Number(id!)),
+		onSuccess: (pdfBlob: Blob) => {
+			const url = window.URL.createObjectURL(pdfBlob)
+			const link = document.createElement('a')
+			link.href = url
+			link.setAttribute('download', `animal_${animal?.name}_report.pdf`)
+			document.body.appendChild(link)
+			link.click()
+			document.body.removeChild(link)
 
+			// Освобождаем память
+			setTimeout(() => {
+				window.URL.revokeObjectURL(url)
+			}, 100)
+		},
+		onError: error => {
+			console.error('Export failed:', error)
+			message.error('Не удалось экспортировать в PDF')
+		},
+	})
+	// const exportToPdf = useMutation({
+	// 	mutationFn: () => exportApi.exportAnimalToPdf(Number(id!)),
+	// 	onSuccess: pdfData => {
+	// 		const blob = new Blob([pdfData], { type: 'application/pdf' })
+	// 		const url = window.URL.createObjectURL(blob)
+	// 		const link = document.createElement('a')
+	// 		link.href = url
+	// 		link.setAttribute('download', `animal_${animal?.name}_report.pdf`)
+	// 		document.body.appendChild(link)
+	// 		link.click()
+	// 		document.body.removeChild(link)
+	// 	},
+	// })
 	const handleSave = () => {
 		const values = form.getFieldsValue()
 		updateAnimal.mutate({
@@ -109,13 +166,41 @@ export const AnimalPage = () => {
 		addAttribute.mutate(newAttribute)
 	}
 
+	const handleDeletePhoto = (photoUrl: string, e: React.MouseEvent) => {
+		e.stopPropagation()
+		deletePhoto.mutate(photoUrl)
+	}
+
+	const handleDeleteDocument = (documentUrl: string) => {
+		deleteDocument.mutate(documentUrl)
+	}
+
+	if (isPending) return <div>Загрузка...</div>
+	if (!animal) return <div>Животное не найдено</div>
+
 	return (
 		<div className={styles.container}>
 			<Button onClick={() => navigate(-1)} className={styles.backButton}>
 				Назад к списку
 			</Button>
-
-			<Title level={2}>{animal?.name}</Title>
+			<Space>
+				<Button
+					type='default'
+					icon={<BookOutlined />}
+					onClick={() => navigate(`/animals/${id}/diary`)}
+				>
+					Дневник
+				</Button>
+				<Button
+					type='primary'
+					icon={<FilePdfOutlined />}
+					onClick={() => exportToPdf.mutate()}
+					loading={exportToPdf.isPending}
+				>
+					Экспорт в PDF
+				</Button>
+			</Space>
+			<Title level={2}>{animal.name}</Title>
 
 			<div className={styles.sectionsContainer}>
 				{/* Основная информация */}
@@ -132,10 +217,10 @@ export const AnimalPage = () => {
 						<Form
 							form={form}
 							initialValues={{
-								name: animal?.name,
-								description: animal?.description,
-								birthDate: animal?.birthDate ? dayjs(animal.birthDate) : null,
-								mass: animal?.mass,
+								name: animal.name,
+								description: animal.description,
+								birthDate: animal.birthDate ? dayjs(animal.birthDate) : null,
+								mass: animal.mass,
 							}}
 							layout='vertical'
 						>
@@ -161,14 +246,14 @@ export const AnimalPage = () => {
 					) : (
 						<>
 							<p>
-								<Text strong>Описание:</Text> {animal?.description || '—'}
+								<Text strong>Описание:</Text> {animal.description || '—'}
 							</p>
 							<p>
-								<Text strong>Дата рождения:</Text> {animal?.birthDate || '—'}
+								<Text strong>Дата рождения:</Text> {animal.birthDate || '—'}
 							</p>
 							<p>
 								<Text strong>Вес:</Text>{' '}
-								{animal?.mass ? `${animal.mass} кг` : '—'}
+								{animal.mass ? `${animal.mass} кг` : '—'}
 							</p>
 						</>
 					)}
@@ -176,29 +261,24 @@ export const AnimalPage = () => {
 
 				{/* Атрибуты */}
 				<Card
-					title='Атрибуты'
-					className={styles.section}
-					extra={
-						<Button
-							type='text'
-							icon={<PlusOutlined />}
-							onClick={() => setNewAttribute({ name: '', value: '' })}
-						>
-							Добавить
-						</Button>
+					title={
+						<div className={styles.cardTitleWithButton}>
+							<span>Атрибуты</span>
+						</div>
 					}
+					className={styles.section}
 				>
 					{newAttribute.name !== undefined && (
 						<div className={styles.newAttribute}>
 							<Input
-								placeholder='Название атрибута (например: Цвет)'
+								placeholder='Название атрибута'
 								value={newAttribute.name}
 								onChange={e =>
 									setNewAttribute({ ...newAttribute, name: e.target.value })
 								}
 							/>
 							<Input
-								placeholder='Значение (например: Рыжий)'
+								placeholder='Значение'
 								value={newAttribute.value}
 								onChange={e =>
 									setNewAttribute({ ...newAttribute, value: e.target.value })
@@ -212,52 +292,54 @@ export const AnimalPage = () => {
 								Добавить
 							</Button>
 							<Text type='secondary' className={styles.tip}>
-								Примеры атрибутов: Цвет, Порода, Особенности, Аллергии
+								Примеры: Порода, Цвет, Особенности, Аллергии
 							</Text>
 						</div>
 					)}
 
 					<div className={styles.attributesList}>
-						{animal?.attributes?.map((attr: AttributeResponse) => (
+						{animal.attributes.map(attr => (
 							<div key={attr.id} className={styles.attributeItem}>
-								<Text strong>{attr.name}:</Text> {attr.value}
+								<div className={styles.attributeContent}>
+									<Text strong>{attr.name}:</Text> {attr.value || '—'}
+								</div>
 								<Button
 									type='text'
 									danger
 									icon={<DeleteOutlined />}
 									onClick={() => deleteAttribute.mutate(attr.id)}
+									loading={deleteAttribute.isPending}
 								/>
 							</div>
 						))}
-						{animal?.attributes?.length === 0 && (
+						{animal.attributes.length === 0 && (
 							<Text type='secondary'>Нет добавленных атрибутов</Text>
 						)}
 					</div>
 				</Card>
 
 				{/* Фотографии */}
-				<Card
-					title='Фотографии'
-					className={styles.section}
-					extra={
-						<FileUpload
-							beforeUpload={file => {
-								addPhoto.mutate(file)
-								return false
-							}}
-							accept='image/*'
-							showUploadList={false}
-							buttonText={''}
-							buttonIcon={undefined}
+				<Card title='Фотографии' className={styles.section}>
+					<FileUpload
+						beforeUpload={(file: File) => {
+							addPhoto.mutate(file)
+							return false
+						}}
+						accept='image/*'
+						showUploadList={false}
+						buttonText={'Добавить фото +'}
+						buttonIcon={undefined}
+					>
+						<Button
+							type='text'
+							icon={<UploadOutlined className={styles.darkIcon} />}
 						>
-							<Button type='text' icon={<UploadOutlined />}>
-								Добавить
-							</Button>
-						</FileUpload>
-					}
-				>
+							Добавить фото
+						</Button>
+					</FileUpload>
+
 					<div className={styles.photosGrid}>
-						{animal?.photos?.map((photo, index) => (
+						{animal.photos.map((photo, index) => (
 							<div key={index} className={styles.photoWrapper}>
 								<Image
 									src={photo}
@@ -274,51 +356,63 @@ export const AnimalPage = () => {
 										},
 									}}
 								/>
-								<EyeOutlined
-									className={styles.viewIcon}
-									onClick={() => {
-										setSelectedPhotoIndex(index)
-										setIsPhotoModalOpen(true)
-									}}
-								/>
+								<div className={styles.photoActions}>
+									<EyeOutlined
+										className={styles.viewIcon}
+										onClick={() => {
+											setSelectedPhotoIndex(index)
+											setIsPhotoModalOpen(true)
+										}}
+									/>
+									<DeleteOutlined
+										className={styles.deleteIcon}
+										onClick={e => handleDeletePhoto(photo, e)}
+									/>
+								</div>
 							</div>
 						))}
-						{animal?.photos?.length === 0 && (
+						{animal.photos.length === 0 && (
 							<Text type='secondary'>Нет добавленных фото</Text>
 						)}
 					</div>
 				</Card>
 
 				{/* Документы */}
-				<Card
-					title='Документы'
-					className={styles.section}
-					extra={
-						<FileUpload
-							beforeUpload={file => {
-								addDocument.mutate({ file, type: 'OTHER' })
-								return false
-							}}
-							accept='.pdf,.doc,.docx'
-							showUploadList={false}
-							buttonText={''}
-							buttonIcon={undefined}
+				<Card title='Документы' className={styles.section}>
+					<FileUpload
+						beforeUpload={(file: File) => {
+							addDocument.mutate({ file, type: 'OTHER' })
+							return false
+						}}
+						accept='.pdf,.doc,.docx'
+						showUploadList={false}
+						buttonText={'Добавить документ +'}
+						buttonIcon={undefined}
+					>
+						<Button
+							type='text'
+							icon={<UploadOutlined className={styles.darkIcon} />}
 						>
-							<Button type='text' icon={<UploadOutlined />}>
-								Добавить
-							</Button>
-						</FileUpload>
-					}
-				>
+							Добавить документ
+						</Button>
+					</FileUpload>
+
 					<div className={styles.documentsList}>
-						{animal?.documents?.map((doc, index) => (
+						{animal.documents.map((doc, index) => (
 							<div key={index} className={styles.documentItem}>
 								<a href={doc} target='_blank' rel='noopener noreferrer'>
 									Документ {index + 1}
 								</a>
+								<Button
+									type='text'
+									danger
+									icon={<DeleteOutlined />}
+									onClick={() => handleDeleteDocument(doc)}
+									loading={deleteDocument.isPending}
+								/>
 							</div>
 						))}
-						{animal?.documents?.length === 0 && (
+						{animal.documents.length === 0 && (
 							<Text type='secondary'>Нет добавленных документов</Text>
 						)}
 					</div>
@@ -327,7 +421,7 @@ export const AnimalPage = () => {
 
 			{/* Модальное окно просмотра фото */}
 			<Modal
-				visible={isPhotoModalOpen}
+				open={isPhotoModalOpen}
 				footer={null}
 				onCancel={() => setIsPhotoModalOpen(false)}
 				width='80vw'
@@ -335,11 +429,11 @@ export const AnimalPage = () => {
 			>
 				<div className={styles.photoModal}>
 					<Image
-						src={animal?.photos?.[selectedPhotoIndex]}
-						alt={`Фото ${animal?.name}`}
+						src={animal.photos[selectedPhotoIndex]}
+						alt={`Фото ${animal.name}`}
 						style={{ maxHeight: '80vh', objectFit: 'contain' }}
 					/>
-					{animal?.photos && animal.photos.length > 1 && (
+					{animal.photos.length > 1 && (
 						<div className={styles.photoNavigation}>
 							<Button
 								onClick={() =>
@@ -348,7 +442,6 @@ export const AnimalPage = () => {
 											(prev - 1 + animal.photos.length) % animal.photos.length
 									)
 								}
-								disabled={animal.photos.length <= 1}
 							>
 								Назад
 							</Button>
@@ -361,7 +454,6 @@ export const AnimalPage = () => {
 										prev => (prev + 1) % animal.photos.length
 									)
 								}
-								disabled={animal.photos.length <= 1}
 							>
 								Вперед
 							</Button>

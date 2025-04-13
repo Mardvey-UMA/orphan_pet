@@ -48,7 +48,21 @@ export const animalApi = {
 			)
 			.then(res => res.data)
 	},
+	deleteAnimalPhoto: (photoUrl: string) => {
+		return apiClient
+			.delete(`/animals/photos`, {
+				data: { url: photoUrl },
+			})
+			.then(res => res.data)
+	},
 
+	deleteAnimalDocument: (documentUrl: string) => {
+		return apiClient
+			.delete(`/animals/documents`, {
+				data: { url: documentUrl },
+			})
+			.then(res => res.data)
+	},
 	// Атрибуты
 	addAttribute: (animalId: number, data: AttributeRequest) =>
 		apiClient
