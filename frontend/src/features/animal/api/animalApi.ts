@@ -1,35 +1,59 @@
 import { apiClient } from '../../../api/client'
 import {
 	AnimalCreateRequest,
+	AnimalDocumentUploadResponse,
+	AnimalPhotoUploadResponse,
 	AnimalResponse,
-	AnimalUpdateRequest,
 	AttributeRequest,
-	AttributeResponse,
-	S3FileResponse,
-	StatusLogResponse,
 } from './types'
 
 export const animalApi = {
-	// Основные операции
+	// Основные операции с животными
 	createAnimal: (data: AnimalCreateRequest) =>
-		apiClient.post<AnimalResponse>('/animals', data).then(r => r.data),
+		apiClient.post<AnimalResponse>('/animals', data).then(res => res.data),
 
-	getAnimal: (animalId: number) =>
-		apiClient.get<AnimalResponse>(`/animals/${animalId}`).then(r => r.data),
+	getAnimal: (id: number) =>
+		apiClient.get<AnimalResponse>(`/animals/${id}`).then(res => res.data),
 
-	updateAnimal: (animalId: number, data: AnimalUpdateRequest) =>
+	updateAnimal: (id: number, data: Partial<AnimalCreateRequest>) =>
 		apiClient
-			.patch<AnimalResponse>(`/animals/${animalId}`, data)
-			.then(r => r.data),
+			.patch<AnimalResponse>(`/animals/${id}`, data)
+			.then(res => res.data),
 
-	deleteAnimal: (animalId: number) =>
-		apiClient.delete(`/animals/${animalId}`).then(r => r.data),
+	deleteAnimal: (id: number) =>
+		apiClient.delete(`/animals/${id}`).then(res => res.data),
+
+	// Файлы
+	uploadAnimalPhoto: (animalId: number, file: File) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		return apiClient
+			.post<AnimalPhotoUploadResponse>(
+				`/animals/${animalId}/photos`,
+				formData,
+				{ headers: { 'Content-Type': 'multipart/form-data' } }
+			)
+			.then(res => res.data)
+	},
+
+	uploadAnimalDocument: (animalId: number, file: File, type: string) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		formData.append('type', type)
+		return apiClient
+			.post<AnimalDocumentUploadResponse>(
+				`/animals/${animalId}/documents`,
+				formData,
+				{ headers: { 'Content-Type': 'multipart/form-data' } }
+			)
+			.then(res => res.data)
+	},
 
 	// Атрибуты
 	addAttribute: (animalId: number, data: AttributeRequest) =>
 		apiClient
-			.post<AttributeResponse>(`/animals/${animalId}/attributes`, data)
-			.then(r => r.data),
+			.post(`/animals/${animalId}/attributes`, data)
+			.then(res => res.data),
 
 	updateAttribute: (
 		animalId: number,
@@ -37,50 +61,13 @@ export const animalApi = {
 		data: AttributeRequest
 	) =>
 		apiClient
-			.patch<AttributeResponse>(
-				`/animals/${animalId}/attributes/${attributeId}`,
-				data
-			)
-			.then(r => r.data),
+			.patch(`/animals/${animalId}/attributes/${attributeId}`, data)
+			.then(res => res.data),
 
 	deleteAttribute: (animalId: number, attributeId: number) =>
 		apiClient
 			.delete(`/animals/${animalId}/attributes/${attributeId}`)
-			.then(r => r.data),
-
-	// Фото
-	uploadAnimalPhoto: (animalId: number, file: File) => {
-		const formData = new FormData()
-		formData.append('file', file)
-		return apiClient
-			.post<S3FileResponse>(`/animals/${animalId}/photos`, formData, {
-				headers: { 'Content-Type': 'multipart/form-data' },
-			})
-			.then(r => r.data)
-	},
-
-	deleteAnimalPhoto: (photoId: number) =>
-		apiClient.delete(`/animals/photos/${photoId}`).then(r => r.data),
-
-	// Документы
-	uploadAnimalDocument: (animalId: number, file: File, type: string) => {
-		const formData = new FormData()
-		formData.append('file', file)
-		formData.append('type', type)
-		return apiClient
-			.post<S3FileResponse>(`/animals/${animalId}/documents`, formData, {
-				headers: { 'Content-Type': 'multipart/form-data' },
-			})
-			.then(r => r.data)
-	},
-
-	deleteAnimalDocument: (documentId: number) =>
-		apiClient.delete(`/animals/documents/${documentId}`).then(r => r.data),
-
-	// История состояний
-	getStatusLogs: (animalId: number) =>
-		apiClient
-			.get<StatusLogResponse[]>(`/animals/${animalId}/status-logs`)
-			.then(r => r.data),
-	
+			.then(res => res.data),
+	getUserAnimals: () =>
+		apiClient.get<AnimalResponse[]>('/users/me/animals').then(res => res.data),
 }

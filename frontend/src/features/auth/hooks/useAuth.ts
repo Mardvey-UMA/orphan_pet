@@ -17,8 +17,8 @@ export const useAuth = () => {
 		mutationFn: authApi.login,
 		onSuccess: data => {
 			setTokens({
-				accessToken: data.accessToken,
-				refreshToken: data.refreshToken,
+				accessToken: data.access_token,
+				refreshToken: data.refresh_token,
 			})
 		},
 	})

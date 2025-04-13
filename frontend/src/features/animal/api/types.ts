@@ -1,17 +1,9 @@
-// Основные типы
 export interface AnimalCreateRequest {
 	name: string
 	description?: string
-	birthDate?: string // ISO date string
-	mass?: number
-	attributes: AttributeRequest[]
-}
-
-export interface AnimalUpdateRequest {
-	name?: string
-	description?: string
 	birthDate?: string
 	mass?: number
+	attributes?: AttributeRequest[]
 }
 
 export interface AnimalResponse {
@@ -21,9 +13,14 @@ export interface AnimalResponse {
 	birthDate?: string
 	mass?: number
 	attributes: AttributeResponse[]
-	photos: string[] // objectKeys
-	documents: DocumentResponse[]
-	statusLogs: StatusLogResponse[]
+	photos: string[]
+	documents: string[]
+}
+
+export interface DocumentResponse {
+	id: number
+	type: string
+	url: string
 }
 
 export interface AttributeRequest {
@@ -36,23 +33,20 @@ export interface AttributeResponse {
 	name: string
 	value?: string
 }
-
-export interface DocumentResponse {
-	id: number
-	type: string
-	objectKey: string
-	documentName?: string
+export interface AnimalUpdateRequest {
+	name?: string
+	description?: string
+	birthDate?: string
+	mass?: number
 }
-
-export interface StatusLogResponse {
-	id: number
-	logDate: string
-	notes?: string
-	photos: string[]
-	documents: DocumentResponse[]
-}
-
-export interface S3FileResponse {
+export interface S3UploadResponse {
 	objectKey: string
 	presignedUrl: string
+}
+export interface AnimalPhotoUploadResponse {
+	url: string // Прямая ссылка на фото
+}
+
+export interface AnimalDocumentUploadResponse {
+	url: string // Прямая ссылка на документ
 }

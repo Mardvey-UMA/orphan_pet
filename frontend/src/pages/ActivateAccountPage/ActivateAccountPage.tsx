@@ -12,7 +12,7 @@ export default function ActivateAccountPage() {
 		try {
 			await activate(values.token)
 			message.success('Аккаунт успешно активирован!')
-			navigate('/login')
+			navigate('/auth/login')
 		} catch (error) {
 			message.error(`Ошибка активации: ${error ?? 'Неизвестная'}`)
 		}

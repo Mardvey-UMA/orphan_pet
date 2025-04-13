@@ -1,0 +1,43 @@
+.profileContainer {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem;
+}
+
+.profileSection {
+	display: grid;
+	grid-template-columns: 200px 1fr;
+	gap: 2rem;
+	margin-bottom: 3rem;
+}
+
+.animalsSection {
+	margin-top: 3rem;
+}
+
+.animalsHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1.5rem;
+}
+
+.animalsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 1.5rem;
+}
+
+.animalImage {
+	height: 150px;
+	object-fit: cover;
+}
+
+.noImage {
+	height: 150px;
+	background: #f0f0f0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #666;
+}

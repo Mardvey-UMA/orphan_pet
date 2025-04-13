@@ -6,7 +6,7 @@ import { MainLayout } from '@/layouts/MainLayout/MainLayout'
 
 // Импорты страниц
 import ActivateAccountPage from '@/pages/ActivateAccountPage/ActivateAccountPage'
-import AnimalPage from '@/pages/AnimalPage/AnimalPage'
+import { AnimalPage } from '@/pages/AnimalPage/AnimalPage'
 import DiaryPage from '@/pages/DiaryPage/DiaryPage'
 import HomePage from '@/pages/HomePage/HomePage'
 import LoginPage from '@/pages/LoginPage/LoginPage'

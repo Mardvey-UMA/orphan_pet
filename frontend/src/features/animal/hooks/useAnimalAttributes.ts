@@ -15,17 +15,17 @@ export const useAnimalAttributes = (animalId: number) => {
 	const updateAttribute = useMutation<
 		AttributeResponse,
 		Error,
-		{ attrId: number; data: AttributeRequest }
+		{ attributeId: number; data: AttributeRequest }
 	>({
-		mutationFn: ({ attrId, data }) =>
-			animalApi.updateAttribute(animalId, attrId, data),
+		mutationFn: ({ attributeId, data }) =>
+			animalApi.updateAttribute(animalId, attributeId, data),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['animal', animalId] })
 		},
 	})
 
 	const deleteAttribute = useMutation<void, Error, number>({
-		mutationFn: attrId => animalApi.deleteAttribute(animalId, attrId),
+		mutationFn: attributeId => animalApi.deleteAttribute(animalId, attributeId),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['animal', animalId] })
 		},
@@ -34,11 +34,9 @@ export const useAnimalAttributes = (animalId: number) => {
 	return {
 		addAttribute: addAttribute.mutateAsync,
 		isAdding: addAttribute.isPending,
-
 		updateAttribute: updateAttribute.mutateAsync,
-		isUpdatingAttr: updateAttribute.isPending,
-
+		isUpdating: updateAttribute.isPending,
 		deleteAttribute: deleteAttribute.mutateAsync,
-		isDeletingAttr: deleteAttribute.isPending,
+		isDeleting: deleteAttribute.isPending,
 	}
 }

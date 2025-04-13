@@ -25,7 +25,7 @@ export default function RegisterPage() {
 			message.success(
 				'Регистрация прошла успешно! Проверьте почту для активации.'
 			)
-			navigate('/activate')
+			navigate('/auth/activate')
 		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				const serverMsg = error.response?.data?.error || error.message

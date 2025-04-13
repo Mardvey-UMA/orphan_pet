@@ -17,7 +17,7 @@ export default function LoginPage() {
 	async function onFinish(values: LoginFormValues) {
 		try {
 			await login({
-				identifier: values.identifier,
+				indentifier: values.identifier,
 				password: values.password,
 			})
 			message.success('Авторизация прошла успешно!')

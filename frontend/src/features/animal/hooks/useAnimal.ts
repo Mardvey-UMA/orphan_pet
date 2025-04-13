@@ -1,22 +1,20 @@
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { animalApi } from '../api/animalApi'
-import { AnimalUpdateRequest } from '../api/types'
-import { useToken } from '../../auth/hooks/useToken'
+import { AnimalCreateRequest, AnimalResponse } from '../api/types'
 
 export const useAnimal = (animalId?: number) => {
 	const queryClient = useQueryClient()
-	const { getAccessToken } = useToken()
 
-	// Получение данных животного
-	const animalQuery = useQuery({
+	const {
+		data: animal,
+		isPending,
+		error,
+	} = useQuery<AnimalResponse>({
 		queryKey: ['animal', animalId],
 		queryFn: () => animalApi.getAnimal(animalId!),
-		enabled: !!animalId && !!getAccessToken(),
-		staleTime: 5 * 60 * 1000,
+		enabled: !!animalId,
 	})
 
-	// Создание животного
 	const createMutation = useMutation({
 		mutationFn: animalApi.createAnimal,
 		onSuccess: () => {
@@ -24,36 +22,35 @@ export const useAnimal = (animalId?: number) => {
 		},
 	})
 
-	// Обновление животного
 	const updateMutation = useMutation({
-		mutationFn: ({ id, data }: { id: number; data: AnimalUpdateRequest }) =>
-			animalApi.updateAnimal(id, data),
+		mutationFn: ({
+			id,
+			data,
+		}: {
+			id: number
+			data: Partial<AnimalCreateRequest>
+		}) => animalApi.updateAnimal(id, data),
 		onSuccess: (_, { id }) => {
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
+			queryClient.invalidateQueries({ queryKey: ['userAnimals'] })
 		},
 	})
 
-	// Удаление животного
 	const deleteMutation = useMutation({
-		mutationFn: animalApi.deleteAnimal,
+		mutationFn: (id: number) => animalApi.deleteAnimal(id),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ['userAnimals'] })
 		},
 	})
 
 	return {
-		// Данные
-		animalData: animalQuery.data,
-		isLoading: animalQuery.isLoading,
-		refetchAnimal: animalQuery.refetch,
-
-		// Основные операции
+		animal,
+		isPending,
+		error,
 		createAnimal: createMutation.mutateAsync,
 		isCreating: createMutation.isPending,
-
 		updateAnimal: updateMutation.mutateAsync,
 		isUpdating: updateMutation.isPending,
-
 		deleteAnimal: deleteMutation.mutateAsync,
 		isDeleting: deleteMutation.isPending,
 	}

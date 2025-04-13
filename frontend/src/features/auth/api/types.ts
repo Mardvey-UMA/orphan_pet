@@ -18,15 +18,15 @@ export interface ActivateRequest {
 
 // Авторизация
 export interface LoginRequest {
-	identifier: string // email или username
+	indentifier: string // email или username
 	password: string
 }
 
 export interface Tokens {
-	accessToken: string
-	refreshToken: string
-	accessExpiresAt: string
-	refreshExpiresAt: string
+	access_token: string
+	refresh_token: string
+	access_expires_at: string
+	refresh_expires_at: string
 }
 
 export interface LoginResponse extends Tokens {
