@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import './styles/base.css'
+import { AppRouter } from './router/AppRouter'
+import './styles/base.module.scss'
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -12,17 +12,10 @@ const queryClient = new QueryClient({
 	},
 })
 
-const router = createBrowserRouter([
-	{
-		path: '/',
-		element: <div>Pet Health App</div>,
-	},
-])
-
 export function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
-			<RouterProvider router={router} />
+			<AppRouter />
 			<ReactQueryDevtools initialIsOpen={false} />
 		</QueryClientProvider>
 	)

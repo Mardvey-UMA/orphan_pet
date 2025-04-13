@@ -1,0 +1,34 @@
+.authLayout {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+
+	// Любые нужные глобальные стили
+}
+
+.topBar {
+	background-color: #0052cc; // синяя полоса
+	color: #fff;
+	padding: 1rem;
+	display: flex;
+	align-items: center;
+
+	.logoIcon {
+		font-size: 1.5rem;
+		margin-right: 1rem;
+	}
+
+	.appName {
+		font-size: 1.2rem;
+		font-weight: 500;
+	}
+}
+
+.contentWrapper {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	// Если хотим расположить формы по центру экрана
+	// Или можно сделать padding: 2rem и т.д.
+}

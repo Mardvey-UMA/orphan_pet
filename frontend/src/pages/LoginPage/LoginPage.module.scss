@@ -1,0 +1,19 @@
+.loginContainer {
+	max-width: 400px;
+	margin: 0 auto;
+	padding: 2rem;
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+
+	h1 {
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+}
+
+.loginForm {
+	.ant-form-item {
+		margin-bottom: 1.5rem;
+	}
+}
