@@ -20,19 +20,17 @@ export const diaryApi = {
 				`/animals/${animalId}/status-logs/${statusLogId}`
 			)
 			.then(r => r.data),
-	
+
 	deleteStatusLog: (animalId: number, statusLogId: number) =>
 		apiClient
 			.delete(`/animals/${animalId}/status-logs/${statusLogId}`)
 			.then(r => r.data),
-
 
 	deleteStatusLogPhoto: (photoId: number) =>
 		apiClient
 			.delete(`/animals/status-logs/photos/${photoId}`)
 			.then(r => r.data),
 
-	
 	deleteStatusLogDocument: (documentId: number) =>
 		apiClient
 			.delete(`/animals/status-logs/documents/${documentId}`)
