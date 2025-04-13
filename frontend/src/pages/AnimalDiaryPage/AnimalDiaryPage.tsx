@@ -213,230 +213,235 @@ export const AnimalDiaryPage = () => {
 			</Button>
 
 			<Title level={2}>Дневник: {animal.name}</Title>
+			<div className={styles.layoutContainer}>
+				<div className={styles.calendarContainer}>
+					<Calendar
+						value={selectedDate}
+						onChange={setSelectedDate}
+						onPanelChange={setSelectedDate}
+						dateCellRender={dateCellRender}
+						className={styles.calendar}
+					/>
+				</div>
+				<div className={styles.entryContainer}>
+					<Card
+						title={`Запись за ${selectedDate.format('DD.MM.YYYY')}`}
+						className={styles.entryCard}
+					>
+						{currentEntry ? (
+							<>
+								<Form
+									form={form}
+									initialValues={{ notes: currentEntry.notes }}
+									layout='vertical'
+								>
+									<Form.Item name='notes' label='Заметки'>
+										<Input.TextArea
+											rows={4}
+											placeholder='Опишите состояние животного...'
+										/>
+									</Form.Item>
 
-			<div className={styles.calendarSection}>
-				<Calendar
-					value={selectedDate}
-					onChange={setSelectedDate}
-					onPanelChange={setSelectedDate}
-					dateCellRender={dateCellRender}
-					className={styles.calendar}
-				/>
-			</div>
-
-			<Card
-				title={`Запись за ${selectedDate.format('DD.MM.YYYY')}`}
-				className={styles.entryCard}
-			>
-				{currentEntry ? (
-					<>
-						<Form
-							form={form}
-							initialValues={{ notes: currentEntry.notes }}
-							layout='vertical'
-						>
-							<Form.Item name='notes' label='Заметки'>
-								<Input.TextArea
-									rows={4}
-									placeholder='Опишите состояние животного...'
-								/>
-							</Form.Item>
-
-							{/* Секция атрибутов */}
-							{/* Атрибуты животного */}
-							<Card
-								title={
-									<div className={styles.cardTitleWithButton}>
-										<span>Атрибуты животного</span>
-									</div>
-								}
-								className={styles.section}
-							>
-								<div className={styles.newAttribute}>
-									<Input
-										placeholder='Название атрибута'
-										value={newAttribute.name}
-										onChange={e =>
-											setNewAttribute({ ...newAttribute, name: e.target.value })
-										}
-									/>
-									<Input
-										placeholder='Значение'
-										value={newAttribute.value}
-										onChange={e =>
-											setNewAttribute({
-												...newAttribute,
-												value: e.target.value,
-											})
-										}
-									/>
-									<Button
-										type='primary'
-										icon={<PlusOutlined />}
-										onClick={handleAddAttribute}
-										//loading={addAttribute.isPending}
-									>
-										Добавить
-									</Button>
-									<Text type='secondary' className={styles.tip}>
-										Примеры: Порода, Цвет, Особенности, Аллергии
-									</Text>
-								</div>
-
-								<div className={styles.attributesList}>
-									{animal.attributes.map(attr => (
-										<div key={attr.id} className={styles.attributeItem}>
-											<div className={styles.attributeContent}>
-												<Text strong>{attr.name}:</Text> {attr.value || '—'}
+									{/* Секция атрибутов */}
+									{/* Атрибуты животного */}
+									<Card
+										title={
+											<div className={styles.cardTitleWithButton}>
+												<span>Атрибуты животного</span>
 											</div>
+										}
+										className={styles.section}
+									>
+										<div className={styles.newAttribute}>
+											<Input
+												placeholder='Название атрибута'
+												value={newAttribute.name}
+												onChange={e =>
+													setNewAttribute({
+														...newAttribute,
+														name: e.target.value,
+													})
+												}
+											/>
+											<Input
+												placeholder='Значение'
+												value={newAttribute.value}
+												onChange={e =>
+													setNewAttribute({
+														...newAttribute,
+														value: e.target.value,
+													})
+												}
+											/>
 											<Button
-												type='text'
-												danger
-												icon={<DeleteOutlined />}
-												onClick={() => deleteAttribute.mutate(attr.id)}
-												loading={deleteAttribute.isPending}
-											/>
-										</div>
-									))}
-									{animal.attributes.length === 0 && (
-										<Text type='secondary'>Нет добавленных атрибутов</Text>
-									)}
-								</div>
-							</Card>
-
-							{/* Секция фото */}
-							<div className={styles.photosSection}>
-								<h3>Фото</h3>
-								<FileUpload
-									beforeUpload={(file: File) => {
-										addPhoto.mutate(file)
-										return false
-									}}
-									accept='image/*'
-									showUploadList={false}
-									buttonText='Добавить фото'
-									buttonIcon={<UploadOutlined />}
-								/>
-
-								<div className={styles.photosGrid}>
-									{photos.map((photo: string, index: number) => (
-										<div key={index} className={styles.photoWrapper}>
-											<Image
-												src={photo}
-												width={100}
-												height={100}
-												preview={{ visible: false }}
-												onClick={() => {
-													setSelectedPhotoIndex(index)
-													setIsPhotoModalOpen(true)
-												}}
-											/>
-										</div>
-									))}
-								</div>
-							</div>
-
-							{/* Секция документов */}
-							<div className={styles.documentsSection}>
-								<h3>Документы</h3>
-								<FileUpload
-									beforeUpload={(file: File) => {
-										addDocument.mutate(file)
-										return false
-									}}
-									accept='.pdf,.doc,.docx'
-									showUploadList={false}
-									buttonText='Добавить документ'
-									buttonIcon={<UploadOutlined />}
-								/>
-
-								<div className={styles.documentsList}>
-									{documents.map((doc: DocumentResponse, index: number) => (
-										<div key={index} className={styles.documentItem}>
-											<a
-												href={doc.url}
-												target='_blank'
-												rel='noopener noreferrer'
+												type='primary'
+												icon={<PlusOutlined />}
+												onClick={handleAddAttribute}
+												//loading={addAttribute.isPending}
 											>
-												Документ {index + 1}
-											</a>
+												Добавить
+											</Button>
+											<Text type='secondary' className={styles.tip}>
+												Примеры: Порода, Цвет, Особенности, Аллергии
+											</Text>
 										</div>
-									))}
-								</div>
-							</div>
 
-							{/* Кнопка сохранения внизу */}
-							<div className={styles.saveButton}>
+										<div className={styles.attributesList}>
+											{animal.attributes.map(attr => (
+												<div key={attr.id} className={styles.attributeItem}>
+													<div className={styles.attributeContent}>
+														<Text strong>{attr.name}:</Text> {attr.value || '—'}
+													</div>
+													<Button
+														type='text'
+														danger
+														icon={<DeleteOutlined />}
+														onClick={() => deleteAttribute.mutate(attr.id)}
+														loading={deleteAttribute.isPending}
+													/>
+												</div>
+											))}
+											{animal.attributes.length === 0 && (
+												<Text type='secondary'>Нет добавленных атрибутов</Text>
+											)}
+										</div>
+									</Card>
+
+									{/* Секция фото */}
+									<div className={styles.photosSection}>
+										<h3>Фото</h3>
+										<FileUpload
+											beforeUpload={(file: File) => {
+												addPhoto.mutate(file)
+												return false
+											}}
+											accept='image/*'
+											showUploadList={false}
+											buttonText='Добавить фото'
+											buttonIcon={<UploadOutlined />}
+										/>
+
+										<div className={styles.photosGrid}>
+											{photos.map((photo: string, index: number) => (
+												<div key={index} className={styles.photoWrapper}>
+													<Image
+														src={photo}
+														width={100}
+														height={100}
+														preview={{ visible: false }}
+														onClick={() => {
+															setSelectedPhotoIndex(index)
+															setIsPhotoModalOpen(true)
+														}}
+													/>
+												</div>
+											))}
+										</div>
+									</div>
+
+									{/* Секция документов */}
+									<div className={styles.documentsSection}>
+										<h3>Документы</h3>
+										<FileUpload
+											beforeUpload={(file: File) => {
+												addDocument.mutate(file)
+												return false
+											}}
+											accept='.pdf,.doc,.docx'
+											showUploadList={false}
+											buttonText='Добавить документ'
+											buttonIcon={<UploadOutlined />}
+										/>
+
+										<div className={styles.documentsList}>
+											{documents.map((doc: DocumentResponse, index: number) => (
+												<div key={index} className={styles.documentItem}>
+													<a
+														href={doc.url}
+														target='_blank'
+														rel='noopener noreferrer'
+													>
+														Документ {index + 1}
+													</a>
+												</div>
+											))}
+										</div>
+									</div>
+
+									{/* Кнопка сохранения внизу */}
+									<div className={styles.saveButton}>
+										<Button
+											type='primary'
+											onClick={handleSave}
+											loading={updateEntry.isPending || createEntry.isPending}
+											block
+										>
+											Сохранить запись
+										</Button>
+									</div>
+								</Form>
+							</>
+						) : (
+							<div className={styles.noEntry}>
+								<Text type='secondary'>Запись на эту дату отсутствует</Text>
 								<Button
 									type='primary'
-									onClick={handleSave}
-									loading={updateEntry.isPending || createEntry.isPending}
-									block
+									icon={<PlusOutlined />}
+									onClick={() => createEntry.mutate('Новая запись')}
+									loading={createEntry.isPending}
 								>
-									Сохранить запись
-								</Button>
-							</div>
-						</Form>
-					</>
-				) : (
-					<div className={styles.noEntry}>
-						<Text type='secondary'>Запись на эту дату отсутствует</Text>
-						<Button
-							type='primary'
-							icon={<PlusOutlined />}
-							onClick={() => createEntry.mutate('Новая запись')}
-							loading={createEntry.isPending}
-						>
-							Создать запись
-						</Button>
-					</div>
-				)}
-			</Card>
-
-			{/* Модальное окно просмотра фото */}
-			<Modal
-				open={isPhotoModalOpen}
-				footer={null}
-				onCancel={() => setIsPhotoModalOpen(false)}
-				width='80vw'
-				bodyStyle={{ padding: 0 }}
-			>
-				{currentEntry && currentEntry?.photos?.length > 0 && (
-					<div className={styles.photoModal}>
-						<Image
-							src={currentEntry.photos[selectedPhotoIndex]}
-							style={{ maxHeight: '80vh', objectFit: 'contain' }}
-						/>
-						{currentEntry.photos.length > 1 && (
-							<div className={styles.photoNavigation}>
-								<Button
-									onClick={() =>
-										setSelectedPhotoIndex(
-											prev =>
-												(prev - 1 + currentEntry.photos.length) %
-												currentEntry.photos.length
-										)
-									}
-								>
-									Назад
-								</Button>
-								<span>
-									{selectedPhotoIndex + 1} / {currentEntry.photos.length}
-								</span>
-								<Button
-									onClick={() =>
-										setSelectedPhotoIndex(
-											prev => (prev + 1) % currentEntry.photos.length
-										)
-									}
-								>
-									Вперед
+									Создать запись
 								</Button>
 							</div>
 						)}
-					</div>
-				)}
-			</Modal>
+					</Card>
+
+					{/* Модальное окно просмотра фото */}
+					<Modal
+						open={isPhotoModalOpen}
+						footer={null}
+						onCancel={() => setIsPhotoModalOpen(false)}
+						width='80vw'
+						bodyStyle={{ padding: 0 }}
+					>
+						{currentEntry && currentEntry?.photos?.length > 0 && (
+							<div className={styles.photoModal}>
+								<Image
+									src={currentEntry.photos[selectedPhotoIndex]}
+									style={{ maxHeight: '80vh', objectFit: 'contain' }}
+								/>
+								{currentEntry.photos.length > 1 && (
+									<div className={styles.photoNavigation}>
+										<Button
+											onClick={() =>
+												setSelectedPhotoIndex(
+													prev =>
+														(prev - 1 + currentEntry.photos.length) %
+														currentEntry.photos.length
+												)
+											}
+										>
+											Назад
+										</Button>
+										<span>
+											{selectedPhotoIndex + 1} / {currentEntry.photos.length}
+										</span>
+										<Button
+											onClick={() =>
+												setSelectedPhotoIndex(
+													prev => (prev + 1) % currentEntry.photos.length
+												)
+											}
+										>
+											Вперед
+										</Button>
+									</div>
+								)}
+							</div>
+						)}
+					</Modal>
+				</div>
+			</div>
 		</div>
 	)
 }

@@ -1,10 +1,66 @@
+.layoutContainer {
+	display: flex;
+	gap: 20px;
+	align-items: flex-start;
+}
+
+.calendarContainer {
+	flex: 0 0 550px; // Фиксированная ширина календаря
+	position: sticky;
+	top: 20px;
+}
+.calendar {
+	width: 100%; // Занимает всю ширину контейнера
+	border: 1px solid #f0f0f0;
+	border-radius: 8px;
+	padding: 15px; // Можно увеличить отступы
+	background: white;
+
+	// Увеличиваем внутренние элементы
+	.ant-picker-panel {
+		width: 100%;
+	}
+
+	.ant-picker-date-panel {
+		width: 100%;
+	}
+
+	.ant-picker-body {
+		padding: 10px; // Увеличиваем отступы внутри календаря
+	}
+
+	// Увеличиваем ячейки
+	.ant-picker-content th,
+	.ant-picker-content td {
+		height: 36px; // Было 32px
+		padding: 2px;
+	}
+
+	.ant-picker-cell-inner {
+		width: 36px; // Было 32px
+		height: 36px;
+		line-height: 36px;
+	}
+}
+.entryContainer {
+	flex: 1;
+	min-width: 0; // Для правильного сжатия flex-элемента
+}
+
 .container {
 	padding: 20px;
 	max-width: 1200px;
 	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
 }
 
 .backButton {
+	margin-bottom: 20px;
+	align-self: flex-start; // Выравниваем кнопку по левому краю
+}
+
+.pageTitle {
 	margin-bottom: 20px;
 }
 
@@ -81,6 +137,16 @@
 	}
 }
 
+// .calendarDayWithEntry {
+// 	position: absolute;
+// 	bottom: 2px;
+// 	left: 50%;
+// 	transform: translateX(-50%);
+// 	width: 6px;
+// 	height: 6px;
+// 	border-radius: 50%;
+// 	background: #1890ff;
+// }
 .calendarDayWithEntry {
 	position: absolute;
 	bottom: 2px;
