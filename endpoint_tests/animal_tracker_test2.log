@@ -1,0 +1,32 @@
+2025-04-13 01:58:50,104 - INFO - Starting Animal Tracker API tests
+2025-04-13 01:58:50,104 - INFO - Registering user: testuser_3be17385
+2025-04-13 01:58:51,437 - INFO - User registered successfully. Username: testuser_3be17385
+2025-04-13 01:58:51,438 - INFO - Simulating account activation (in real system would require email confirmation)
+2025-04-13 01:58:51,438 - INFO - Authenticating user...
+2025-04-13 01:58:51,742 - INFO - Authentication successful. Token received.
+2025-04-13 01:58:51,742 - INFO - Creating animal...
+2025-04-13 01:58:52,663 - INFO - Animal created successfully. ID: 1
+2025-04-13 01:58:52,663 - INFO - Getting animal with ID: 1
+2025-04-13 01:58:52,735 - INFO - Animal retrieved successfully
+2025-04-13 01:58:52,735 - INFO - Updating animal with ID: 1
+2025-04-13 01:58:52,811 - INFO - Animal updated successfully
+2025-04-13 01:58:52,811 - INFO - Uploading photo for animal with ID: 1
+2025-04-13 01:58:53,504 - INFO - Photo uploaded successfully. Photo ID: 0475a793-ded3-42f9-8e22-0d5e9731b315_test_image.jpg
+2025-04-13 01:58:53,504 - INFO - Uploading document for animal with ID: 1
+2025-04-13 01:58:53,650 - INFO - Document uploaded successfully. Document ID: d9312e94-66ce-4dd9-8f75-2863353e3729_test_document.pdf
+2025-04-13 01:58:53,650 - INFO - Adding status log for animal with ID: 1
+2025-04-13 01:58:53,777 - ERROR - Failed to add status log. Status code: 400, Response: {"timestamp":"2025-04-12T21:58:53.769+00:00","status":400,"error":"Bad Request","path":"/api/animals/1/status-logs"}
+2025-04-13 01:58:53,777 - INFO - Getting status logs for animal with ID: 1
+2025-04-13 01:58:53,834 - INFO - Status logs retrieved successfully
+2025-04-13 01:58:53,835 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:58:53,835 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:58:53,835 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:58:53,835 - INFO - Adding attribute for animal with ID: 1
+2025-04-13 01:58:53,873 - INFO - Attribute added successfully. Attribute ID: 4
+2025-04-13 01:58:53,874 - INFO - Updating attribute with ID: 4
+2025-04-13 01:58:53,916 - INFO - Attribute updated successfully
+2025-04-13 01:58:53,916 - INFO - Getting attributes history for animal with ID: 1
+2025-04-13 01:58:53,951 - INFO - Attributes history retrieved successfully
+2025-04-13 01:58:53,951 - INFO - Getting analytics for animal with ID: 1
+2025-04-13 01:58:53,998 - INFO - Animal analytics retrieved successfully
+2025-04-13 01:58:53,998 - INFO - Exporting animal with ID: 1 to PDF

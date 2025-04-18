@@ -2,6 +2,7 @@ package ru.animaltracker.userservice.entity
 
 import jakarta.persistence.*
 import ru.animaltracker.userservice.dto.AnimalResponse
+import ru.animaltracker.userservice.service.interfaces.S3Service
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -27,22 +28,22 @@ class Animal {
     @Column(columnDefinition = "text")
     var description: String? = null
 
-    @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "animal",  orphanRemoval = true)
     var attributes: MutableSet<Attribute> = mutableSetOf()
 
-    @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "animal",  orphanRemoval = true)
     var animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf()
 
-    @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "animal",  orphanRemoval = true)
     var animalUsers: MutableSet<AnimalUser> = mutableSetOf()
 
-    @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "animal",  orphanRemoval = true)
     var documents: MutableSet<Document> = mutableSetOf()
 
-    @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "animal",  orphanRemoval = true)
     var statusLogs: MutableSet<AnimalStatusLog> = mutableSetOf()
 
-    @OneToMany(mappedBy = "animal", cascade = [CascadeType.ALL], orphanRemoval = true)
+    @OneToMany(mappedBy = "animal",  orphanRemoval = true)
     var attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
 
     fun addStatusLog(statusLog: AnimalStatusLog) {
@@ -65,7 +66,7 @@ class Animal {
         document.animal = this
     }
 
-    fun toDto(): AnimalResponse {
+    fun toDto(s3Service: S3Service): AnimalResponse {
         return AnimalResponse(
             id = id,
             name = name,
@@ -73,7 +74,8 @@ class Animal {
             birthDate = birthDate,
             mass = mass,
             attributes = attributes.map { it.toDto() },
-            photos = animalPhotos.mapNotNull { it.photo?.objectKey }
+            photos = animalPhotos.mapNotNull { it.photo?.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
+            documents = documents.mapNotNull { it.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
         )
     }
 

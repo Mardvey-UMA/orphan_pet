@@ -4,8 +4,8 @@ import org.springframework.web.multipart.MultipartFile
 import ru.animaltracker.userservice.dto.*
 
 interface AnimalService {
-    fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse
-     fun  addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse
+     fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse
+     fun addAnimalPhoto(username: String, animalId: Long, file: MultipartFile): S3FileResponse
      fun addAnimalDocument(username: String, animalId: Long, file: MultipartFile, type: String): S3FileResponse
      fun addStatusLog(username: String, animalId: Long, request: StatusLogCreateRequest): StatusLogResponse
      fun addStatusLogPhoto(username: String, animalId: Long, statusLogId: Long, file: MultipartFile): S3FileResponse

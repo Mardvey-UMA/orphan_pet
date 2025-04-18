@@ -1,3 +1,5 @@
+/* Общие стили для обоих контейнеров */
+.registerContainer,
 .loginContainer {
 	max-width: 400px;
 	margin: 0 auto;
@@ -5,15 +7,33 @@
 	background-color: #fff;
 	border: 1px solid #ddd;
 	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 	h1 {
 		text-align: center;
 		margin-bottom: 2rem;
+		color: #333;
 	}
 }
 
+/* Стили для форм */
+.registerForm,
 .loginForm {
 	.ant-form-item {
 		margin-bottom: 1.5rem;
+
+		&:last-child {
+			margin-bottom: 0;
+		}
 	}
+
+	.ant-btn {
+		height: 40px;
+		font-weight: 500;
+	}
+}
+
+/* Дополнительные стили для подтверждения пароля */
+.confirm-password {
+	margin-top: -0.5rem;
 }

@@ -6,10 +6,10 @@ s3:
   s3Url: https://s3.twcstorage.ru
   region: ru-1
   bucket: 242358d3-2ebecc78-2588-458f-9f57-d47bfd2ce148
-logging:
-  level:
-    org.hibernate.SQL: debug
-    org.hibernate.type.descriptor.sql.BasicBinder: trace
+#logging:
+#  level:
+#    org.hibernate.SQL: debug
+#    org.hibernate.type.descriptor.sql.BasicBinder: trace
 spring:
   application:
     name: user-service

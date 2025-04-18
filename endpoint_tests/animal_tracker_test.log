@@ -1,0 +1,72 @@
+2025-04-13 01:43:23,459 - INFO - Starting Animal Tracker API tests
+2025-04-13 01:43:23,459 - INFO - Registering user: testuser_ba5c9747
+2025-04-13 01:43:24,805 - INFO - User registered successfully. Username: testuser_ba5c9747
+2025-04-13 01:43:24,805 - INFO - Simulating account activation (in real system would require email confirmation)
+2025-04-13 01:43:24,805 - INFO - Authenticating user...
+2025-04-13 01:43:25,111 - INFO - Authentication successful. Token received.
+2025-04-13 01:43:25,112 - INFO - Creating animal...
+2025-04-13 01:43:26,094 - INFO - Animal created successfully. ID: 1
+2025-04-13 01:43:26,095 - INFO - Getting animal with ID: 1
+2025-04-13 01:43:26,184 - INFO - Animal retrieved successfully
+2025-04-13 01:43:26,185 - INFO - Updating animal with ID: 1
+2025-04-13 01:43:26,263 - INFO - Animal updated successfully
+2025-04-13 01:43:26,263 - INFO - Uploading photo for animal with ID: 1
+2025-04-13 01:43:27,033 - INFO - Photo uploaded successfully. Photo ID: 20f6433f-3efc-48e9-a1c6-654f5fdbf229_test_image.jpg
+2025-04-13 01:43:27,033 - INFO - Uploading document for animal with ID: 1
+2025-04-13 01:43:27,180 - INFO - Document uploaded successfully. Document ID: 19513652-49b6-46a4-ab38-d51985585229_test_document.pdf
+2025-04-13 01:43:27,181 - INFO - Adding status log for animal with ID: 1
+2025-04-13 01:43:27,316 - ERROR - Failed to add status log. Status code: 400, Response: {"timestamp":"2025-04-12T21:43:27.308+00:00","status":400,"error":"Bad Request","path":"/api/animals/1/status-logs"}
+2025-04-13 01:43:27,317 - INFO - Getting status logs for animal with ID: 1
+2025-04-13 01:43:27,363 - INFO - Status logs retrieved successfully
+2025-04-13 01:43:27,363 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:43:27,363 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:43:27,364 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:43:27,364 - INFO - Adding attribute for animal with ID: 1
+2025-04-13 01:43:27,405 - INFO - Attribute added successfully. Attribute ID: 4
+2025-04-13 01:43:27,406 - INFO - Updating attribute with ID: 4
+2025-04-13 01:43:27,451 - INFO - Attribute updated successfully
+2025-04-13 01:43:27,451 - INFO - Getting attributes history for animal with ID: 1
+2025-04-13 01:43:27,494 - INFO - Attributes history retrieved successfully
+2025-04-13 01:43:27,494 - INFO - Getting analytics for animal with ID: 1
+2025-04-13 01:43:27,543 - INFO - Animal analytics retrieved successfully
+2025-04-13 01:43:27,544 - INFO - Exporting animal with ID: 1 to PDF
+2025-04-13 01:43:27,765 - INFO - Animal exported to PDF successfully. File saved as animal_1.pdf
+2025-04-13 01:43:27,765 - INFO - Getting user's animals
+2025-04-13 01:43:27,804 - INFO - User's animals retrieved successfully
+2025-04-13 01:43:27,804 - INFO - Deleting status log with ID: None
+2025-04-13 01:43:27,804 - WARNING - Animal ID or Status log ID not set, skipping test
+2025-04-13 01:43:27,804 - INFO - Deleting attribute with ID: 4
+2025-04-13 01:43:27,857 - ERROR - Failed to delete attribute. Status code: 500, Response: {"timestamp":"2025-04-12T21:43:27.854+00:00","status":500,"error":"Internal Server Error","path":"/api/animals/1/attributes/4"}
+2025-04-13 01:43:27,857 - INFO - Deleting animal photo with ID: 20f6433f-3efc-48e9-a1c6-654f5fdbf229_test_image.jpg
+2025-04-13 01:43:27,879 - ERROR - Failed to delete animal photo. Status code: 400, Response: {"timestamp":"2025-04-12T21:43:27.877+00:00","status":400,"error":"Bad Request","path":"/api/animals/photos/20f6433f-3efc-48e9-a1c6-654f5fdbf229_test_image.jpg"}
+2025-04-13 01:43:27,880 - INFO - Deleting animal document with ID: 19513652-49b6-46a4-ab38-d51985585229_test_document.pdf
+2025-04-13 01:43:27,900 - ERROR - Failed to delete animal document. Status code: 400, Response: {"timestamp":"2025-04-12T21:43:27.897+00:00","status":400,"error":"Bad Request","path":"/api/animals/documents/19513652-49b6-46a4-ab38-d51985585229_test_document.pdf"}
+2025-04-13 01:43:27,900 - INFO - Deleting animal with ID: 1
+2025-04-13 01:43:28,095 - INFO - Animal deleted successfully
+2025-04-13 01:43:28,095 - INFO - 
+Test Results Summary:
+2025-04-13 01:43:28,095 - INFO - create_animal                 : PASSED
+2025-04-13 01:43:28,095 - INFO - get_animal                    : PASSED
+2025-04-13 01:43:28,095 - INFO - update_animal                 : PASSED
+2025-04-13 01:43:28,095 - INFO - upload_animal_photo           : PASSED
+2025-04-13 01:43:28,096 - INFO - upload_animal_document        : PASSED
+2025-04-13 01:43:28,096 - INFO - add_status_log                : FAILED
+2025-04-13 01:43:28,096 - INFO - get_status_logs               : PASSED
+2025-04-13 01:43:28,096 - INFO - upload_status_log_photo       : FAILED
+2025-04-13 01:43:28,096 - INFO - upload_status_log_document    : FAILED
+2025-04-13 01:43:28,096 - INFO - update_status_log             : FAILED
+2025-04-13 01:43:28,096 - INFO - add_attribute                 : PASSED
+2025-04-13 01:43:28,096 - INFO - update_attribute              : PASSED
+2025-04-13 01:43:28,096 - INFO - get_attributes_history        : PASSED
+2025-04-13 01:43:28,096 - INFO - get_animal_analytics          : PASSED
+2025-04-13 01:43:28,096 - INFO - export_animal_to_pdf          : PASSED
+2025-04-13 01:43:28,096 - INFO - get_user_animals              : PASSED
+2025-04-13 01:43:28,096 - INFO - delete_status_log             : FAILED
+2025-04-13 01:43:28,096 - INFO - delete_attribute              : FAILED
+2025-04-13 01:43:28,097 - INFO - delete_animal_photo           : FAILED
+2025-04-13 01:43:28,097 - INFO - delete_animal_document        : FAILED
+2025-04-13 01:43:28,097 - INFO - delete_animal                 : PASSED
+2025-04-13 01:43:28,097 - INFO - 
+Total: 13/21 tests passed (61.9%)
+2025-04-13 01:43:28,097 - ERROR - Some tests failed
+2025-04-13 01:43:28,097 - INFO - Testing completed

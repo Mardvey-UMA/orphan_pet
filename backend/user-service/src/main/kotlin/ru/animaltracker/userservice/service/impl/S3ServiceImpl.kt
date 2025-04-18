@@ -10,6 +10,7 @@ import software.amazon.awssdk.core.sync.RequestBody
 import software.amazon.awssdk.services.s3.S3Client
 import software.amazon.awssdk.services.s3.model.GetObjectRequest
 import software.amazon.awssdk.services.s3.model.PutObjectRequest
+import software.amazon.awssdk.services.s3.model.S3Object
 import software.amazon.awssdk.services.s3.presigner.S3Presigner
 import java.time.Duration
 import java.util.*
@@ -23,7 +24,7 @@ class S3ServiceImpl(
 ) : S3Service {
 
     companion object {
-        private const val DEFAULT_PRESIGNED_URL_DURATION_MINUTES = 15L
+        private const val DEFAULT_PRESIGNED_URL_DURATION_MINUTES = 10080L
     }
 
     override  fun uploadFile(

@@ -1,0 +1,1234 @@
+=== Файл: App.css ===
+```css
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+```
+
+=== Файл: vite-env.d.ts ===
+```typescript
+/// <reference types="vite/client" />
+```
+
+=== Файл: App.tsx ===
+```typescript
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import './styles/base.css'
+
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+			retry: 1,
+		},
+	},
+})
+
+const router = createBrowserRouter([
+	{
+		path: '/',
+		element: <div>Pet Health App</div>,
+	},
+])
+
+export function App() {
+	return (
+		<QueryClientProvider client={queryClient}>
+			<RouterProvider router={router} />
+			<ReactQueryDevtools initialIsOpen={false} />
+		</QueryClientProvider>
+	)
+}
+```
+
+=== Файл: main.tsx ===
+```typescript
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { App } from './App.tsx'
+import './index.css'
+
+createRoot(document.getElementById('root')!).render(
+	<StrictMode>
+		<App />
+	</StrictMode>
+)
+```
+
+=== Файл: index.css ===
+```css
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+```
+
+=== Файл: features/diary/hooks/useDiary.ts ===
+```typescript
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useToken } from '../../auth/hooks/useToken'
+import { diaryApi } from '../api/diaryApi'
+import { StatusLogCreateRequest, StatusLogUpdateRequest } from '../api/types'
+
+export const useDiary = (animalId: number) => {
+	const queryClient = useQueryClient()
+	const { getAccessToken } = useToken()
+
+	// Получение всех записей
+	const statusLogsQuery = useQuery({
+		queryKey: ['animalStatusLogs', animalId],
+		queryFn: () => diaryApi.getStatusLogs(animalId),
+		enabled: !!animalId && !!getAccessToken(),
+	})
+
+	// Создание записи
+	const createMutation = useMutation({
+		mutationFn: (data: StatusLogCreateRequest) =>
+			diaryApi.createStatusLog(animalId, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	// Обновление записи
+	const updateMutation = useMutation({
+		mutationFn: ({
+			statusLogId,
+			data,
+		}: {
+			statusLogId: number
+			data: StatusLogUpdateRequest
+		}) => diaryApi.updateStatusLog(animalId, statusLogId, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	// Удаление записи
+	const deleteMutation = useMutation({
+		mutationFn: (statusLogId: number) =>
+			diaryApi.deleteStatusLog(animalId, statusLogId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	return {
+		statusLogs: statusLogsQuery.data,
+		isLoading: statusLogsQuery.isLoading,
+		refetchStatusLogs: statusLogsQuery.refetch,
+
+		createStatusLog: createMutation.mutateAsync,
+		isCreating: createMutation.isPending,
+
+		updateStatusLog: updateMutation.mutateAsync,
+		isUpdating: updateMutation.isPending,
+
+		deleteStatusLog: deleteMutation.mutateAsync,
+		isDeleting: deleteMutation.isPending,
+	}
+}
+```
+
+=== Файл: features/diary/hooks/useDiaryFiles.ts ===
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { diaryApi } from '../api/diaryApi'
+
+export const useDiaryFiles = (animalId: number, statusLogId: number) => {
+	const queryClient = useQueryClient()
+
+	const addPhoto = useMutation({
+		mutationFn: (file: File) =>
+			diaryApi.addStatusLogPhoto(animalId, statusLogId, file),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	const deletePhoto = useMutation({
+		mutationFn: (photoId: number) => diaryApi.deleteStatusLogPhoto(photoId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	const addDocument = useMutation({
+		mutationFn: ({ file, type }: { file: File; type: string }) =>
+			diaryApi.addStatusLogDocument(animalId, statusLogId, file, type),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	const deleteDocument = useMutation({
+		mutationFn: (documentId: number) =>
+			diaryApi.deleteStatusLogDocument(documentId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	return {
+		addPhoto: addPhoto.mutateAsync,
+		isAddingPhoto: addPhoto.isPending,
+
+		deletePhoto: deletePhoto.mutateAsync,
+		isDeletingPhoto: deletePhoto.isPending,
+
+		addDocument: addDocument.mutateAsync,
+		isAddingDocument: addDocument.isPending,
+
+		deleteDocument: deleteDocument.mutateAsync,
+		isDeletingDocument: deleteDocument.isPending,
+	}
+}
+```
+
+=== Файл: features/diary/hooks/useDiaryAttributes.ts ===
+```typescript
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AttributeRequest } from '../../animal/api/types'
+import { useToken } from '../../auth/hooks/useToken'
+import { diaryApi } from '../api/diaryApi'
+
+export const useDiaryAttributes = (animalId: number, statusLogId?: number) => {
+	const queryClient = useQueryClient()
+	const { getAccessToken } = useToken()
+
+	// История атрибутов животного
+	const attributeHistoryQuery = useQuery({
+		queryKey: ['animalAttributeHistory', animalId],
+		queryFn: () => diaryApi.getAttributeHistory(animalId),
+		enabled: !!animalId && !!getAccessToken(),
+	})
+
+	// Операции с атрибутами записи
+	const addAttribute = useMutation({
+		mutationFn: (data: AttributeRequest) =>
+			diaryApi.addStatusLogAttribute(animalId, statusLogId!, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+		},
+	})
+
+	const updateAttribute = useMutation({
+		mutationFn: ({
+			attributeId,
+			data,
+		}: {
+			attributeId: number
+			data: AttributeRequest
+		}) =>
+			diaryApi.updateStatusLogAttribute(
+				animalId,
+				statusLogId!,
+				attributeId,
+				data
+			),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+			queryClient.invalidateQueries({
+				queryKey: ['animalAttributeHistory', animalId],
+			})
+		},
+	})
+
+	const deleteAttribute = useMutation({
+		mutationFn: (attributeId: number) =>
+			diaryApi.deleteStatusLogAttribute(animalId, statusLogId!, attributeId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: ['animalStatusLogs', animalId],
+			})
+			queryClient.invalidateQueries({
+				queryKey: ['animalAttributeHistory', animalId],
+			})
+		},
+	})
+
+	return {
+		attributeHistory: attributeHistoryQuery.data,
+		isLoadingHistory: attributeHistoryQuery.isLoading,
+
+		addAttribute: addAttribute.mutateAsync,
+		isAddingAttribute: addAttribute.isPending,
+
+		updateAttribute: updateAttribute.mutateAsync,
+		isUpdatingAttribute: updateAttribute.isPending,
+
+		deleteAttribute: deleteAttribute.mutateAsync,
+		isDeletingAttribute: deleteAttribute.isPending,
+	}
+}
+```
+
+=== Файл: features/diary/api/types.ts ===
+```typescript
+import {
+	AttributeRequest,
+	AttributeResponse,
+	DocumentResponse,
+} from '../../animal/api/types'
+
+export interface StatusLogCreateRequest {
+	notes?: string
+	logDate?: string // ISO date
+	attributes?: AttributeRequest[]
+}
+
+export interface StatusLogUpdateRequest {
+	notes?: string
+	logDate?: string
+}
+
+export interface StatusLogResponse {
+	id: number
+	logDate: string
+	notes?: string
+	photos: string[] // objectKeys
+	documents: DocumentResponse[]
+	attributes: AttributeResponse[]
+}
+
+export interface AttributeHistoryResponse {
+	attributeName: string
+	oldValue?: string
+	changedAt: string
+	changedBy: string
+}
+
+export interface StatusLogWithHistory extends StatusLogResponse {
+	attributeHistory: AttributeHistoryResponse[]
+}
+```
+
+=== Файл: features/diary/api/diaryApi.ts ===
+```typescript
+import { apiClient } from '../../../api/client'
+import { AttributeRequest } from '../../animal/api/types'
+import {
+	AttributeHistoryResponse,
+	StatusLogCreateRequest,
+	StatusLogResponse,
+	StatusLogUpdateRequest,
+	StatusLogWithHistory,
+} from './types'
+
+export const diaryApi = {
+	// Основные операции с записями
+	createStatusLog: (animalId: number, data: StatusLogCreateRequest) =>
+		apiClient
+			.post<StatusLogResponse>(`/animals/${animalId}/status-logs`, data)
+			.then(r => r.data),
+
+	getStatusLog: (animalId: number, statusLogId: number) =>
+		apiClient
+			.get<StatusLogWithHistory>(
+				`/animals/${animalId}/status-logs/${statusLogId}`
+			)
+			.then(r => r.data),
+	getStatusLogs: (animalId: number) =>
+		apiClient
+			.get<StatusLogResponse[]>(`/animals/${animalId}/status-logs`)
+			.then(r => r.data),
+	updateStatusLog: (
+		animalId: number,
+		statusLogId: number,
+		data: StatusLogUpdateRequest
+	) =>
+		apiClient
+			.put<StatusLogResponse>(
+				`/animals/${animalId}/status-logs/${statusLogId}`,
+				data
+			)
+			.then(r => r.data),
+
+	deleteStatusLog: (animalId: number, statusLogId: number) =>
+		apiClient
+			.delete(`/animals/${animalId}/status-logs/${statusLogId}`)
+			.then(r => r.data),
+
+	// Файлы записей
+	addStatusLogPhoto: (animalId: number, statusLogId: number, file: File) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		return apiClient
+			.post(
+				`/animals/${animalId}/status-logs/${statusLogId}/photos`,
+				formData,
+				{ headers: { 'Content-Type': 'multipart/form-data' } }
+			)
+			.then(r => r.data)
+	},
+
+	deleteStatusLogPhoto: (photoId: number) =>
+		apiClient
+			.delete(`/animals/status-logs/photos/${photoId}`)
+			.then(r => r.data),
+
+	addStatusLogDocument: (
+		animalId: number,
+		statusLogId: number,
+		file: File,
+		type: string
+	) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		formData.append('type', type)
+		return apiClient
+			.post(
+				`/animals/${animalId}/status-logs/${statusLogId}/documents`,
+				formData,
+				{ headers: { 'Content-Type': 'multipart/form-data' } }
+			)
+			.then(r => r.data)
+	},
+
+	deleteStatusLogDocument: (documentId: number) =>
+		apiClient
+			.delete(`/animals/status-logs/documents/${documentId}`)
+			.then(r => r.data),
+
+	// Атрибуты записей
+	addStatusLogAttribute: (
+		animalId: number,
+		statusLogId: number,
+		data: AttributeRequest
+	) =>
+		apiClient
+			.post(`/animals/${animalId}/status-logs/${statusLogId}/attributes`, data)
+			.then(r => r.data),
+
+	updateStatusLogAttribute: (
+		animalId: number,
+		statusLogId: number,
+		attributeId: number,
+		data: AttributeRequest
+	) =>
+		apiClient
+			.patch(
+				`/animals/${animalId}/status-logs/${statusLogId}/attributes/${attributeId}`,
+				data
+			)
+			.then(r => r.data),
+
+	deleteStatusLogAttribute: (
+		animalId: number,
+		statusLogId: number,
+		attributeId: number
+	) =>
+		apiClient
+			.delete(
+				`/animals/${animalId}/status-logs/${statusLogId}/attributes/${attributeId}`
+			)
+			.then(r => r.data),
+
+	// Получение истории атрибутов
+	getAttributeHistory: (animalId: number) =>
+		apiClient
+			.get<AttributeHistoryResponse[]>(
+				`/animals/${animalId}/attributes/history`
+			)
+			.then(r => r.data),
+}
+```
+
+=== Файл: features/auth/hooks/useAuth.ts ===
+```typescript
+import { useMutation } from '@tanstack/react-query'
+import { authApi } from '../api/authApi'
+import { useToken } from './useToken'
+
+export const useAuth = () => {
+	const { setTokens, clearTokens } = useToken()
+
+	const registerMutation = useMutation({
+		mutationFn: authApi.register,
+	})
+
+	const activateMutation = useMutation({
+		mutationFn: authApi.activate,
+	})
+
+	const loginMutation = useMutation({
+		mutationFn: authApi.login,
+		onSuccess: data => {
+			setTokens({
+				accessToken: data.accessToken,
+				refreshToken: data.refreshToken,
+			})
+		},
+	})
+
+	const logout = () => {
+		clearTokens()
+		// Дополнительные действия при выходе
+	}
+
+	return {
+		register: registerMutation.mutateAsync,
+		isRegistering: registerMutation.isPending,
+
+		activate: activateMutation.mutateAsync,
+		isActivating: activateMutation.isPending,
+
+		login: loginMutation.mutateAsync,
+		isLoggingIn: loginMutation.isPending,
+
+		logout,
+	}
+}
+```
+
+=== Файл: features/auth/hooks/useToken.ts ===
+```typescript
+import { useEffect } from 'react'
+import { apiClient } from '../../../api/client'
+
+export const useToken = () => {
+	const setTokens = (tokens: { accessToken: string; refreshToken: string }) => {
+		localStorage.setItem('accessToken', tokens.accessToken)
+		localStorage.setItem('refreshToken', tokens.refreshToken)
+		apiClient.defaults.headers['Authorization'] = `Bearer ${tokens.accessToken}`
+	}
+
+	const clearTokens = () => {
+		localStorage.removeItem('accessToken')
+		localStorage.removeItem('refreshToken')
+		delete apiClient.defaults.headers['Authorization']
+	}
+
+	const getAccessToken = () => localStorage.getItem('accessToken')
+
+	// Инициализация при монтировании
+	useEffect(() => {
+		const token = localStorage.getItem('accessToken')
+		if (token) {
+			apiClient.defaults.headers['Authorization'] = `Bearer ${token}`
+		}
+	}, [])
+
+	return { setTokens, clearTokens, getAccessToken }
+}
+```
+
+=== Файл: features/auth/api/types.ts ===
+```typescript
+// Регистрация
+export interface RegisterRequest {
+	username: string
+	email: string
+	password: string
+}
+
+export interface RegisterResponse {
+	email: string
+	username: string
+	isActivated: boolean
+}
+
+// Активация
+export interface ActivateRequest {
+	token: string
+}
+
+// Авторизация
+export interface LoginRequest {
+	identifier: string // email или username
+	password: string
+}
+
+export interface Tokens {
+	accessToken: string
+	refreshToken: string
+	accessExpiresAt: string
+	refreshExpiresAt: string
+}
+
+export interface LoginResponse extends Tokens {
+	user: {
+		email: string
+		username: string
+	}
+}
+```
+
+=== Файл: features/auth/api/authApi.ts ===
+```typescript
+import { apiClient } from '../../../api/client'
+import {
+	LoginRequest,
+	LoginResponse,
+	RegisterRequest,
+	RegisterResponse,
+} from './types'
+
+export const authApi = {
+	register: (data: RegisterRequest) =>
+		apiClient
+			.post<RegisterResponse>('/auth/register', data)
+			.then(response => response.data),
+
+	activate: (token: string) =>
+		apiClient
+			.get<void>('/auth/activate-account', {
+				params: { token },
+			})
+			.then(r => r.data),
+
+	login: (data: LoginRequest) =>
+		apiClient
+			.post<LoginResponse>('/auth/authenticate', data)
+			.then(response => response.data),
+}
+```
+
+=== Файл: features/user/hooks/useUser.ts ===
+```typescript
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { userApi } from '../api/userApi'
+
+export const useUser = () => {
+	// Получение текущего пользователя
+	const {
+		data: currentUser,
+		isLoading: isUserLoading,
+		refetch: refetchUser,
+	} = useQuery({
+		queryKey: ['currentUser'],
+		queryFn: userApi.getCurrentUser,
+		staleTime: 5 * 60 * 1000, // 5 минут
+	})
+
+	// Обновление данных
+	const updateMutation = useMutation({
+		mutationFn: userApi.updateUser,
+		onSuccess: () => refetchUser(),
+	})
+
+	// Загрузка фото
+	const uploadPhotoMutation = useMutation({
+		mutationFn: userApi.uploadPhoto,
+		onSuccess: () => refetchUser(),
+	})
+
+	return {
+		currentUser,
+		isUserLoading,
+
+		updateUser: updateMutation.mutateAsync,
+		isUpdating: updateMutation.isPending,
+
+		uploadPhoto: uploadPhotoMutation.mutateAsync,
+		isUploading: uploadPhotoMutation.isPending,
+	}
+}
+```
+
+=== Файл: features/user/api/types.ts ===
+```typescript
+// Обновление данных пользователя
+export interface UserUpdateRequest {
+	firstName?: string
+	lastName?: string
+	city?: string
+	aboutMe?: string
+}
+
+export interface UserResponse {
+	username: string
+	firstName?: string
+	lastName?: string
+	city?: string
+	aboutMe?: string
+	photoUrl?: string
+}
+
+// Загрузка фото
+export interface S3FileResponse {
+	objectKey: string
+	presignedUrl: string
+}
+```
+
+=== Файл: features/user/api/userApi.ts ===
+```typescript
+import { apiClient } from '../../../api/client'
+import { S3FileResponse, UserResponse, UserUpdateRequest } from './types'
+
+export const userApi = {
+	getCurrentUser: () =>
+		apiClient.get<UserResponse>('/users/me').then(r => r.data),
+
+	updateUser: (data: UserUpdateRequest) =>
+		apiClient.patch<UserResponse>('/users/me', data).then(r => r.data),
+
+	uploadPhoto: (file: File) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		return apiClient
+			.post<S3FileResponse>('/users/me/photo', formData, {
+				headers: {
+					'Content-Type': 'multipart/form-data',
+				},
+			})
+			.then(r => r.data)
+	},
+}
+```
+
+=== Файл: features/animal/hooks/useAnimal.ts ===
+```typescript
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { animalApi } from '../api/animalApi'
+import { AnimalUpdateRequest } from '../api/types'
+import { useToken } from '../../auth/hooks/useToken'
+
+export const useAnimal = (animalId?: number) => {
+	const queryClient = useQueryClient()
+	const { getAccessToken } = useToken()
+
+	// Получение данных животного
+	const animalQuery = useQuery({
+		queryKey: ['animal', animalId],
+		queryFn: () => animalApi.getAnimal(animalId!),
+		enabled: !!animalId && !!getAccessToken(),
+		staleTime: 5 * 60 * 1000,
+	})
+
+	// Создание животного
+	const createMutation = useMutation({
+		mutationFn: animalApi.createAnimal,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['userAnimals'] })
+		},
+	})
+
+	// Обновление животного
+	const updateMutation = useMutation({
+		mutationFn: ({ id, data }: { id: number; data: AnimalUpdateRequest }) =>
+			animalApi.updateAnimal(id, data),
+		onSuccess: (_, { id }) => {
+			queryClient.invalidateQueries({ queryKey: ['animal', id] })
+		},
+	})
+
+	// Удаление животного
+	const deleteMutation = useMutation({
+		mutationFn: animalApi.deleteAnimal,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['userAnimals'] })
+		},
+	})
+
+	return {
+		// Данные
+		animalData: animalQuery.data,
+		isLoading: animalQuery.isLoading,
+		refetchAnimal: animalQuery.refetch,
+
+		// Основные операции
+		createAnimal: createMutation.mutateAsync,
+		isCreating: createMutation.isPending,
+
+		updateAnimal: updateMutation.mutateAsync,
+		isUpdating: updateMutation.isPending,
+
+		deleteAnimal: deleteMutation.mutateAsync,
+		isDeleting: deleteMutation.isPending,
+	}
+}
+```
+
+=== Файл: features/animal/hooks/useAnalytics.ts ===
+```typescript
+import { useQuery } from '@tanstack/react-query'
+import { useToken } from '../../auth/hooks/useToken'
+import { analyticsApi } from '../api/analyticsApi'
+
+export const useAnalytics = (animalId?: number) => {
+	const { getAccessToken } = useToken()
+
+	return useQuery({
+		queryKey: ['animalAnalytics', animalId],
+		queryFn: () => analyticsApi.getAnimalAnalytics(animalId!),
+		enabled: !!animalId && !!getAccessToken(),
+		select: data =>
+			data.map(item => ({
+				...item,
+				changes: item.changes.map(change => ({
+					...change,
+					date: new Date(change.date).toLocaleDateString(),
+				})),
+			})),
+	})
+}
+```
+
+=== Файл: features/animal/hooks/useExport.ts ===
+```typescript
+import { useMutation } from '@tanstack/react-query'
+import { exportApi } from '../api/exportApi'
+
+export const useExport = () => {
+	return useMutation({
+		mutationFn: exportApi.exportAnimalToPdf,
+		onSuccess: () => {
+			// Можно добавить уведомление об успешном экспорте
+			console.log('PDF exported successfully')
+		},
+		onError: error => {
+			console.error('Export failed:', error)
+		},
+	})
+}
+```
+
+=== Файл: features/animal/hooks/useUserAnimals.ts ===
+```typescript
+import { useQuery } from '@tanstack/react-query'
+import { useToken } from '../../auth/hooks/useToken'
+import { analyticsApi } from '../api/analyticsApi'
+
+export const useUserAnimals = () => {
+	const { getAccessToken } = useToken()
+
+	return useQuery({
+		queryKey: ['userAnimals'],
+		queryFn: analyticsApi.getUserAnimals,
+		enabled: !!getAccessToken(),
+		staleTime: 5 * 60 * 1000, // 5 минут
+	})
+}
+```
+
+=== Файл: features/animal/hooks/useAnimalAttributes.ts ===
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { animalApi } from '../api/animalApi'
+import { AttributeRequest, AttributeResponse } from '../api/types'
+
+export const useAnimalAttributes = (animalId: number) => {
+	const queryClient = useQueryClient()
+
+	const addAttribute = useMutation<AttributeResponse, Error, AttributeRequest>({
+		mutationFn: data => animalApi.addAttribute(animalId, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['animal', animalId] })
+		},
+	})
+
+	const updateAttribute = useMutation<
+		AttributeResponse,
+		Error,
+		{ attrId: number; data: AttributeRequest }
+	>({
+		mutationFn: ({ attrId, data }) =>
+			animalApi.updateAttribute(animalId, attrId, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['animal', animalId] })
+		},
+	})
+
+	const deleteAttribute = useMutation<void, Error, number>({
+		mutationFn: attrId => animalApi.deleteAttribute(animalId, attrId),
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ['animal', animalId] })
+		},
+	})
+
+	return {
+		addAttribute: addAttribute.mutateAsync,
+		isAdding: addAttribute.isPending,
+
+		updateAttribute: updateAttribute.mutateAsync,
+		isUpdatingAttr: updateAttribute.isPending,
+
+		deleteAttribute: deleteAttribute.mutateAsync,
+		isDeletingAttr: deleteAttribute.isPending,
+	}
+}
+```
+
+=== Файл: features/animal/api/analyticsApi.ts ===
+```typescript
+import { apiClient } from '../../../api/client'
+import { AnimalResponse } from './types'
+
+export interface AnimalAnalyticsResponse {
+	attributeName: string
+	changes: {
+		date: string
+		value: string
+		changedBy: string
+	}[]
+	stats?: {
+		minValue: string
+		maxValue: string
+		avgValue: number
+	}
+}
+
+export const analyticsApi = {
+	getAnimalAnalytics: (animalId: number) =>
+		apiClient
+			.get<AnimalAnalyticsResponse[]>(`/animals/${animalId}/analytics`)
+			.then(r => r.data),
+
+	getUserAnimals: () =>
+		apiClient.get<AnimalResponse[]>('/users/me/animals').then(r => r.data),
+}
+```
+
+=== Файл: features/animal/api/types.ts ===
+```typescript
+// Основные типы
+export interface AnimalCreateRequest {
+	name: string
+	description?: string
+	birthDate?: string // ISO date string
+	mass?: number
+	attributes: AttributeRequest[]
+}
+
+export interface AnimalUpdateRequest {
+	name?: string
+	description?: string
+	birthDate?: string
+	mass?: number
+}
+
+export interface AnimalResponse {
+	id: number
+	name: string
+	description?: string
+	birthDate?: string
+	mass?: number
+	attributes: AttributeResponse[]
+	photos: string[] // objectKeys
+	documents: DocumentResponse[]
+	statusLogs: StatusLogResponse[]
+}
+
+export interface AttributeRequest {
+	name: string
+	value: string
+}
+
+export interface AttributeResponse {
+	id: number
+	name: string
+	value?: string
+}
+
+export interface DocumentResponse {
+	id: number
+	type: string
+	objectKey: string
+	documentName?: string
+}
+
+export interface StatusLogResponse {
+	id: number
+	logDate: string
+	notes?: string
+	photos: string[]
+	documents: DocumentResponse[]
+}
+
+export interface S3FileResponse {
+	objectKey: string
+	presignedUrl: string
+}
+```
+
+=== Файл: features/animal/api/exportApi.ts ===
+```typescript
+import { apiClient } from '../../../api/client'
+
+export const exportApi = {
+	exportAnimalToPdf: (animalId: number) =>
+		apiClient
+			.get(`/animals/${animalId}/export/pdf`, {
+				responseType: 'blob',
+				headers: {
+					Accept: 'application/pdf',
+				},
+			})
+			.then(response => {
+				// Создаем URL для скачивания файла
+				const url = window.URL.createObjectURL(new Blob([response.data]))
+				const link = document.createElement('a')
+				link.href = url
+				link.setAttribute('download', `animal_${animalId}_report.pdf`)
+				document.body.appendChild(link)
+				link.click()
+				document.body.removeChild(link)
+				return response
+			}),
+}
+```
+
+=== Файл: features/animal/api/animalApi.ts ===
+```typescript
+import { apiClient } from '../../../api/client'
+import {
+	AnimalCreateRequest,
+	AnimalResponse,
+	AnimalUpdateRequest,
+	AttributeRequest,
+	AttributeResponse,
+	S3FileResponse,
+	StatusLogResponse,
+} from './types'
+
+export const animalApi = {
+	// Основные операции
+	createAnimal: (data: AnimalCreateRequest) =>
+		apiClient.post<AnimalResponse>('/animals', data).then(r => r.data),
+
+	getAnimal: (animalId: number) =>
+		apiClient.get<AnimalResponse>(`/animals/${animalId}`).then(r => r.data),
+
+	updateAnimal: (animalId: number, data: AnimalUpdateRequest) =>
+		apiClient
+			.patch<AnimalResponse>(`/animals/${animalId}`, data)
+			.then(r => r.data),
+
+	deleteAnimal: (animalId: number) =>
+		apiClient.delete(`/animals/${animalId}`).then(r => r.data),
+
+	// Атрибуты
+	addAttribute: (animalId: number, data: AttributeRequest) =>
+		apiClient
+			.post<AttributeResponse>(`/animals/${animalId}/attributes`, data)
+			.then(r => r.data),
+
+	updateAttribute: (
+		animalId: number,
+		attributeId: number,
+		data: AttributeRequest
+	) =>
+		apiClient
+			.patch<AttributeResponse>(
+				`/animals/${animalId}/attributes/${attributeId}`,
+				data
+			)
+			.then(r => r.data),
+
+	deleteAttribute: (animalId: number, attributeId: number) =>
+		apiClient
+			.delete(`/animals/${animalId}/attributes/${attributeId}`)
+			.then(r => r.data),
+
+	// Фото
+	uploadAnimalPhoto: (animalId: number, file: File) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		return apiClient
+			.post<S3FileResponse>(`/animals/${animalId}/photos`, formData, {
+				headers: { 'Content-Type': 'multipart/form-data' },
+			})
+			.then(r => r.data)
+	},
+
+	deleteAnimalPhoto: (photoId: number) =>
+		apiClient.delete(`/animals/photos/${photoId}`).then(r => r.data),
+
+	// Документы
+	uploadAnimalDocument: (animalId: number, file: File, type: string) => {
+		const formData = new FormData()
+		formData.append('file', file)
+		formData.append('type', type)
+		return apiClient
+			.post<S3FileResponse>(`/animals/${animalId}/documents`, formData, {
+				headers: { 'Content-Type': 'multipart/form-data' },
+			})
+			.then(r => r.data)
+	},
+
+	deleteAnimalDocument: (documentId: number) =>
+		apiClient.delete(`/animals/documents/${documentId}`).then(r => r.data),
+
+	// История состояний
+	getStatusLogs: (animalId: number) =>
+		apiClient
+			.get<StatusLogResponse[]>(`/animals/${animalId}/status-logs`)
+			.then(r => r.data),
+	
+}
+```
+
+=== Файл: styles/base.css ===
+```css
+@import 'variables.css';
+
+:root {
+	font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+	color-scheme: light dark;
+}
+
+body {
+	margin: 0;
+	min-width: 320px;
+	min-height: 100vh;
+}
+```
+
+=== Файл: api/client.ts ===
+```typescript
+import axios from 'axios'
+
+export const apiClient = axios.create({
+	baseURL: import.meta.env.VITE_API_URL || '/api',
+	withCredentials: true,
+	headers: {
+		'Content-Type': 'application/json',
+	},
+})
+
+// Интерсептор для ошибок
+apiClient.interceptors.response.use(
+	response => response,
+	error => {
+		if (error.response?.status === 401) {
+			// TODO: Добавить обработку refresh токена
+		}
+		return Promise.reject(error)
+	}
+)
+
+// Инициализация токена при старте
+const token = localStorage.getItem('accessToken')
+if (token) {
+	apiClient.defaults.headers['Authorization'] = `Bearer ${token}`
+}
+```
+

@@ -1,0 +1,235 @@
+.homeContainer {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 2rem 1rem;
+	color: #2d3748;
+}
+
+/* Герой-секция */
+.heroSection {
+	display: flex;
+	align-items: center;
+	gap: 2rem;
+	margin-bottom: 4rem;
+	padding: 2rem 0;
+}
+
+.heroContent {
+	flex: 1;
+	font-family: 'Roboto', 'Segoe UI Emoji', 'Apple Color Emoji',
+		'Noto Color Emoji', sans-serif;
+}
+
+.heroIllustration {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+}
+
+.highlight {
+	color: #3182ce;
+	font-weight: 700;
+}
+
+.emoji {
+	font-size: 1.2em;
+}
+
+h1 {
+	font-size: 2.5rem;
+	line-height: 1.2;
+	margin-bottom: 1.5rem;
+	color: #2b6cb0;
+}
+
+.subtitle {
+	font-size: 1.2rem;
+	color: #4a5568;
+	margin-bottom: 2rem;
+	max-width: 600px;
+}
+
+.ctaButtons {
+	display: flex;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.primaryButton {
+	background-color: #3182ce;
+	border-color: #3182ce;
+	&:hover {
+		background-color: #2b6cb0;
+		border-color: #2b6cb0;
+	}
+}
+
+.secondaryButton {
+	color: #3182ce;
+	border-color: #3182ce;
+	&:hover {
+		color: #2b6cb0;
+		border-color: #2b6cb0;
+	}
+}
+
+.petAnimation {
+	font-size: 5rem;
+	animation: bounce 2s infinite;
+	font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji',
+		sans-serif;
+}
+
+@keyframes bounce {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-20px);
+	}
+}
+
+/* Секция преимуществ */
+.featuresSection {
+	margin: 5rem 0;
+	text-align: center;
+}
+
+.featuresGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 2rem;
+	margin-top: 3rem;
+}
+
+.featureCard {
+	background: #ffffff;
+	border-radius: 12px;
+	padding: 2rem;
+	box-shadow: 0 4px 6px rgba(49, 130, 206, 0.1);
+	transition: transform 0.3s ease;
+	border: 1px solid #ebf5ff;
+
+	&:hover {
+		transform: translateY(-5px);
+		box-shadow: 0 6px 12px rgba(49, 130, 206, 0.15);
+	}
+}
+
+.featureIcon {
+	margin-bottom: 1.5rem;
+}
+
+/* Как это работает */
+.howItWorks {
+	margin: 5rem 0;
+	background: #ebf5ff;
+	padding: 3rem;
+	border-radius: 12px;
+}
+
+.steps {
+	margin-top: 2rem;
+}
+
+.step {
+	display: flex;
+	align-items: flex-start;
+	gap: 1.5rem;
+	margin-bottom: 2rem;
+}
+
+.stepNumber {
+	background: #3182ce;
+	color: white;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-weight: bold;
+	flex-shrink: 0;
+}
+
+/* Отзывы */
+.testimonials {
+	margin: 5rem 0;
+}
+
+.testimonialCards {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+	gap: 2rem;
+	margin-top: 2rem;
+}
+
+.testimonial {
+	background: white;
+	padding: 2rem;
+	border-radius: 12px;
+	box-shadow: 0 4px 6px rgba(49, 130, 206, 0.1);
+	position: relative;
+	border: 1px solid #ebf5ff;
+}
+
+.quote {
+	font-size: 4rem;
+	color: #3182ce;
+	opacity: 0.2;
+	position: absolute;
+	top: 0;
+	left: 1rem;
+	line-height: 1;
+}
+
+.author {
+	margin-top: 1rem;
+	font-style: italic;
+	color: #4a5568;
+}
+
+/* Финальный CTA */
+.finalCta {
+	text-align: center;
+	margin: 5rem 0;
+	padding: 3rem;
+	background: linear-gradient(135deg, #ebf5ff 0%, #bee3f8 100%);
+	border-radius: 12px;
+}
+
+.ctaButton {
+	background-color: #3182ce;
+	border-color: #3182ce;
+	padding: 0 2rem;
+	height: 50px;
+	font-size: 1.1rem;
+	margin-top: 1.5rem;
+
+	&:hover {
+		background-color: #2b6cb0;
+		border-color: #2b6cb0;
+	}
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+	.heroSection {
+		flex-direction: column;
+		text-align: center;
+	}
+
+	.subtitle {
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.ctaButtons {
+		justify-content: center;
+	}
+
+	.howItWorks {
+		padding: 2rem 1rem;
+	}
+}

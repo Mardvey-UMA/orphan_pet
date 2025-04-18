@@ -1,0 +1,2307 @@
+=== Файл: AuthServiceApplication.kt ===
+```kotlin
+package ru.animaltracker.authservice
+
+import org.springframework.boot.CommandLineRunner
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.context.properties.EnableConfigurationProperties
+import org.springframework.boot.runApplication
+import org.springframework.context.annotation.Bean
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
+import org.springframework.scheduling.annotation.EnableAsync
+import ru.animaltracker.authservice.config.EmailConfig
+import ru.animaltracker.authservice.config.JwtConfig
+import ru.animaltracker.authservice.config.KafkaConfigProps
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.repository.RoleRepository
+
+@EnableJpaAuditing
+@EnableAsync
+@SpringBootApplication
+@EnableConfigurationProperties(ru.animaltracker.authservice.config.JwtConfig::class, EmailConfig::class, KafkaConfigProps::class)
+class AuthServiceApplication{
+    @Bean
+    fun runner(roleRepository: RoleRepository): CommandLineRunner {
+        return CommandLineRunner {
+            if (roleRepository.findByName("USER") == null) {
+                roleRepository.save(Role(name = "USER"))
+            }
+        }
+    }
+}
+
+fun main(args: Array<String>) {
+    runApplication<AuthServiceApplication>(*args)
+}
+```
+
+=== Файл: controller/ActivationController.kt ===
+```kotlin
+package ru.animaltracker.authservice.controller
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import ru.animaltracker.authservice.service.interfaces.ActivationService
+
+@Tag(
+    name = "Активация аккаунта при регистрации",
+    description = "Эндпоинт для отправки кода подтверждения для активации аккаунта")
+@RequestMapping("/api/auth/activate-account")
+@RestController
+class ActivationController(
+    private val activationService: ActivationService
+) {
+    @Operation(
+        summary = "Активация аккаунта",
+        description = "Запрос на активацию аккаунта (прикладывание кода из почты)")
+    @GetMapping
+    fun confirm(
+        @RequestParam token: String,
+    ): ResponseEntity<String> {
+        activationService.activateAccount(token)
+        return ResponseEntity.ok("Account activated successfully")
+    }
+
+}
+```
+
+=== Файл: controller/LogoutController.kt ===
+```kotlin
+package ru.animaltracker.authservice.controller
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import ru.animaltracker.authservice.service.LogoutService
+@Tag(
+    name = "Выход пользователя",
+    description = "Обработка выхода пользователя")
+@RequestMapping("/api/auth/logout")
+@RestController
+class LogoutController(
+    private val logoutService: LogoutService
+) {
+    @Operation(
+        summary = "Выход авторизированного пользователя",
+        description = "Выход пользователя, с invoke его refresh токена и удалением cookie"
+    )
+    @PostMapping()
+    fun logout(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authentication: Authentication?
+    ): ResponseEntity<String> {
+        logoutService.logout(request, response, authentication)
+        return ResponseEntity.ok("Logged out successfully")
+    }
+}
+```
+
+=== Файл: controller/TokenController.kt ===
+```kotlin
+package ru.animaltracker.authservice.controller
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.CookieValue
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.service.interfaces.TokenService
+
+@Tag(
+    name = "Токен",
+    description = "Рефреш токена")
+@RequestMapping("/api/auth/token")
+@RestController
+class TokenController(
+    private val tokenService: TokenService
+) {
+    @Operation(
+        summary = "Обновление токена",
+        description = "Рефреш токенов пользователя, рефреш берется из cookie"
+    )
+    @PostMapping("/refresh")
+    fun refreshToken(
+        @CookieValue("REFRESH_TOKEN") refreshToken: String,
+        response: HttpServletResponse
+    ): ResponseEntity<AuthResponseDTO> {
+        val newTokens = tokenService.refreshToken(refreshToken, response)
+        return ResponseEntity.ok(newTokens)
+    }
+}
+```
+
+=== Файл: controller/PasswordController.kt ===
+```kotlin
+package ru.animaltracker.authservice.controller
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import ru.animaltracker.authservice.dto.PasswordRecoveryRequestDTO
+import ru.animaltracker.authservice.dto.PasswordResetRequestDTO
+import ru.animaltracker.authservice.service.impl.PasswordRecoveryServiceImpl
+
+@Tag(
+    name = "Восстановление пароля",
+    description = "Все что касается восстановления аккаунта")
+@RequestMapping("/api/auth/password")
+@RestController
+class PasswordController(
+    private val passwordRecoveryService: PasswordRecoveryServiceImpl
+) {
+    @Operation(
+        summary = "Запрос на восстановление пароля по почте",
+        description = "После отправки запроса на почту отправляется код подтверждения"
+    )
+    @PostMapping("/recovery")
+    fun sendPasswordRecoveryEmail(
+        @RequestBody request: PasswordRecoveryRequestDTO
+    ): ResponseEntity<String> {
+        passwordRecoveryService.initiatePasswordRecovery(request.identifier)
+        return ResponseEntity.ok("Password recovery email sent")
+    }
+
+    @Operation(
+        summary = "Сброс пароля",
+        description = "Сброс пароля по ранее полученному на почту коду сброса"
+    )
+    @PostMapping("/reset")
+    fun resetPassword(
+        @RequestBody @Valid request: PasswordResetRequestDTO
+    ): ResponseEntity<String> {
+        passwordRecoveryService.resetPassword(request.token, request.newPassword)
+        return ResponseEntity.ok("Password has been reset successfully")
+    }
+
+}
+```
+
+=== Файл: controller/VkController.kt ===
+```kotlin
+package ru.animaltracker.authservice.controller
+
+import io.swagger.v3.oas.annotations.Hidden
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RestController
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.service.OAuthService
+
+@Tag(
+    name = "VK OAuth",
+    description = "Все что касается обработки вк авторизации регистрации")
+@RestController
+@RequestMapping("/api/auth/login")
+class VkController(
+    private val oAuthService: OAuthService
+){
+    @Hidden
+    @GetMapping("/oauth2/code/vk")
+    fun handleRedirect(
+        @RequestParam("code") code: String,
+        response: HttpServletResponse
+    ): AuthResponseDTO = oAuthService.authenticate(code, response)
+
+    // Чисто открыть страничку VK авторизации
+    @Operation(
+        summary = "Открытие страницы авторизации VK",
+        description = "Открывается VK страничка, после перенаправление и регистрация в системе или авторизация уже существующего"
+    )
+    @GetMapping("/vk")
+    fun authorizeVK(request: HttpServletRequest): ResponseEntity<String>  = oAuthService.vkLoginPageOpen()
+}
+```
+
+=== Файл: controller/AuthController.kt ===
+```kotlin
+package ru.animaltracker.authservice.controller
+
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.tags.Tag
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import jakarta.validation.Valid
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.core.Authentication
+import org.springframework.web.bind.annotation.*
+import ru.animaltracker.authservice.dto.*
+import ru.animaltracker.authservice.service.interfaces.AuthenticationService
+import ru.animaltracker.authservice.service.LogoutService
+import ru.animaltracker.authservice.service.interfaces.PasswordRecoveryService
+import ru.animaltracker.authservice.service.interfaces.RegistrationService
+
+@Tag(
+    name = "Вход и Регистрация",
+    description = "Обработка входа и регистрации пользователя")
+@RestController
+@RequestMapping("/api/auth")
+class AuthController(
+    private val registrationService: RegistrationService,
+    private val authenticationService: AuthenticationService
+) {
+
+    @Operation(
+        summary = "Регистрация",
+        description = "Регистрация пользователя по почте юзернейму и паролю"
+    )
+    @PostMapping("/register")
+    fun registerUser(@RequestBody @Valid registrationRequest: UserRequestDTO): ResponseEntity<UserResponseDTO> {
+        val response = registrationService.register(registrationRequest)
+        return ResponseEntity.status(HttpStatus.CREATED).body(response)
+    }
+
+    @Operation(
+        summary = "Авторизация",
+        description = "Авторизация пользователя, можно войти как по почте так и просто по юзернейму"
+    )
+    @PostMapping("/authenticate")
+    fun authenticateUser(
+        @RequestBody @Valid authRequest: AuthRequestDTO,
+        response: HttpServletResponse
+    ): ResponseEntity<AuthResponseDTO> {
+        val authResponse = authenticationService.authenticate(authRequest, response)
+        return ResponseEntity.ok(authResponse)
+    }
+}
+```
+
+=== Файл: enums/BusinessErrorCodes.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+import org.springframework.http.HttpStatus
+
+enum class BusinessErrorCodes (
+    val code: Int,
+    val httpStatus: HttpStatus,
+    val description: String
+){
+    NO_CODE(0, HttpStatus.NOT_IMPLEMENTED, "No code"),
+    INCORRECT_CURRENT_PASSWORD(300, HttpStatus.BAD_REQUEST, "Incorrect password"),
+    ACCOUNT_LOCKED(302, HttpStatus.FORBIDDEN, "User account is locked"),
+    ACCOUNT_DISABLED(303, HttpStatus.FORBIDDEN, "User account is disabled"),
+    BAD_CREDENTIALS(304, HttpStatus.UNAUTHORIZED, "Login and/or password is incorrect"),
+    NEW_PASSWORD_DOES_NOT_MATCH(301, HttpStatus.BAD_REQUEST, "The new password does not match"),
+    USER_ALREADY_EXISTS(305, HttpStatus.BAD_REQUEST, "User already exists"),
+    INVALID_TOKEN(306, HttpStatus.UNAUTHORIZED, "Invalid token"),
+    TOKEN_EXPIRED(307, HttpStatus.UNAUTHORIZED, "Token has expired"),
+    USER_NOT_FOUND(308, HttpStatus.NOT_FOUND, "User not found")
+}
+```
+
+=== Файл: enums/CookieName.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+enum class CookieName(
+    private val cookieName: String,
+) {
+    ACCESS_TOKEN("access_token"),
+    REFRESH_TOKEN("refresh_token"),
+}
+```
+
+=== Файл: enums/Provider.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+enum class Provider {
+    VK,
+    PASSWORD,
+}
+```
+
+=== Файл: enums/UserRole.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+enum class UserRole {
+    ADMIN,
+    USER,
+}
+```
+
+=== Файл: enums/MailTokenType.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+enum class MailTokenType{
+    CONFIRM,
+    RECOVERY
+}
+```
+
+=== Файл: enums/EmailTemplateName.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+enum class EmailTemplateName(
+    val templateName: String
+) {
+    ACTIVATE_ACCOUNT("activate_account"),
+    RECOVERY_PASSWORD("recovery_password")
+}
+```
+
+=== Файл: enums/TokenType.kt ===
+```kotlin
+package ru.animaltracker.authservice.enums
+
+enum class TokenType {
+    ACCESS,
+    REFRESH,
+}
+```
+
+=== Файл: service/MessageProducerService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.stereotype.Service
+
+@Service
+class MessageProducerService(
+    private val kafkaTemplate: KafkaTemplate<String, String>,
+    private val objectMapper: ObjectMapper
+) {
+
+    fun sendMessage(topic: String, dto: Any) {
+        val json = objectMapper.writeValueAsString(dto)
+        kafkaTemplate.send(topic, json)
+    }
+}
+```
+
+=== Файл: service/PasswordRecoveryHelper.kt ===
+```kotlin
+package ru.animaltracker.authservice.service
+
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.entity.MailToken
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.MailTokenType
+import ru.animaltracker.authservice.repository.MailTokenRepository
+import ru.animaltracker.authservice.config.EmailConfig
+import ru.animaltracker.authservice.enums.EmailTemplateName
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.service.interfaces.UserService
+import java.security.SecureRandom
+import java.time.LocalDateTime
+
+@Service
+class PasswordRecoveryHelper(
+    private val mailTokenRepository: MailTokenRepository,
+    private val userService: UserService,
+    private val emailService: ru.animaltracker.authservice.service.EmailService,
+    private val emailConfig: EmailConfig
+) {
+
+    fun generateAndSaveRecoveryToken(user: User): String {
+        deactivateExistingTokens(user, MailTokenType.RECOVERY)
+
+        val generatedToken = generateRecoveryCode()
+        val mailToken = MailToken(
+            token = generatedToken,
+            createdAt = LocalDateTime.now(),
+            expiresAt = LocalDateTime.now().plusSeconds(emailConfig.activationTokenExpiration),
+            user = user,
+            tokenType = MailTokenType.RECOVERY
+        )
+        mailTokenRepository.save(mailToken)
+        return generatedToken
+    }
+
+    fun resetPassword(token: String, newPassword: String) {
+        val mailToken = mailTokenRepository.findByToken(token)
+            ?: throw GlobalExceptionHandler.InvalidTokenException("Invalid recovery token")
+
+        if (LocalDateTime.now().isAfter(mailToken.expiresAt) || !mailToken.enabled) {
+            throw GlobalExceptionHandler.InvalidTokenException("Recovery token expired or already used")
+        }
+
+        val user = mailToken.user
+        userService.updatePassword(user, newPassword)
+        mailToken.validatedAt = LocalDateTime.now()
+        mailToken.enabled = false
+        mailTokenRepository.save(mailToken)
+    }
+
+    fun sendRecoveryEmail(user: User, token: String) {
+        emailService.sendEmail(
+            to = user.email,
+            username = user.username,
+            emailTemplate = EmailTemplateName.RECOVERY_PASSWORD,
+            confirmationUrl = emailConfig.activationUrl,
+            activationCode = token,
+            subject = "Password Recovery"
+        )
+    }
+
+    private fun deactivateExistingTokens(user: User, tokenType: MailTokenType) {
+        val activeTokens = mailTokenRepository.findByUserIdAndEnabledAndTokenType(
+            userId = user.id!!,
+            enabled = true,
+            tokenType = tokenType
+        )
+        activeTokens.forEach { it.enabled = false }
+        mailTokenRepository.saveAll(activeTokens)
+    }
+
+    private fun generateRecoveryCode(length: Int = 6): String {
+        val secureRandom = SecureRandom()
+        return (1..length)
+            .map { secureRandom.nextInt(10) }
+            .joinToString("")
+    }
+}
+```
+
+=== Файл: service/EmailService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service
+
+import jakarta.mail.internet.MimeMessage
+import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
+import org.springframework.scheduling.annotation.Async
+import org.springframework.stereotype.Service
+import org.thymeleaf.context.Context
+import org.thymeleaf.spring6.SpringTemplateEngine
+import ru.animaltracker.authservice.config.EmailConfig
+import ru.animaltracker.authservice.enums.EmailTemplateName
+
+@Service
+class EmailService(
+    private val mailSender: JavaMailSender,
+    private val templateEngine: SpringTemplateEngine,
+    private val emailConfig: EmailConfig
+) {
+    @Async
+    fun sendEmail(to: String,
+                  username: String,
+                  emailTemplate: EmailTemplateName,
+                  confirmationUrl: String,
+                  activationCode: String,
+                  subject: String)
+    {
+        val mimeMessage: MimeMessage = mailSender.createMimeMessage()
+        val helper = MimeMessageHelper(mimeMessage,
+            MimeMessageHelper.MULTIPART_MODE_MIXED
+            )
+        val properties = mutableMapOf<String, Any>()
+        properties["username"] = username
+        properties["confirmationUrl"] = confirmationUrl
+        properties["activation_code"] = activationCode
+
+        val context = Context() // ThymeLeaf Context
+        context.setVariables(properties)
+
+        helper.setFrom(emailConfig.emailAddressSender)
+        helper.setTo(to)
+        helper.setSubject(subject)
+
+        val template = templateEngine.process(emailTemplate.templateName, context)
+
+        helper.setText(template, true)
+
+        mailSender.send(mimeMessage)
+    }
+}
+```
+
+=== Файл: service/JwtService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service
+
+import io.jsonwebtoken.Claims
+import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.io.Decoders
+import io.jsonwebtoken.security.Keys
+import jakarta.servlet.http.Cookie
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.config.JwtConfig
+import ru.animaltracker.authservice.entity.User
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.util.*
+import javax.crypto.SecretKey
+
+@Service
+class JwtService(private val jwtConfig: ru.animaltracker.authservice.config.JwtConfig) {
+
+    fun getSignInKey(): SecretKey {
+        val keyBytes = Decoders.BASE64.decode(jwtConfig.secretKey)
+        return Keys.hmacShaKeyFor(keyBytes)
+    }
+
+    fun extractUsername(token: String): String? = extractClaim(token) { claims: Claims -> claims.subject }
+
+    fun <T> extractClaim(token: String, claimsResolver: (Claims) -> T): T {
+        val claims = extractAllClaims(token)
+        return claimsResolver.invoke(claims)
+    }
+
+    fun extractAllClaims(token: String): Claims =
+        Jwts.parser()
+            .verifyWith(getSignInKey())
+            .build()
+            .parseSignedClaims(token)
+            .payload
+
+    private fun buildToken(
+        extraClaims: Map<String, Any>,
+        userDetails: UserDetails,
+        jwtExpiration: Long
+    ): String {
+        val now = Instant.now()
+        return Jwts.builder()
+            .claims(extraClaims)
+            .subject(userDetails.username)
+            .issuedAt(Date.from(now))
+            .expiration(Date.from(now.plusSeconds(jwtExpiration)))
+            .signWith(getSignInKey())
+            .compact()
+    }
+
+    fun isTokenValid(token: String, userDetails: UserDetails): Boolean {
+        val username = extractUsername(token)
+        return username != null &&
+                username == userDetails.username &&
+                !isTokenExpired(token)
+    }
+
+    fun createHttpOnlyCookie(name: String, value: String): Cookie {
+        val cookie = Cookie(name, value)
+        cookie.isHttpOnly = true
+        cookie.maxAge = jwtConfig.expiration.toInt()
+        cookie.path = "/"
+        return cookie
+    }
+
+    private fun isTokenExpired(token: String): Boolean = extractExpiration(token).before(Date.from(Instant.now()))
+
+    fun extractExpiration(token: String): Date = extractClaim(token, Claims::getExpiration)
+
+    fun generateAccessToken(user: UserDetails): String {
+        val userEntity = user as User
+        val claims = mapOf<String, Any>(
+            "roles" to user.authorities.map { it.authority },
+            "token_type" to "ACCESS",
+            "username" to userEntity.username,
+            "user_id" to userEntity.id!!,
+            "sub" to userEntity.username
+        )
+        return buildToken(claims, user, jwtConfig.expiration)
+    }
+
+    fun generateRefreshToken(user: UserDetails): String {
+        val claims = mapOf("type" to "refresh")
+        return buildToken(claims, user, jwtConfig.refreshExpiration)
+    }
+    fun isRefreshTokenValid(token: String): Boolean {
+        val claims = extractAllClaims(token)
+        return claims["type"] == "refresh" && !isTokenExpired(token)
+    }
+
+    /////////////////////////////////////////////
+    fun extractExpirationLocalDateTime(token: String): LocalDateTime? {
+        return try {
+            val expirationDate = extractExpiration(token)
+            expirationDate.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+        } catch (e: Exception) {
+            null
+        }
+    }
+}
+```
+
+=== Файл: service/LogoutService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service
+
+import jakarta.servlet.http.Cookie
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.web.authentication.logout.LogoutHandler
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.repository.TokenRepository
+
+@Service
+class LogoutService(
+    private val tokenRepository: TokenRepository
+) : LogoutHandler {
+
+    override fun logout(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        authentication: Authentication?
+    ) {
+        val refreshToken = getCookieValue(request, CookieName.REFRESH_TOKEN.name)
+
+        if (refreshToken != null) {
+            val storedToken = tokenRepository.findByToken(refreshToken)
+            if (storedToken != null && !storedToken.revoked && !storedToken.expired) {
+                storedToken.revoked = true
+                storedToken.expired = true
+                tokenRepository.save(storedToken)
+            }
+        }
+
+        SecurityContextHolder.clearContext()
+
+        clearCookie(response, CookieName.REFRESH_TOKEN.name)
+
+        clearCookie(response, CookieName.ACCESS_TOKEN.name)
+    }
+
+    private fun getCookieValue(request: HttpServletRequest, name: String): String? {
+        return request.cookies?.find { it.name == name }?.value
+    }
+
+    private fun clearCookie(response: HttpServletResponse, name: String) {
+        val cookie = Cookie(name, null).apply {
+            maxAge = 0
+            path = "/"
+            isHttpOnly = true
+        }
+        response.addCookie(cookie)
+    }
+}
+```
+
+=== Файл: service/OAuthService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service
+
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
+import org.springframework.http.ResponseEntity
+import org.springframework.http.HttpMethod
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpStatus
+
+import ru.animaltracker.authservice.config.VkApiConfig
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.enums.Provider
+
+import ru.animaltracker.authservice.repository.UserRepository
+import ru.animaltracker.authservice.service.interfaces.TokenService
+import ru.animaltracker.authservice.service.interfaces.UserService
+import java.net.URI
+import java.time.LocalDateTime
+
+@Service
+class OAuthService(
+    private val restTemplate: RestTemplate,
+    private val userRepository: UserRepository,
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
+    private val userService: UserService,
+    private val objectMapper: ObjectMapper,
+    private val vkApiConfig: VkApiConfig,
+    private val tokenService: TokenService
+) {
+
+    fun authenticate(code: String, response: HttpServletResponse): AuthResponseDTO {
+        // Поменять код на токен
+        val tokenResponse = exchangeCodeForAccessToken(code)
+        val accessTokenVk = tokenResponse["access_token"].asText() // access вкшный
+
+        val userId = tokenResponse["user_id"].asText()
+        val email = tokenResponse["email"]?.asText()
+
+        // размениваем на id
+        val userInfoResponse = getUserInfoVk(accessTokenVk, userId)
+        val vkId = userInfoResponse["response"][0]["id"].asLong()
+
+        // Проверяем есть ли такой
+        val existingUser = userRepository.findByVkId(vkId)
+        val user = existingUser ?: createNewUser(vkId, email)
+
+        val refreshToken: String = jwtService.generateRefreshToken(user)
+        val accessToken: String = jwtService.generateAccessToken(user)
+
+        // Кидаем в кукисы
+        response.addCookie(jwtService.createHttpOnlyCookie(CookieName.ACCESS_TOKEN.name, accessToken))
+        response.addCookie(jwtService.createHttpOnlyCookie(CookieName.REFRESH_TOKEN.name, refreshToken))
+
+        // Пишем рефрешку
+        tokenService.saveRefreshToken(user, refreshToken)
+
+        return AuthResponseDTO(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            issuedAt = LocalDateTime.now(),
+            accessExpiresAt = jwtService.extractExpirationLocalDateTime(accessToken),
+            refreshExpiresAt = jwtService.extractExpirationLocalDateTime(refreshToken)
+        )
+    }
+
+    private fun exchangeCodeForAccessToken(code: String): JsonNode {
+        val tokenUri = vkApiConfig.provider.vk.tokenUri
+        // Формировка ссылки
+        val uri = URI.create(
+            "$tokenUri?client_id=${vkApiConfig.registration.vk.clientId}" +
+                    "&client_secret=${vkApiConfig.registration.vk.clientSecret}" +
+                    "&redirect_uri=${vkApiConfig.registration.vk.redirectUri}" +
+                    "&code=$code"
+        )
+        // Прокидываем GET
+        val response: ResponseEntity<String> = restTemplate.exchange(
+            uri,
+            HttpMethod.GET,
+            null,
+            String::class.java
+        )
+        // Тело ответа
+        return parseJson(response.body!!)
+    }
+
+    private fun getUserInfoVk(accessToken: String, userId: String): JsonNode {
+        val userInfoUri = vkApiConfig.provider.vk.userInfoUri
+
+        // Запрос на вытяжку инфы
+        val uri = URI.create(
+            "$userInfoUri?user_ids=$userId&fields=email&access_token=$accessToken&v=5.131"
+        )
+
+        val response: ResponseEntity<String> = restTemplate.exchange(
+            uri,
+            HttpMethod.GET,
+            null,
+            String::class.java
+        )
+
+        return parseJson(response.body!!)
+    }
+
+    private fun parseJson(json: String): JsonNode {
+        return objectMapper.readTree(json)
+    }
+
+    private fun createNewUser(vkId: Long, email: String?): User {
+        val userEmail = email ?: "${vkId}@vk.com"
+
+        return userService.registerVkUser(
+            UserRequestDTO(
+                username = vkId.toString(),
+                email = userEmail,
+                password = null
+            ),
+            vkId
+        )
+    }
+    fun vkLoginPageOpen(): ResponseEntity<String> {
+        val uri = URI.create(
+            "${vkApiConfig.provider.vk.authorizationUri}?" +
+                    "client_id=${vkApiConfig.registration.vk.clientId}" +
+                    "&client_secret=${vkApiConfig.registration.vk.clientSecret}" +
+                    "&redirect_uri=${vkApiConfig.registration.vk.redirectUri}"
+        )
+        return ResponseEntity.status(HttpStatus.FOUND)
+            .location(uri)
+            .build()
+    }
+}
+```
+
+=== Файл: service/impl/UserServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.impl
+
+import jakarta.transaction.Transactional
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.Provider
+import ru.animaltracker.authservice.enums.UserRole
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.repository.RoleRepository
+import ru.animaltracker.authservice.repository.UserRepository
+import ru.animaltracker.authservice.service.interfaces.UserService
+import java.time.LocalDateTime
+
+@Service
+@Transactional
+class UserServiceImpl(
+    private val userRepository: UserRepository,
+    private val roleRepository: RoleRepository,
+    private val passwordEncoder: PasswordEncoder
+): UserService {
+
+    override fun saveUser(user: User): User = userRepository.save(user)
+
+    override fun saveRole(role: Role): Role = roleRepository.save(role)
+
+    override fun getUsers(): List<User> = userRepository.findAll()
+
+    override fun registerUser(email: String, username: String, rawPassword: String): User {
+        if (userRepository.findByEmail(email) != null) {
+            throw GlobalExceptionHandler.UserAlreadyExistsException("Email already in use")
+        }
+        if (userRepository.findByUsername(username) != null) {
+            throw GlobalExceptionHandler.UserAlreadyExistsException("Username already in use")
+        }
+
+        val userRole = roleRepository.findByName(UserRole.USER.toString())
+            ?: throw IllegalStateException("Role USER not found")
+
+        val user = User(
+            email = email,
+            username = username,
+            password = passwordEncoder.encode(rawPassword),
+            accountLocked = false,
+            enabled = true, // TODO (ЭТО ДЛЯ ТЕСТОВ, ПОТОМ ПОМЕНЯТЬ)
+            roles = mutableSetOf(userRole),
+            vkId = null,
+            provider = Provider.PASSWORD,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now(),
+        )
+        return userRepository.save(user)
+    }
+
+    override fun registerVkUser(userRequest: UserRequestDTO, vkId: Long): User {
+        if (userRepository.findByVkId(vkId) != null) {
+            throw GlobalExceptionHandler.UserAlreadyExistsException("VK ID already exists INVALID_VK_ID")
+        }
+
+        val email = userRequest.email.ifEmpty { "${vkId}@vk.com" }
+
+        val userRole = roleRepository.findByName(UserRole.USER.toString())
+            ?: throw GlobalExceptionHandler.UserAlreadyExistsException("Role USER not found")
+
+        val user = User(
+            email = email,
+            username = userRequest.username,
+            provider = Provider.VK,
+            enabled = true, // VK по умолчанию активированы
+            accountLocked = false,
+            roles = mutableSetOf(userRole),
+            vkId = vkId,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now(),
+            password = null.toString()
+        )
+        userRepository.save(user)
+
+        return user
+    }
+
+    override fun findByEmail(email: String): User? = userRepository.findByEmail(email)
+
+    override fun findByUsername(username: String): User? = userRepository.findByUsername(username)
+
+    override fun findById(id: Long): User? = userRepository.findById(id).orElse(null)
+
+    override fun findByVkId(vkId: Long): User? = userRepository.findByVkId(vkId)
+
+    override fun enableUser(user: User) {
+        user.enabled = true
+        userRepository.save(user)
+    }
+
+    override fun updatePassword(user: User, newPassword: String) {
+        if (user.provider != Provider.PASSWORD) {
+            throw IllegalStateException("VK User does not have a password")
+        }
+        user.password = passwordEncoder.encode(newPassword)
+        userRepository.save(user)
+    }
+}
+```
+
+=== Файл: service/impl/AuthenticationServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.impl
+
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.config.JwtConfig
+import ru.animaltracker.authservice.dto.AuthRequestDTO
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.service.interfaces.AuthenticationService
+import ru.animaltracker.authservice.service.JwtService
+import ru.animaltracker.authservice.service.interfaces.TokenService
+import ru.animaltracker.authservice.service.interfaces.UserService
+import java.time.LocalDateTime
+
+@Service
+class AuthenticationServiceImpl(
+    private val authenticationManager: AuthenticationManager,
+    private val userService: UserService,
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
+    private val tokenService: TokenService,
+    private val jwtConfig: ru.animaltracker.authservice.config.JwtConfig
+) : AuthenticationService {
+
+    override fun authenticate(request: AuthRequestDTO, response: HttpServletResponse): AuthResponseDTO {
+
+        val identifier: String = request.indentifier
+        val userEntity: User = if (identifier.contains("@")) {
+            userService.findByEmail(identifier)
+        } else {
+            userService.findByUsername(identifier)
+        } ?: throw UsernameNotFoundException("User with identifier '$identifier' not found")
+
+        val auth = authenticationManager.authenticate(
+            UsernamePasswordAuthenticationToken(
+                userEntity.username,
+                request.password,
+            )
+        )
+        val user = auth.principal as User
+
+        val accessToken: String = jwtService.generateAccessToken(user)
+        val refreshToken: String = jwtService.generateRefreshToken(user)
+
+        response.addCookie(jwtService.createHttpOnlyCookie(CookieName.ACCESS_TOKEN.name, accessToken))
+        response.addCookie(jwtService.createHttpOnlyCookie(CookieName.REFRESH_TOKEN.name, refreshToken))
+
+        tokenService.saveRefreshToken(user, refreshToken)
+
+        return AuthResponseDTO(
+            accessToken = accessToken,
+            issuedAt = LocalDateTime.now(),
+            accessExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.expiration),
+            refreshToken = refreshToken,
+            refreshExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.refreshExpiration)
+        )
+    }
+}
+```
+
+=== Файл: service/impl/PasswordRecoveryServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.impl
+
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.service.PasswordRecoveryHelper
+import ru.animaltracker.authservice.service.interfaces.PasswordRecoveryService
+import ru.animaltracker.authservice.service.interfaces.UserService
+
+@Service
+class PasswordRecoveryServiceImpl(
+    private val userService: UserService,
+    private val passwordRecoveryHelper: ru.animaltracker.authservice.service.PasswordRecoveryHelper
+) : PasswordRecoveryService {
+
+    override fun initiatePasswordRecovery(identifier: String) {
+        val user: User = if (identifier.contains("@")) {
+            userService.findByEmail(identifier)
+                ?: throw GlobalExceptionHandler.UserNotFoundException("User with email $identifier not found")
+        } else {
+            userService.findByUsername(identifier)
+                ?: throw GlobalExceptionHandler.UserNotFoundException("User with username $identifier not found")
+        }
+        val recoveryToken: String = passwordRecoveryHelper.generateAndSaveRecoveryToken(user)
+        passwordRecoveryHelper.sendRecoveryEmail(user, recoveryToken)
+    }
+
+    override fun resetPassword(token: String, newPassword: String) {
+        passwordRecoveryHelper.resetPassword(token, newPassword)
+    }
+}
+```
+
+=== Файл: service/impl/ActivationServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.impl
+
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.entity.MailToken
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.MailTokenType
+import ru.animaltracker.authservice.repository.MailTokenRepository
+import ru.animaltracker.authservice.config.EmailConfig
+import ru.animaltracker.authservice.dto.UserCreatedEvent
+import ru.animaltracker.authservice.enums.EmailTemplateName
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+//import ru.animaltracker.authservice.kafka.KafkaProducer
+import ru.animaltracker.authservice.service.interfaces.ActivationService
+import ru.animaltracker.authservice.service.EmailService
+import ru.animaltracker.authservice.service.MessageProducerService
+import ru.animaltracker.authservice.service.interfaces.UserService
+import java.security.SecureRandom
+import java.time.LocalDateTime
+
+@Service
+class ActivationServiceImpl(
+    private val mailTokenRepository: MailTokenRepository,
+    private val userService: UserService,
+    private val emailService: EmailService,
+    private val emailConfig: EmailConfig,
+    private val messageProducerService: MessageProducerService
+) : ActivationService {
+
+    override fun generateAndSaveActivationToken(user: User): String {
+        deactivateExistingTokens(user, MailTokenType.CONFIRM)
+
+        val generatedToken = generateActivationCode()
+        val mailToken = MailToken(
+            token = generatedToken,
+            createdAt = LocalDateTime.now(),
+            expiresAt = LocalDateTime.now().plusSeconds(emailConfig.activationTokenExpiration),
+            user = user,
+            tokenType = MailTokenType.CONFIRM
+        )
+        mailTokenRepository.save(mailToken)
+        return generatedToken
+    }
+
+    override fun activateAccount(token: String) {
+        val savedMailToken: MailToken = mailTokenRepository.findByToken(token)
+            ?: throw GlobalExceptionHandler.InvalidTokenException("Invalid activation token")
+
+        if (LocalDateTime.now().isAfter(savedMailToken.expiresAt) || !savedMailToken.enabled) {
+            throw GlobalExceptionHandler.InvalidTokenException("Activation token expired or already used")
+        }
+
+        val user = savedMailToken.user
+        userService.enableUser(user)
+        savedMailToken.validatedAt = LocalDateTime.now()
+        savedMailToken.enabled = false
+        mailTokenRepository.save(savedMailToken)
+
+    }
+
+    override fun sendActivationEmail(user: User, token: String) {
+        emailService.sendEmail(
+            to = user.email,
+            username = user.username,
+            emailTemplate = EmailTemplateName.ACTIVATE_ACCOUNT,
+            confirmationUrl = emailConfig.activationUrl,
+            activationCode = token,
+            subject = "Account Activation"
+        )
+    }
+
+    private fun deactivateExistingTokens(user: User, tokenType: MailTokenType) {
+        val activeTokens = mailTokenRepository.findByUserIdAndEnabledAndTokenType(
+            userId = user.id!!,
+            enabled = true,
+            tokenType = tokenType
+        )
+        activeTokens.forEach { it.enabled = false }
+        mailTokenRepository.saveAll(activeTokens)
+    }
+
+    private fun generateActivationCode(length: Int = 6): String {
+//        val secureRandom = SecureRandom()
+//        return (1..length)
+//            .map { secureRandom.nextInt(10) }
+//            .joinToString("")
+        return "777777"
+    }
+}
+```
+
+=== Файл: service/impl/TokenServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.impl
+
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.config.JwtConfig
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.entity.Token
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.enums.CookieName
+import ru.animaltracker.authservice.enums.TokenType
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+import ru.animaltracker.authservice.repository.TokenRepository
+import ru.animaltracker.authservice.service.JwtService
+import ru.animaltracker.authservice.service.interfaces.TokenService
+import ru.animaltracker.authservice.service.interfaces.UserService
+import java.time.LocalDateTime
+
+@Service
+class TokenServiceImpl(
+    private val tokenRepository: TokenRepository,
+    private val userService: UserService,
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
+    private val jwtConfig: ru.animaltracker.authservice.config.JwtConfig,
+) : TokenService {
+
+    override fun saveRefreshToken(user: User, refreshToken: String) {
+        val token = Token(
+            user = user,
+            token = refreshToken,
+            tokenType = TokenType.REFRESH,
+            expired = false,
+            revoked = false,
+            created = LocalDateTime.now()
+        )
+        tokenRepository.save(token)
+    }
+
+    override fun revokeRefreshToken(token: String) {
+        val storedToken = tokenRepository.findByToken(token)
+        storedToken?.let {
+            it.revoked = true
+            it.expired = true
+            tokenRepository.save(it)
+        }
+    }
+
+    override fun findRefreshToken(token: String): Token? = tokenRepository.findByToken(token)
+
+    override fun revokeAllRefreshTokens(user: User) {
+        val tokens = tokenRepository.findValidRefreshTokensByUser(user.id!!)
+        tokens.forEach {
+            it.revoked = true
+            it.expired = true
+        }
+        tokenRepository.saveAll(tokens)
+    }
+
+    override fun refreshToken(refreshToken: String, response: HttpServletResponse): AuthResponseDTO {
+        if (!jwtService.isRefreshTokenValid(refreshToken)) {
+            throw GlobalExceptionHandler.InvalidTokenException("Invalid or expired refresh token")
+        }
+
+        val userEmail: String = jwtService.extractUsername(refreshToken)
+            ?: throw GlobalExceptionHandler.InvalidTokenException("Invalid refresh token")
+
+        val user: User = userService.findByEmail(userEmail)
+            ?: throw GlobalExceptionHandler.InvalidTokenException("User not found")
+
+        revokeRefreshToken(refreshToken)
+        val newRefreshToken: String = jwtService.generateRefreshToken(user)
+        saveRefreshToken(user, newRefreshToken)
+
+        val newAccessToken: String = jwtService.generateAccessToken(user)
+
+        response.addCookie(jwtService.createHttpOnlyCookie(CookieName.ACCESS_TOKEN.name, newAccessToken))
+        response.addCookie(jwtService.createHttpOnlyCookie(CookieName.REFRESH_TOKEN.name, newRefreshToken))
+
+        return AuthResponseDTO(
+            accessToken = newAccessToken,
+            issuedAt = LocalDateTime.now(),
+            accessExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.expiration),
+            refreshToken = newRefreshToken,
+            refreshExpiresAt = LocalDateTime.now().plusSeconds(jwtConfig.refreshExpiration)
+        )
+    }
+}
+```
+
+=== Файл: service/impl/RegistrationServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.impl
+
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.dto.UserCreatedEvent
+//import ru.animaltracker.authservice.kafka.KafkaProducer
+import ru.animaltracker.authservice.service.interfaces.ActivationService
+import ru.animaltracker.authservice.service.interfaces.RegistrationService
+import ru.animaltracker.authservice.service.interfaces.UserService
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.dto.UserResponseDTO
+import ru.animaltracker.authservice.service.MessageProducerService
+import java.time.LocalDateTime
+
+@Service
+class RegistrationServiceImpl(
+    private val userService: UserService,
+    private val activationService: ActivationService,
+    private val messageProducerService: MessageProducerService
+) : RegistrationService {
+
+    override fun register(request: UserRequestDTO): UserResponseDTO {
+
+        val rawPassword = request.password ?: throw IllegalArgumentException("Password is required")
+
+        val user = userService.registerUser(
+            email = request.email,
+            username = request.username,
+            rawPassword = rawPassword
+        )
+
+        val activationToken = activationService.generateAndSaveActivationToken(user)
+
+        activationService.sendActivationEmail(user, activationToken)
+        val kal = UserCreatedEvent(
+            user.username,
+            user.email,
+        )
+        messageProducerService.sendMessage("user-created", kal)
+        // TODO( ДЛЯ ТЕСТОВ ИЗМЕНИТЬ ЛОГИКУ)...
+
+        return UserResponseDTO(
+            role = user.roles,
+            provider = user.provider,
+            enabled = user.enabled,
+            createdAt = LocalDateTime.now(),
+            updatedAt = LocalDateTime.now()
+        )
+    }
+
+}
+```
+
+=== Файл: service/interfaces/AuthenticationService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.interfaces
+
+import jakarta.servlet.http.HttpServletResponse
+import ru.animaltracker.authservice.dto.AuthRequestDTO
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+
+interface AuthenticationService {
+    fun authenticate(request: AuthRequestDTO, response: HttpServletResponse): AuthResponseDTO
+}
+```
+
+=== Файл: service/interfaces/ActivationService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.interfaces
+
+import ru.animaltracker.authservice.entity.User
+
+interface ActivationService {
+    fun generateAndSaveActivationToken(user: User): String
+    fun activateAccount(token: String)
+    fun sendActivationEmail(user: User, token: String)
+}
+```
+
+=== Файл: service/interfaces/UserService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.interfaces
+
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.dto.UserResponseDTO
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.entity.User
+import ru.animaltracker.authservice.exception.GlobalExceptionHandler
+
+interface UserService {
+
+    fun saveUser(user: User): User
+    fun saveRole(role: Role): Role
+    fun getUsers(): List<User>
+
+    @Throws(GlobalExceptionHandler.UserAlreadyExistsException::class, IllegalStateException::class)
+    fun registerUser(email: String, username: String, rawPassword: String): User
+
+    @Throws(GlobalExceptionHandler.UserAlreadyExistsException::class, IllegalStateException::class)
+    fun registerVkUser(userRequest: UserRequestDTO, vkId: Long): User
+
+    fun findByEmail(email: String): User?
+    fun findByUsername(username: String): User?
+    fun findById(id: Long): User?
+    fun findByVkId(vkId: Long): User?
+    fun enableUser(user: User)
+    fun updatePassword(user: User, newPassword: String)
+}
+```
+
+=== Файл: service/interfaces/PasswordRecoveryService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.interfaces
+
+interface PasswordRecoveryService {
+    fun initiatePasswordRecovery(identifier: String)
+    fun resetPassword(token: String, newPassword: String)
+}
+```
+
+=== Файл: service/interfaces/RegistrationService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.interfaces
+
+import ru.animaltracker.authservice.dto.UserRequestDTO
+import ru.animaltracker.authservice.dto.UserResponseDTO
+
+
+interface RegistrationService {
+    fun register(request: UserRequestDTO): UserResponseDTO
+}
+```
+
+=== Файл: service/interfaces/TokenService.kt ===
+```kotlin
+package ru.animaltracker.authservice.service.interfaces
+
+import jakarta.servlet.http.HttpServletResponse
+import ru.animaltracker.authservice.dto.AuthResponseDTO
+import ru.animaltracker.authservice.entity.Token
+import ru.animaltracker.authservice.entity.User
+
+interface TokenService {
+    fun saveRefreshToken(user: User, refreshToken: String)
+    fun revokeRefreshToken(token: String)
+    fun findRefreshToken(token: String): Token?
+    fun revokeAllRefreshTokens(user: User)
+    fun refreshToken(refreshToken: String, response: HttpServletResponse): AuthResponseDTO
+}
+```
+
+=== Файл: exception/ExceptionResponse.kt ===
+```kotlin
+package ru.animaltracker.authservice.exception
+
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class ExceptionResponse(
+    var businessErrorCode: Int? = null,
+    var businessErrorDescription : String? = null,
+    var error : String? = null,
+    var validationErrors: Set<String>? = null,
+    var errors: Map<String, String>? = null,
+)
+```
+
+=== Файл: exception/GlobalExceptionHandler.kt ===
+```kotlin
+package ru.animaltracker.authservice.exception
+
+import jakarta.mail.MessagingException
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.LockedException
+import org.springframework.web.bind.MethodArgumentNotValidException
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import ru.animaltracker.authservice.enums.BusinessErrorCodes
+
+@RestControllerAdvice
+class GlobalExceptionHandler {
+
+    class UserAlreadyExistsException(message: String) : RuntimeException(message)
+    class InvalidTokenException(message: String) : RuntimeException(message)
+    class UserNotFoundException(message: String) : RuntimeException(message)
+
+    @ExceptionHandler(InvalidTokenException::class)
+    fun handleInvalidTokenException(exp: InvalidTokenException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorCode = ru.animaltracker.authservice.enums.BusinessErrorCodes.INVALID_TOKEN.code,
+                    businessErrorDescription = ru.animaltracker.authservice.enums.BusinessErrorCodes.INVALID_TOKEN.description,
+                    error = exp.message
+                )
+            )
+
+    @ExceptionHandler(UserNotFoundException::class)
+    fun handleUserNotFoundException(exp: UserNotFoundException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorCode = ru.animaltracker.authservice.enums.BusinessErrorCodes.USER_NOT_FOUND.code,
+                    businessErrorDescription = ru.animaltracker.authservice.enums.BusinessErrorCodes.USER_NOT_FOUND.description,
+                    error = exp.message
+                )
+            )
+    
+    @ExceptionHandler(UserAlreadyExistsException::class)
+    fun handleException (exp: UserAlreadyExistsException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorCode = ru.animaltracker.authservice.enums.BusinessErrorCodes.USER_ALREADY_EXISTS.code,
+                    businessErrorDescription = ru.animaltracker.authservice.enums.BusinessErrorCodes.USER_ALREADY_EXISTS.description,
+                    error = "User with this email / username already exists"
+                )
+            )
+
+    @ExceptionHandler(LockedException::class)
+    fun handleException (exp: LockedException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorCode = ru.animaltracker.authservice.enums.BusinessErrorCodes.ACCOUNT_LOCKED.code,
+                    businessErrorDescription = ru.animaltracker.authservice.enums.BusinessErrorCodes.ACCOUNT_LOCKED.description,
+                    error = exp.message
+                )
+            )
+    @ExceptionHandler(DisabledException::class)
+    fun handleException (exp: DisabledException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorCode = ru.animaltracker.authservice.enums.BusinessErrorCodes.ACCOUNT_DISABLED.code,
+                    businessErrorDescription = ru.animaltracker.authservice.enums.BusinessErrorCodes.ACCOUNT_DISABLED.description,
+                    error = exp.message
+                )
+            )
+
+    @ExceptionHandler(BadCredentialsException::class)
+    fun handleException (exp: BadCredentialsException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorCode = ru.animaltracker.authservice.enums.BusinessErrorCodes.BAD_CREDENTIALS.code,
+                    businessErrorDescription = ru.animaltracker.authservice.enums.BusinessErrorCodes.BAD_CREDENTIALS.description,
+                    error = ru.animaltracker.authservice.enums.BusinessErrorCodes.BAD_CREDENTIALS.description
+                )
+            )
+
+    @ExceptionHandler(MessagingException::class)
+    fun handleException (exp: MessagingException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    error = exp.message,
+                )
+            )
+
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handleException (exp: MethodArgumentNotValidException): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> {
+
+        val errors: MutableSet<String> = HashSet()
+        exp.bindingResult.fieldErrors.forEach { fieldError ->
+            fieldError.defaultMessage?.let { errors.add(it) }
+        }
+
+        return         ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    validationErrors = errors,
+                )
+            )
+    }
+
+    @ExceptionHandler(Exception::class)
+    fun handleException (exp: Exception): ResponseEntity<ru.animaltracker.authservice.exception.ExceptionResponse> =
+        ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(
+                ru.animaltracker.authservice.exception.ExceptionResponse(
+                    businessErrorDescription = "Very bad(",
+                    error = exp.message
+                )
+            )
+}
+```
+
+=== Файл: entity/User.kt ===
+```kotlin
+package ru.animaltracker.authservice.entity
+
+import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import org.springframework.security.core.GrantedAuthority
+import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.security.core.userdetails.UserDetails
+import ru.animaltracker.authservice.enums.Provider
+import java.security.Principal
+import java.time.LocalDateTime
+
+@Entity
+@Table(name = "users")
+@EntityListeners(AuditingEntityListener::class) // Чтобы дата создания и обновления сразу вбивались при создании юзера
+class User(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // IDENTITY - По мере заполнения просто инкремент id
+    var id: Long? = null,
+
+    @Column(nullable = false, unique = true) var email: String,
+
+    @Column(nullable = false, unique = true)
+    private var username: String,
+
+    @Column(nullable = true)
+    private var password: String,
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    var roles: MutableSet<Role> = mutableSetOf(),
+
+    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
+    private var tokens: MutableSet<Token> = mutableSetOf(),
+
+    @Column(nullable = true) var vkId: Long? = null,
+
+    @Column(nullable = false) var provider: Provider,
+
+    @Column(nullable = false) var enabled: Boolean,
+
+    @Column(nullable = false)
+    private var accountLocked: Boolean,
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false) var createdAt: LocalDateTime? = null,
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private var updatedAt: LocalDateTime? = null
+
+) : UserDetails, Principal{
+    override fun getAuthorities(): MutableCollection<out GrantedAuthority> = roles.map { SimpleGrantedAuthority(it.name) }.toMutableSet()
+
+    override fun isEnabled(): Boolean = enabled
+
+    override fun isCredentialsNonExpired(): Boolean = true
+
+    override fun isAccountNonExpired(): Boolean = true
+
+    override fun isAccountNonLocked(): Boolean = !accountLocked
+
+    override fun getPassword(): String = password
+
+    override fun getUsername(): String = username
+
+    override fun getName(): String = username
+
+    fun setPassword(newPassword: String) {
+        this.password = newPassword
+    }
+}
+```
+
+=== Файл: entity/Token.kt ===
+```kotlin
+package ru.animaltracker.authservice.entity
+
+import jakarta.persistence.*
+import ru.animaltracker.authservice.enums.TokenType
+import java.time.LocalDateTime
+
+@Entity
+class Token (
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private var id : Long? = null,
+
+    @Column(unique = true)
+    private var token: String,
+
+    @Enumerated(EnumType.STRING)
+    var tokenType: TokenType = TokenType.REFRESH,
+
+    var revoked: Boolean,
+
+    var expired: Boolean,
+
+    var created: LocalDateTime = LocalDateTime.now(),
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    var user: User
+    )
+
+```
+
+=== Файл: entity/Role.kt ===
+```kotlin
+package ru.animaltracker.authservice.entity
+
+import com.fasterxml.jackson.annotation.JsonIgnore
+import jakarta.persistence.*
+import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import java.time.LocalDateTime
+
+@Entity
+@EntityListeners(AuditingEntityListener::class)
+class Role (
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private var id: Long? = null,
+
+    @Column(unique = true, nullable = false)
+    var name: String,
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = [CascadeType.ALL], mappedBy = "roles")
+    @JsonIgnore
+    private var users: MutableList<User> = mutableListOf(),
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private var createdAt: LocalDateTime? = null,
+
+    @LastModifiedDate
+    @Column(name = "updated_at", insertable = false)
+    private var updatedAt: LocalDateTime? = null,
+
+)
+```
+
+=== Файл: entity/MailToken.kt ===
+```kotlin
+package ru.animaltracker.authservice.entity
+
+import jakarta.persistence.*
+import ru.animaltracker.authservice.enums.MailTokenType
+import java.time.LocalDateTime
+
+@Entity
+class MailToken(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long? = null,
+    var token: String,
+    @Enumerated(EnumType.STRING)
+    var tokenType: MailTokenType,
+    var expiresAt: LocalDateTime,
+    var createdAt: LocalDateTime,
+    var validatedAt: LocalDateTime? = null,
+    var enabled: Boolean = true,
+    @ManyToOne
+    @JoinColumn(name = "userId", nullable = false) var user: User
+)
+```
+
+=== Файл: dto/UserRequestDTO.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Size
+import org.springframework.validation.annotation.Validated
+
+@Validated
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class UserRequestDTO(
+
+    @field:NotEmpty(message = "username cannot be empty")
+    @field:NotBlank(message = "username cannot has blank")
+    var username: String,
+
+    @field:Email(message = "email is not formatted")
+    @field:NotEmpty(message = "email cannot be empty")
+    @field:NotBlank(message = "email cannot has blank")
+    var email: String,
+
+    var password: String?
+)
+```
+
+=== Файл: dto/AuthResponseDTO.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import java.time.Instant
+import java.time.LocalDateTime
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class AuthResponseDTO (
+    var accessToken: String,
+    var accessExpiresAt: LocalDateTime? = null,
+    var issuedAt: LocalDateTime? = null,
+    var refreshToken: String? = null,
+    var refreshExpiresAt: LocalDateTime? = null,
+)
+```
+
+=== Файл: dto/UserCreatedEvent.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+
+data class UserCreatedEvent(
+    val username: String,
+    val email: String,
+)
+```
+
+=== Файл: dto/PasswordResetRequestDTO.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import jakarta.validation.constraints.NotBlank
+import org.springframework.validation.annotation.Validated
+
+@Validated
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class PasswordResetRequestDTO(
+    @field:NotBlank(message = "Token must not be blank")
+    val token: String,
+
+    @field:NotBlank(message = "New password must not be blank")
+    val newPassword: String
+)
+```
+
+=== Файл: dto/AuthRequestDTO.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import jakarta.validation.constraints.Email
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.NotEmpty
+import jakarta.validation.constraints.Size
+import org.springframework.validation.annotation.Validated
+
+@Validated
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class AuthRequestDTO(
+    @field:NotBlank
+    @field:NotEmpty
+    var indentifier: String,
+
+    @field:NotEmpty(message = "password cannot be empty")
+    @field:NotBlank(message = "password cannot has blank")
+    @field:Size(min = 4, message = "password should be 4 chars long minimum")
+    var password: String
+)
+```
+
+=== Файл: dto/UserResponseDTO.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+import com.fasterxml.jackson.databind.PropertyNamingStrategies
+import com.fasterxml.jackson.databind.annotation.JsonNaming
+import ru.animaltracker.authservice.entity.Role
+import ru.animaltracker.authservice.enums.Provider
+import ru.animaltracker.authservice.enums.UserRole
+import java.time.LocalDateTime
+
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy::class)
+data class UserResponseDTO(
+    var role: MutableSet<Role>, // Тут поменять
+    var provider: Provider,
+    var enabled: Boolean,
+    var vkId: Long? = null,
+    var createdAt: LocalDateTime,
+    var updatedAt: LocalDateTime? = null,
+    )
+```
+
+=== Файл: dto/PasswordRecoveryRequestDTO.kt ===
+```kotlin
+package ru.animaltracker.authservice.dto
+import jakarta.validation.constraints.NotBlank
+import org.springframework.validation.annotation.Validated
+
+
+@Validated
+data class PasswordRecoveryRequestDTO(
+    @field:NotBlank(message = "Identifier must not be blank")
+    val identifier: String
+)
+```
+
+=== Файл: security/JwtFilter.kt ===
+```kotlin
+package ru.animaltracker.authservice.security
+
+import io.jsonwebtoken.io.IOException
+import jakarta.servlet.FilterChain
+import jakarta.servlet.ServletException
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.springframework.http.HttpHeaders
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
+import org.springframework.stereotype.Service
+import org.springframework.web.filter.OncePerRequestFilter
+import ru.animaltracker.authservice.repository.TokenRepository
+import ru.animaltracker.authservice.service.JwtService
+@Service
+class JwtFilter(
+    private val jwtService: ru.animaltracker.authservice.service.JwtService,
+    private val userDetailsService: UserDetailsService,
+    private val tokenRepository: TokenRepository
+): OncePerRequestFilter() {
+    @Throws(ServletException::class, IOException::class)
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
+        if (request.servletPath.contains("/api/auth")) {
+            filterChain.doFilter(request, response)
+            return
+        }
+        val authHeader = request.getHeader(HttpHeaders.AUTHORIZATION)
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response)
+            return
+        }
+        val jwt = authHeader.substring("Bearer ".length)
+        val username = jwtService.extractUsername(jwt)
+
+        // Добавлена проверка что token живет и что не исключен
+        val token = tokenRepository.findByToken(jwt)
+        val isTokenValid = token?.let { !it.expired && !it.revoked } ?: false
+
+        if (username != null &&
+            SecurityContextHolder.getContext().authentication == null) {
+
+            val userDetails: UserDetails = userDetailsService.loadUserByUsername(username)
+            if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid) {
+                val authToken = UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.authorities)
+                authToken.details = WebAuthenticationDetailsSource()
+                    .buildDetails(request)
+                SecurityContextHolder.getContext().authentication = authToken
+            }
+        }
+        filterChain.doFilter(request, response)
+    }
+
+}
+```
+
+=== Файл: security/UserDetailsServiceImpl.kt ===
+```kotlin
+package ru.animaltracker.authservice.security
+
+import jakarta.transaction.Transactional
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.repository.UserRepository
+
+@Service
+class UserDetailsServiceImpl(
+    private val userRepository: UserRepository
+): UserDetailsService{
+
+    @Transactional
+    @Throws(UsernameNotFoundException::class)
+    override fun loadUserByUsername(username: String): UserDetails {
+        val user = userRepository.findByUsername(username)
+            ?: throw UsernameNotFoundException("User with email $username not found")
+        return user
+    }
+}
+```
+
+=== Файл: config/EmailConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@Component
+@ConfigurationProperties(prefix = "mailing")
+class EmailConfig {
+    lateinit var activationUrl: String
+    lateinit var emailAddressSender: String
+    var activationTokenExpiration: Long = 60
+}
+```
+
+=== Файл: config/KafkaConfigProps.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@ConfigurationProperties(prefix = "spring.kafka")
+data class KafkaConfigProps(
+    val bootstrapServers: String = "",
+    val producer: ProducerProps = ProducerProps(),
+    val consumer: ConsumerProps = ConsumerProps()
+) {
+    data class ProducerProps(
+        val keySerializer: String = "",
+        val valueSerializer: String = ""
+    )
+
+    data class ConsumerProps(
+        val keyDeserializer: String = "",
+        val valueDeserializer: String = "",
+        val groupId: String = "",
+        val autoOffsetReset: String = "",
+        val properties: Map<String, String> = emptyMap()
+    )
+}
+```
+
+=== Файл: config/BeansConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import org.springframework.security.crypto.password.PasswordEncoder
+
+@Configuration
+class BeansConfig (
+    val userDetailsService: UserDetailsService
+){
+
+    @Bean
+    fun authenticationProvider(): AuthenticationProvider{
+        val authProvider = DaoAuthenticationProvider()
+        authProvider.setUserDetailsService(userDetailsService)
+        authProvider.setPasswordEncoder(passwordEncoder())
+        return authProvider
+    }
+    @Bean
+    fun authenticationManager(
+        config: AuthenticationConfiguration
+    ) : AuthenticationManager =
+        config.getAuthenticationManager()
+
+    @Bean
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+}
+```
+
+=== Файл: config/VkApiConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@Component
+@ConfigurationProperties(prefix = "spring.security.oauth2.client")
+class VkApiConfig {
+    lateinit var registration: Registration
+    lateinit var provider: Provider
+
+    data class Registration(
+        var vk: ClientRegistration
+    )
+
+    data class Provider(
+        var vk: ClientProvider
+    )
+
+    data class ClientRegistration(
+        var clientName: String = "",
+        var clientId: String = "",
+        var clientSecret: String = "",
+        var redirectUri: String = "",
+        var authorizationGrantType: String = "",
+        var clientAuthenticationMethod: String = "",
+        var scope: List<String> = listOf(),
+        var provider: String = ""
+    )
+
+    data class ClientProvider(
+        var authorizationUri: String = "",
+        var tokenUri: String = "",
+        var userInfoUri: String = "",
+        var userNameAttribute: String = ""
+    )
+}
+```
+
+=== Файл: config/KafkaProducerConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.apache.kafka.clients.producer.ProducerConfig
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
+import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.core.ProducerFactory
+
+@Configuration
+class KafkaProducerConfig {
+
+    @Bean
+    fun producerFactory(): ProducerFactory<String, String> {
+        val configProps = mapOf(
+            ProducerConfig.BOOTSTRAP_SERVERS_CONFIG to "kafka:9092",
+            ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringSerializer",
+            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG to "org.apache.kafka.common.serialization.StringSerializer"
+        )
+        return DefaultKafkaProducerFactory(configProps)
+    }
+
+    @Bean
+    fun kafkaTemplate(): KafkaTemplate<String, String> {
+        return KafkaTemplate(producerFactory())
+    }
+}
+```
+
+=== Файл: config/JwtConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import jakarta.annotation.PostConstruct
+import org.slf4j.LoggerFactory
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@Component
+@ConfigurationProperties(prefix = "spring.security.jwt")
+class JwtConfig {
+    lateinit var secretKey: String
+    var expiration: Long = 0
+    var refreshExpiration: Long = 0
+}
+```
+
+=== Файл: config/PublicRoutesConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.stereotype.Component
+
+@Component
+@ConfigurationProperties(prefix = "spring")
+class PublicRoutesConfig {
+    lateinit var publicUrls: List<String>
+}
+```
+
+=== Файл: config/WebConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.servlet.config.annotation.CorsRegistry
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
+
+@Configuration
+class WebConfig {
+
+    @Bean
+    fun restTemplate(): RestTemplate = RestTemplate()
+
+    @Bean
+    fun corsConfigurer(): WebMvcConfigurer {
+        return object : WebMvcConfigurer {
+            override fun addCorsMappings(registry: CorsRegistry) {
+                registry.addMapping("/**")
+                    .allowedOrigins("*")
+                    .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                    .allowedHeaders("*")
+            }
+        }
+    }
+}
+```
+
+=== Файл: config/OpenApiConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import io.swagger.v3.oas.models.OpenAPI
+import io.swagger.v3.oas.models.info.Info
+import io.swagger.v3.oas.models.servers.Server
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.web.util.UriComponentsBuilder
+
+@Configuration
+class OpenApiConfig {
+
+    @Bean
+    fun customOpenAPI(): OpenAPI {
+        return OpenAPI()
+            .servers(listOf(Server().url("http://localhost:80")))
+            .info(
+                Info()
+                    .title("Auth Service API")
+                    .description("API for hadle register/login/oauth2")
+                    .version("v1.0")
+            )
+    }
+}
+```
+
+=== Файл: config/SecurityConfig.kt ===
+```kotlin
+package ru.animaltracker.authservice.config
+
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.security.authentication.AuthenticationProvider
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
+import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.web.SecurityFilterChain
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+import ru.animaltracker.authservice.security.JwtFilter
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(securedEnabled = true)
+class SecurityConfig(
+    private val jwtAuthFilter: JwtFilter,
+    private val authenticationProvider: AuthenticationProvider,
+    private val publicRoutesConfig: PublicRoutesConfig
+) {
+    @Bean
+    @Throws(Exception::class)
+    fun securityFilterChain(http: HttpSecurity): SecurityFilterChain {
+        http
+            .csrf { it.disable() }
+            .sessionManagement { session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            }
+            .authorizeHttpRequests { authorize ->
+                publicRoutesConfig.publicUrls.forEach { url ->
+                    authorize.requestMatchers(url).permitAll()
+                }
+
+                authorize.anyRequest().authenticated()
+            }
+            .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
+        return http.build()
+    }
+}
+```
+
+=== Файл: repository/MailTokenRepository.kt ===
+```kotlin
+package ru.animaltracker.authservice.repository
+
+import org.springframework.data.jpa.repository.JpaRepository
+import ru.animaltracker.authservice.entity.MailToken
+import ru.animaltracker.authservice.enums.MailTokenType
+
+interface MailTokenRepository: JpaRepository<MailToken, Long> {
+    fun findByToken(token: String): MailToken?
+    fun findByUserId(userId: Long): List<MailToken>
+    fun findByUserIdAndEnabledAndTokenType(
+        userId: Long,
+        enabled: Boolean,
+        tokenType: MailTokenType
+    ): List<MailToken>
+}
+```
+
+=== Файл: repository/TokenRepository.kt ===
+```kotlin
+package ru.animaltracker.authservice.repository
+
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import ru.animaltracker.authservice.entity.Token
+import ru.animaltracker.authservice.enums.TokenType
+
+interface TokenRepository : JpaRepository<Token, Long> {
+    @Query(
+        value = """
+        select t from Token t 
+        where t.user.email = :email and t.expired = false and t.revoked = false
+        """
+    )
+    fun findAllValidTokenByUserEmail (email: String):Set<Token>
+
+    @Query(
+        value = """
+        select t from Token t inner join User u
+        on t.user.id = u.id
+        where u.id = :id and t.expired = false and t.revoked = false
+        """
+    )
+    fun findAllValidTokenByUser (id: Long):Set<Token>
+
+    @Query("SELECT t FROM Token t " +
+            "WHERE t.user.id = :userId AND t.expired = false AND t.revoked = false AND t.tokenType = 'REFRESH'")
+    fun findValidRefreshTokensByUser(userId: Long): Set<Token>
+
+    fun findByToken (token: String): Token?
+}
+```
+
+=== Файл: repository/UserRepository.kt ===
+```kotlin
+package ru.animaltracker.authservice.repository
+
+import org.springframework.data.jpa.repository.EntityGraph
+import org.springframework.data.jpa.repository.JpaRepository
+import ru.animaltracker.authservice.entity.User
+
+interface UserRepository: JpaRepository<User, Long> {
+    @EntityGraph(attributePaths = ["roles"])
+    fun findByEmail(email: String): User?
+
+    @EntityGraph(attributePaths = ["roles"])
+    fun findByUsername(username: String): User?
+
+    @EntityGraph(attributePaths = ["roles"])
+    fun findByVkId(vkId: Long): User?
+}
+```
+
+=== Файл: repository/RoleRepository.kt ===
+```kotlin
+package ru.animaltracker.authservice.repository
+
+import org.springframework.data.jpa.repository.JpaRepository
+import ru.animaltracker.authservice.entity.Role
+
+
+interface RoleRepository: JpaRepository<Role, Long> {
+    fun findByName(name: String): Role?
+}
+```
+

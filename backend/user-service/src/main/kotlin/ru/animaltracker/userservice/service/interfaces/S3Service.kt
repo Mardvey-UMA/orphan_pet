@@ -1,6 +1,7 @@
 package ru.animaltracker.userservice.service.interfaces
 
 import org.springframework.web.multipart.MultipartFile
+import software.amazon.awssdk.services.s3.model.S3Object
 import java.time.Duration
 
 interface S3Service {

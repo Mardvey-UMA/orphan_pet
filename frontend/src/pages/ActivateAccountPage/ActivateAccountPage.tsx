@@ -30,15 +30,32 @@ export default function ActivateAccountPage() {
 				className={styles.activateForm}
 			>
 				<Form.Item
-					label='Код активации (token)'
 					name='token'
-					rules={[{ required: true, message: 'Введите код из почты' }]}
+					rules={[
+						{ required: true, message: 'Введите код из письма' },
+						{ len: 6, message: 'Код должен содержать 6 символов' },
+					]}
+					className={styles.otpFormItem}
 				>
-					<Input />
+					<div className={styles.otpContainer}>
+						<Input.OTP
+							length={6}
+							type='numeric'
+							formatter={str => str.toUpperCase()}
+							className={styles.otpInput}
+							autoFocus
+						/>
+					</div>
 				</Form.Item>
 
 				<Form.Item>
-					<Button type='primary' htmlType='submit' loading={isActivating}>
+					<Button
+						type='primary'
+						htmlType='submit'
+						loading={isActivating}
+						block
+						size='large'
+					>
 						Активировать
 					</Button>
 				</Form.Item>

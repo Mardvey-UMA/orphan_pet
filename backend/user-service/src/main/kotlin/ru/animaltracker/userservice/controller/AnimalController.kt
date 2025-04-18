@@ -2,6 +2,7 @@ package ru.animaltracker.userservice.controller
 
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -47,20 +48,20 @@ class AnimalController(
         return ResponseEntity.noContent().build()
     }
 
-    @PostMapping("/{animalId}/photos")
+    @PostMapping("/{animalId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
      fun uploadAnimalPhoto(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
-        @RequestParam file: MultipartFile
+        @RequestParam("file") file: MultipartFile
     ): ResponseEntity<S3FileResponse> {
         return ResponseEntity.ok(animalService.addAnimalPhoto(username, animalId, file))
     }
 
-    @PostMapping("/{animalId}/documents")
+    @PostMapping("/{animalId}/documents", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
      fun uploadAnimalDocument(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
-        @RequestParam file: MultipartFile,
+        @RequestParam("file") file: MultipartFile,
         @RequestParam type: String
     ): ResponseEntity<S3FileResponse> {
         return ResponseEntity.ok(animalService.addAnimalDocument(username, animalId, file, type))
@@ -75,12 +76,12 @@ class AnimalController(
         return ResponseEntity.ok(animalService.addStatusLog(username, animalId, request))
     }
 
-    @PostMapping("/{animalId}/status-logs/{statusLogId}/photos")
+    @PostMapping("/{animalId}/status-logs/{statusLogId}/photos", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
      fun uploadStatusLogPhoto(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable statusLogId: Long,
-        @RequestParam file: MultipartFile
+        @RequestParam("file") file: MultipartFile
     ): ResponseEntity<S3FileResponse> {
         return ResponseEntity.ok(animalService.addStatusLogPhoto(username, animalId, statusLogId, file))
     }
@@ -90,7 +91,7 @@ class AnimalController(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long,
         @PathVariable statusLogId: Long,
-        @RequestParam file: MultipartFile,
+        @RequestParam("file") file: MultipartFile,
         @RequestParam type: String
     ): ResponseEntity<S3FileResponse> {
         return ResponseEntity.ok(animalService.addStatusLogDocument(username, animalId, statusLogId, file, type))

@@ -33,7 +33,7 @@ class UserServiceImpl(
         request.city?.let { user.city = it }
         request.aboutMe?.let { user.aboutMe = it }
         val savedUser = userRepository.save(user)
-        return savedUser.toDto()
+        return savedUser.toDto(s3Service)
     }
 
     @Transactional(readOnly = true)
@@ -41,7 +41,7 @@ class UserServiceImpl(
         val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
 
-        return user.toDto()
+        return user.toDto(s3Service)
     }
 
     @Transactional

@@ -24,7 +24,6 @@ export default function LoginPage() {
 			navigate('/')
 		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
-				// Можем достать текст ошибки из error.response?.data или error.message
 				const serverMsg = error.response?.data?.error || error.message
 				message.error(`Ошибка авторизации: ${serverMsg}`)
 			} else {
@@ -59,7 +58,12 @@ export default function LoginPage() {
 				</Form.Item>
 
 				<Form.Item>
-					<Button type='primary' htmlType='submit' loading={isLoggingIn}>
+					<Button
+						type='primary'
+						htmlType='submit'
+						loading={isLoggingIn}
+						block // Делает кнопку на всю ширину
+					>
 						Войти
 					</Button>
 				</Form.Item>

@@ -1,19 +1,21 @@
 package ru.animaltracker.authservice.service.impl
 
 import org.springframework.stereotype.Service
+import ru.animaltracker.authservice.dto.UserCreatedEvent
 //import ru.animaltracker.authservice.kafka.KafkaProducer
 import ru.animaltracker.authservice.service.interfaces.ActivationService
 import ru.animaltracker.authservice.service.interfaces.RegistrationService
 import ru.animaltracker.authservice.service.interfaces.UserService
 import ru.animaltracker.authservice.dto.UserRequestDTO
 import ru.animaltracker.authservice.dto.UserResponseDTO
+import ru.animaltracker.authservice.service.MessageProducerService
 import java.time.LocalDateTime
 
 @Service
 class RegistrationServiceImpl(
     private val userService: UserService,
     private val activationService: ActivationService,
-    //private val kafkaProducer: KafkaProducer
+    private val messageProducerService: MessageProducerService
 ) : RegistrationService {
 
     override fun register(request: UserRequestDTO): UserResponseDTO {
@@ -29,6 +31,8 @@ class RegistrationServiceImpl(
         val activationToken = activationService.generateAndSaveActivationToken(user)
 
         activationService.sendActivationEmail(user, activationToken)
+
+        // TODO( ДЛЯ ТЕСТОВ ИЗМЕНИТЬ ЛОГИКУ)...
 
         return UserResponseDTO(
             role = user.roles,

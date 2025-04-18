@@ -5,21 +5,77 @@
 	background: #fff;
 	border: 1px solid #f0f0f0;
 	border-radius: 8px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
 	h1 {
 		margin-bottom: 1rem;
 		text-align: center;
+		color: #333;
 	}
 
 	p {
 		text-align: center;
 		margin-bottom: 2rem;
-		color: #888;
+		color: #666;
+	}
+	.otpFormItem {
+		.ant-form-item-control {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+
+			/* Стили для сообщений об ошибках */
+			.ant-form-item-explain {
+				text-align: center;
+				width: 100%;
+				margin-top: 8px;
+
+				.ant-form-item-explain-error {
+					display: inline-block;
+					text-align: center;
+				}
+			}
+		}
 	}
 }
 
 .activateForm {
 	.ant-form-item {
-		margin-bottom: 1rem;
+		margin-bottom: 1.5rem;
+
+		&:last-child {
+			margin-top: 2rem;
+		}
 	}
+}
+
+/* Новые стили для контейнера OTP */
+.otpContainer {
+	display: flex;
+	justify-content: center;
+	width: 100%;
+	margin: 1rem 0;
+}
+
+/* Стили для самого OTP */
+.otpInput {
+	.ant-input-otp-input {
+		width: 48px !important;
+		height: 48px !important;
+		font-size: 18px !important;
+		text-align: center;
+		border-radius: 8px;
+		border: 2px solid #d9d9d9;
+		transition: all 0.3s;
+
+		&:focus {
+			border-color: #1890ff;
+			box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+		}
+	}
+}
+
+.ant-btn {
+	height: 48px;
+	font-size: 16px;
 }

@@ -2,6 +2,7 @@ package ru.animaltracker.userservice.entity
 
 import jakarta.persistence.*
 import ru.animaltracker.userservice.dto.UserResponse
+import ru.animaltracker.userservice.service.interfaces.S3Service
 import java.time.LocalDate
 
 @Entity
@@ -49,14 +50,14 @@ class User {
 
     fun getAnimals(): List<Animal> = animalUsers.mapNotNull { it.animal }
 
-    fun toDto(): UserResponse {
+    fun toDto(s3Service : S3Service): UserResponse {
         return UserResponse(
             username = username ?: "",
             firstName = firstName,
             lastName = lastName,
             city = city,
             aboutMe = aboutMe,
-            photoUrl = userPhotos.firstOrNull()?.photo?.objectKey
+            photoUrl = userPhotos.firstOrNull()?.photo?.objectKey?.let { s3Service.generatePresignedUrl(it) }
         )
     }
 

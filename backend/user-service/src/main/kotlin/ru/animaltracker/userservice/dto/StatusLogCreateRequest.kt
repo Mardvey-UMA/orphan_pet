@@ -8,6 +8,5 @@ data class StatusLogCreateRequest(
     @field:NotBlank
     val notes: String?,
 
-    @field:PastOrPresent
     val logDate: LocalDate?
 )

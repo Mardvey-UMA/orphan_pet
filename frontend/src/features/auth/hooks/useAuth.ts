@@ -25,7 +25,6 @@ export const useAuth = () => {
 
 	const logout = () => {
 		clearTokens()
-		// Дополнительные действия при выходе
 	}
 
 	return {

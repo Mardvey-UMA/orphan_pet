@@ -10,5 +10,6 @@ data class AnimalResponse(
     var birthDate: LocalDate? = null,
     var mass: BigDecimal? = null,
     var attributes: List<AttributeResponse> = emptyList(),
-    var photos: List<String> = emptyList()
+    var photos: List<String> = emptyList(),
+    var documents: List<String> = emptyList(),
 )

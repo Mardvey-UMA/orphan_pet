@@ -66,7 +66,7 @@ class AnimalServiceImpl(
         user.addAnimal(savedAnimal)
         userRepository.save(user)
 
-        return savedAnimal.toDto()
+        return savedAnimal.toDto(s3Service)
     }
 
     @Transactional
@@ -112,7 +112,7 @@ class AnimalServiceImpl(
             this.user = user
         })
 
-        return statusLog.toDto()
+        return statusLog.toDto(s3Service)
     }
 
     @Transactional
@@ -202,23 +202,24 @@ class AnimalServiceImpl(
         val user = userRepository.findByUsername(username)
             ?: throw EntityNotFoundException("User not found")
 
-        return user.animalUsers.mapNotNull { it.animal?.toDto() }
+        return user.animalUsers.mapNotNull { it.animal?.toDto(s3Service) }
     }
     @Transactional(readOnly = true)
     override fun getAnimal(username: String, animalId: Long): AnimalResponse {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        return animal.toDto()
+
+        return animal.toDto(s3Service)
     }
     @Transactional(readOnly = true)
     override fun getStatusLog(id: Long): StatusLogResponse {
         val log = statusLogRepository.findById(id)
             .orElseThrow { EntityNotFoundException("Status log not found") }
-        return log.toDto()
+        return log.toDto(s3Service)
     }
     @Transactional(readOnly = true)
     override fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse> {
         val (_, animal) = validateUserAndAnimal(username, animalId)
-        return statusLogRepository.findByAnimalId(animalId).map { it.toDto() }
+        return statusLogRepository.findByAnimalId(animalId).map { it.toDto(s3Service) }
     }
 
     @Transactional
@@ -247,7 +248,7 @@ class AnimalServiceImpl(
         request.birthDate?.let { animal.birthDate = it }
         request.mass?.let { animal.mass = it }
 
-        return animalRepository.save(animal).toDto()
+        return animalRepository.save(animal).toDto(s3Service)
     }
 
     @Transactional
@@ -262,7 +263,7 @@ class AnimalServiceImpl(
         request.notes?.let { statusLog.notes = it }
         request.logDate?.let { statusLog.logDate = it }
 
-        return statusLogRepository.save(statusLog).toDto()
+        return statusLogRepository.save(statusLog).toDto(s3Service)
     }
 
     @Transactional

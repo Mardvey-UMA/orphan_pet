@@ -1,6 +1,7 @@
 package ru.animaltracker.userservice.controller
 
 import jakarta.validation.Valid
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.multipart.MultipartFile
@@ -33,10 +34,10 @@ class UserController(
         return ResponseEntity.ok(userService.updateUser(username, request))
     }
 
-    @PostMapping("/me/photo")
+    @PostMapping("/me/photo", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
      fun uploadUserPhoto(
         @RequestHeader("X-User-Name") username: String,
-        @RequestParam file: MultipartFile
+        @RequestParam("file") file: MultipartFile
     ): ResponseEntity<S3FileResponse> {
         return ResponseEntity.ok(userService.uploadUserPhoto(username, file))
     }

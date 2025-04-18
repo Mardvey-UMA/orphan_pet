@@ -83,10 +83,10 @@ class ActivationServiceImpl(
     }
 
     private fun generateActivationCode(length: Int = 6): String {
-//        val secureRandom = SecureRandom()
-//        return (1..length)
-//            .map { secureRandom.nextInt(10) }
-//            .joinToString("")
-        return "777777"
+        val secureRandom = SecureRandom()
+        return (1..length)
+            .map { secureRandom.nextInt(10) }
+            .joinToString("")
+        //return "777777"
     }
 }

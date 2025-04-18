@@ -8,6 +8,7 @@ interface RegisterFormValues {
 	username: string
 	email: string
 	password: string
+	confirmPassword: string
 }
 
 export default function RegisterPage() {
@@ -67,13 +68,40 @@ export default function RegisterPage() {
 				<Form.Item
 					label='Пароль'
 					name='password'
-					rules={[{ required: true, message: 'Введите пароль' }]}
+					rules={[
+						{ required: true, message: 'Введите пароль' },
+						{ min: 6, message: 'Пароль должен быть не менее 6 символов' },
+					]}
 				>
 					<Input.Password placeholder='Введите пароль' />
 				</Form.Item>
 
+				<Form.Item
+					label='Подтвердите пароль'
+					name='confirmPassword'
+					dependencies={['password']}
+					rules={[
+						{ required: true, message: 'Подтвердите пароль' },
+						({ getFieldValue }) => ({
+							validator(_, value) {
+								if (!value || getFieldValue('password') === value) {
+									return Promise.resolve()
+								}
+								return Promise.reject(new Error('Пароли не совпадают!'))
+							},
+						}),
+					]}
+				>
+					<Input.Password placeholder='Повторите пароль' />
+				</Form.Item>
+
 				<Form.Item>
-					<Button type='primary' htmlType='submit' loading={isRegistering}>
+					<Button
+						type='primary'
+						htmlType='submit'
+						loading={isRegistering}
+						block // Делает кнопку на всю ширину
+					>
 						Зарегистрироваться
 					</Button>
 				</Form.Item>

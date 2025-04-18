@@ -44,7 +44,7 @@ class UserServiceImpl(
             username = username,
             password = passwordEncoder.encode(rawPassword),
             accountLocked = false,
-            enabled = false,
+            enabled = false, // TODO (ЭТО ДЛЯ ТЕСТОВ, ПОТОМ ПОМЕНЯТЬ). поменял
             roles = mutableSetOf(userRole),
             vkId = null,
             provider = Provider.PASSWORD,

@@ -1,6 +1,7 @@
 package ru.animaltracker.userservice.entity
 import jakarta.persistence.*
 import ru.animaltracker.userservice.dto.StatusLogResponse
+import ru.animaltracker.userservice.service.interfaces.S3Service
 import java.time.LocalDate
 @Entity
 @Table(name = "animal_status_log")
@@ -60,13 +61,17 @@ class AnimalStatusLog {
         return statusLogDocument
     }
 
-    fun toDto(): StatusLogResponse {
+    fun toDto(s3Service: S3Service): StatusLogResponse {
         return StatusLogResponse(
             id = id,
             logDate = logDate ?: LocalDate.now(),
             notes = notes,
-            photos = statusLogPhotos.mapNotNull { it.photo?.objectKey },
-            documents = statusLogDocuments.mapNotNull { it.document?.objectKey }
+            photos = statusLogPhotos.mapNotNull { it.photo?.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
+            documents = statusLogDocuments.mapNotNull { it.document?.objectKey?.let { it1 ->
+                s3Service.generatePresignedUrl(
+                    it1
+                )
+            } }
         )
     }
 
