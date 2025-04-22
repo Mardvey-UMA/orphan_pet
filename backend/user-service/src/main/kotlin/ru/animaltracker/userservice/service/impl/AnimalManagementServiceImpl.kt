@@ -1,24 +1,27 @@
 package ru.animaltracker.userservice.service.impl
 
 import jakarta.persistence.EntityNotFoundException
+import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.animaltracker.userservice.dto.*
 import ru.animaltracker.userservice.entity.*
 import ru.animaltracker.userservice.repository.*
 import ru.animaltracker.userservice.service.interfaces.AnimalManagementService
+import ru.animaltracker.userservice.service.interfaces.AnimalValidationService
 import ru.animaltracker.userservice.service.interfaces.S3Service
 import java.nio.file.AccessDeniedException
 import java.time.LocalDate
 
+@Service
 class AnimalManagementServiceImpl(
     private val userRepository: UserRepository,
     private val animalRepository: AnimalRepository,
     private val attributeRepository: AttributeRepository,
-    private val documentRepository: DocumentRepository,
-    private val photoRepository: PhotoRepository,
     private val attributeValueHistoryRepository: AttributeValueHistoryRepository,
     private val s3Service: S3Service,
+    private val animalValidationService: AnimalValidationService
 ) : AnimalManagementService {
+
     @Transactional
     override fun createAnimal(username: String, request: AnimalCreateRequest): AnimalResponse {
         val user = userRepository.findByUsername(username)
@@ -49,21 +52,9 @@ class AnimalManagementServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
-        val animal = animalRepository.findById(animalId)
-            .orElseThrow { EntityNotFoundException("Animal not found") }
-
-        return attributeRepository.findByAnimalId(animalId)
-            .flatMap { attribute ->
-                attribute.valueHistories.map { history ->
-                    AttributeHistoryResponse(
-                        attributeName = attribute.name ?: "",
-                        oldValue = history.value,
-                        changedAt = history.recordedAt ?: LocalDate.now(),
-                        changedBy = history.user.username ?: ""
-                    )
-                }
-            }
+    override fun getAnimal(username: String, animalId: Long): AnimalResponse {
+        val (_, animal) = animalValidationService.validateUserAndAnimal(username, animalId)
+        return animal.toDto(s3Service)
     }
 
     @Transactional(readOnly = true)
@@ -76,24 +67,13 @@ class AnimalManagementServiceImpl(
 
     @Transactional
     override fun deleteAnimal(username: String, animalId: Long) {
-        val (_, animal) = validateUserAndAnimal(username, animalId)
-
-        animal.documents.forEach {
-            it.objectKey?.let { key -> s3Service.deleteFile(key) }
-            documentRepository.delete(it)
-        }
-
-        animal.animalPhotos.forEach {
-            it.photo?.objectKey?.let { key -> s3Service.deleteFile(key) }
-            it.photo?.let { photo -> photoRepository.delete(photo) }
-        }
-
+        val (_, animal) = animalValidationService.validateUserAndAnimal(username, animalId)
         animalRepository.delete(animal)
     }
 
     @Transactional
     override fun updateAnimal(username: String, animalId: Long, request: AnimalUpdateRequest): AnimalResponse {
-        val (_, animal) = validateUserAndAnimal(username, animalId)
+        val (_, animal) = animalValidationService.validateUserAndAnimal(username, animalId)
 
         request.name?.let { animal.name = it }
         request.description?.let { animal.description = it }
@@ -104,12 +84,8 @@ class AnimalManagementServiceImpl(
     }
 
     @Transactional
-    override fun addAttribute(
-        username: String,
-        animalId: Long,
-        request: AttributeRequest
-    ): AttributeResponse {
-        val (_, animal) = validateUserAndAnimal(username, animalId)
+    override fun addAttribute(username: String, animalId: Long, request: AttributeRequest): AttributeResponse {
+        val (_, animal) = animalValidationService.validateUserAndAnimal(username, animalId)
 
         val attribute = Attribute().apply {
             name = request.name
@@ -131,7 +107,7 @@ class AnimalManagementServiceImpl(
         attributeId: Short,
         request: AttributeUpdateRequest
     ): AttributeResponse {
-        val (user, animal) = validateUserAndAnimal(username, animalId)
+        val (user, animal) = animalValidationService.validateUserAndAnimal(username, animalId)
         val attribute = attributeRepository.findById(attributeId)
             .orElseThrow { EntityNotFoundException("Attribute not found") }
 
@@ -163,7 +139,7 @@ class AnimalManagementServiceImpl(
 
     @Transactional
     override fun deleteAttribute(username: String, animalId: Long, attributeId: Short) {
-        val (_, _) = validateUserAndAnimal(username, animalId)
+        val (_, _) = animalValidationService.validateUserAndAnimal(username, animalId)
         val attribute = attributeRepository.findById(attributeId)
             .orElseThrow { EntityNotFoundException("Attribute not found") }
 
@@ -175,17 +151,21 @@ class AnimalManagementServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    private fun validateUserAndAnimal(username: String, animalId: Long): Pair<User, Animal> {
-        val user = userRepository.findByUsername(username)
-            ?: throw EntityNotFoundException("User not found")
-
+    override fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
         val animal = animalRepository.findById(animalId)
             .orElseThrow { EntityNotFoundException("Animal not found") }
 
-        if (animal.animalUsers.none { it.user?.id == user.id }) {
-            throw AccessDeniedException("User doesn't have access to this animal")
-        }
-
-        return user to animal
+        return attributeRepository.findByAnimalId(animalId)
+            .flatMap { attribute ->
+                attribute.valueHistories.map { history ->
+                    AttributeHistoryResponse(
+                        attributeName = attribute.name ?: "",
+                        oldValue = history.value,
+                        changedAt = history.recordedAt ?: LocalDate.now(),
+                        changedBy = history.user.username ?: ""
+                    )
+                }
+            }
     }
+
 }
