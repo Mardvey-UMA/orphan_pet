@@ -17,7 +17,6 @@ class AnimalManagementServiceImpl(
     private val userRepository: UserRepository,
     private val animalRepository: AnimalRepository,
     private val attributeRepository: AttributeRepository,
-    private val attributeValueHistoryRepository: AttributeValueHistoryRepository,
     private val s3Service: S3Service,
     private val animalValidationService: AnimalValidationService
 ) : AnimalManagementService {
@@ -124,14 +123,6 @@ class AnimalManagementServiceImpl(
             value.value = request.value
             attribute.values.clear()
             attribute.values.add(value)
-
-            attributeValueHistoryRepository.save(AttributeValueHistory().apply {
-                this.value = request.value
-                this.recordedAt = LocalDate.now()
-                this.user = user
-                this.animal = animal
-                this.attribute = attribute
-            })
         }
 
         return attributeRepository.save(attribute).toDto()
@@ -150,22 +141,5 @@ class AnimalManagementServiceImpl(
         attributeRepository.delete(attribute)
     }
 
-    @Transactional(readOnly = true)
-    override fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse> {
-        val animal = animalRepository.findById(animalId)
-            .orElseThrow { EntityNotFoundException("Animal not found") }
-
-        return attributeRepository.findByAnimalId(animalId)
-            .flatMap { attribute ->
-                attribute.valueHistories.map { history ->
-                    AttributeHistoryResponse(
-                        attributeName = attribute.name ?: "",
-                        oldValue = history.value,
-                        changedAt = history.recordedAt ?: LocalDate.now(),
-                        changedBy = history.user.username ?: ""
-                    )
-                }
-            }
-    }
 
 }

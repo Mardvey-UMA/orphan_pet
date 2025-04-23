@@ -32,18 +32,38 @@ class PdfExporter {
                         attr.name?.let { addKeyValue(doc, it, attr.values.firstOrNull()?.value) }
                     }
 
-                    doc.add(Paragraph("История изменений:").setBold())
-                    animal.statusLogs.sortedBy { it.logDate }.forEach { log ->
-                        doc.add(Paragraph("${log.logDate}: ${log.notes}"))
-                    }
+                    doc.add(Paragraph("История параметров:").setBold())
+                    animal.parameterHistories.sortedBy { it.recordedAt }.forEach { history ->
+                        val changes = mutableListOf<String>()
+
+                        if (history.oldMass != null && history.newMass != null) {
+                            changes.add("Вес: ${history.oldMass} → ${history.newMass}")
+                        }
+                        if (history.oldHeight != null && history.newHeight != null) {
+                            changes.add("Рост: ${history.oldHeight} → ${history.newHeight}")
+                        }
+                        if (history.oldTemperature != null && history.newTemperature != null) {
+                            changes.add("Температура: ${history.oldTemperature} → ${history.newTemperature}")
+                        }
+                        if (history.oldActivityLevel != null && history.newActivityLevel != null) {
+                            changes.add("Активность: ${history.oldActivityLevel} → ${history.newActivityLevel}")
+                        }
+                        if (history.oldAppetiteLevel != null && history.newAppetiteLevel != null) {
+                            changes.add("Аппетит: ${history.oldAppetiteLevel} → ${history.newAppetiteLevel}")
+                        }
+
+                        if (changes.isNotEmpty()) {
+                            doc.add(Paragraph("${history.recordedAt}: ${changes.joinToString(", ")}"))
+                        }
                 }
             }
 
             return outputStream.toByteArray()
         }
     }
-
+}
     private fun addKeyValue(doc: Document, key: String, value: String?) {
         doc.add(Paragraph("$key: ${value ?: "не указано"}"))
     }
-}
+    }
+

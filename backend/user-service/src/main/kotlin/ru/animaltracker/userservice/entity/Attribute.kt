@@ -20,20 +20,12 @@ class Attribute {
     @OneToMany(mappedBy = "attribute", cascade = [CascadeType.ALL], orphanRemoval = true)
     var values: MutableSet<Value> = mutableSetOf()
 
-    @OneToMany(mappedBy = "attribute")
-    var valueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
-
     fun addValue(valueStr: String) {
         val value = Value().apply {
             this.value = valueStr
             this.attribute = this@Attribute
         }
         values.add(value)
-    }
-
-    fun addHistory(history: AttributeValueHistory) {
-        history.attribute = this
-        valueHistories.add(history)
     }
 
     fun toDto(): AttributeResponse {

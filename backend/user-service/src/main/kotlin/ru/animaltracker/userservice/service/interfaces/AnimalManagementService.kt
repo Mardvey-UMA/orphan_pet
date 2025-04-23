@@ -11,5 +11,4 @@ interface AnimalManagementService {
     fun addAttribute(username: String, animalId: Long, request: AttributeRequest): AttributeResponse
     fun updateAttribute(username: String, animalId: Long, attributeId: Short, request: AttributeUpdateRequest): AttributeResponse
     fun deleteAttribute(username: String, animalId: Long, attributeId: Short)
-    fun getAnimalAttributesHistory(animalId: Long): List<AttributeHistoryResponse>
 }

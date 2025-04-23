@@ -36,9 +36,6 @@ class User {
     @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
     var animalUsers: MutableSet<AnimalUser> = mutableSetOf()
 
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var attributeValueHistories: MutableSet<AttributeValueHistory> = mutableSetOf()
-
     fun addAnimal(animal: Animal) {
         val animalUser = AnimalUser().apply {
             this.user = this@User

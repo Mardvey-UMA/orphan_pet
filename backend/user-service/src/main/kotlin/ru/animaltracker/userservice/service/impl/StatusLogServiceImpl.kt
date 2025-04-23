@@ -16,6 +16,7 @@ class StatusLogServiceImpl(
     private val statusLogRepository: AnimalStatusLogRepository,
     private val photoRepository: PhotoRepository,
     private val documentRepository: DocumentRepository,
+    private val parameterHistoryRepository: AnimalParameterHistoryRepository,
     private val s3Service: S3Service,
     private val animalValidationService: AnimalValidationService
 ) : StatusLogService {
@@ -31,11 +32,64 @@ class StatusLogServiceImpl(
         val statusLog = statusLogRepository.save(AnimalStatusLog().apply {
             notes = request.notes
             logDate = request.logDate ?: LocalDate.now()
+            massChange = request.massChange
+            heightChange = request.heightChange
+            temperatureChange = request.temperatureChange
+            activityLevelChange = request.activityLevelChange
+            appetiteLevelChange = request.appetiteLevelChange
             this.animal = animal
             this.user = user
         })
 
+        saveParameterChanges(animal, user, statusLog)
+
         return statusLog.toDto(s3Service)
+    }
+    private fun saveParameterChanges(
+        animal: Animal,
+        user: User,
+        statusLog: AnimalStatusLog
+    ) {
+        val history = AnimalParameterHistory().apply {
+            recordedAt = statusLog.logDate ?: LocalDate.now()
+            this.user = user
+            this.animal = animal
+            this.statusLog = statusLog
+        }
+
+        statusLog.massChange?.let {
+            history.oldMass = animal.mass
+            animal.mass = animal.mass?.add(it) ?: it
+            history.newMass = animal.mass
+        }
+
+        statusLog.heightChange?.let {
+            history.oldHeight = animal.height
+            animal.height = animal.height?.add(it) ?: it
+            history.newHeight = animal.height
+        }
+
+        statusLog.temperatureChange?.let {
+            history.oldTemperature = animal.temperature
+            animal.temperature = animal.temperature?.add(it) ?: it
+            history.newTemperature = animal.temperature
+        }
+
+        statusLog.activityLevelChange?.let {
+            history.oldActivityLevel = animal.activityLevel
+            animal.activityLevel = it
+            history.newActivityLevel = it
+        }
+
+        statusLog.appetiteLevelChange?.let {
+            history.oldAppetiteLevel = animal.appetiteLevel
+            animal.appetiteLevel = it
+            history.newAppetiteLevel = it
+        }
+
+        if (history.hasChanges()) {
+            parameterHistoryRepository.save(history)
+        }
     }
 
     @Transactional
@@ -83,4 +137,65 @@ class StatusLogServiceImpl(
         return log.toDto(s3Service)
     }
 
+    @Transactional(readOnly = true)
+    override fun getParameterHistory(
+        username: String,
+        animalId: Long,
+        parameterName: String
+    ): List<ParameterChangeResponse> {
+        animalValidationService.validateUserAndAnimal(username, animalId)
+
+        return parameterHistoryRepository.findByAnimalIdOrderByRecordedAtDesc(animalId)
+            .filterNotNull()
+            .mapNotNull { history ->
+                when (parameterName.lowercase()) {
+                    "mass" -> history.takeIf { it.oldMass != null || it.newMass != null }?.let {
+                        ParameterChangeResponse(
+                            parameterName = "mass",
+                            oldValue = it.oldMass?.toString() ?: "",
+                            newValue = it.newMass?.toString() ?: "",
+                            changedAt = it.recordedAt ?: LocalDate.now(),
+                            changedBy = it.user.username ?: ""
+                        )
+                    }
+                    "height" -> history.takeIf { it.oldHeight != null || it.newHeight != null }?.let {
+                        ParameterChangeResponse(
+                            parameterName = "height",
+                            oldValue = it.oldHeight?.toString() ?: "",
+                            newValue = it.newHeight?.toString() ?: "",
+                            changedAt = it.recordedAt ?: LocalDate.now(),
+                            changedBy = it.user.username ?: ""
+                        )
+                    }
+                    "temperature" -> history.takeIf { it.oldTemperature != null || it.newTemperature != null }?.let {
+                        ParameterChangeResponse(
+                            parameterName = "temperature",
+                            oldValue = it.oldTemperature?.toString() ?: "",
+                            newValue = it.newTemperature?.toString() ?: "",
+                            changedAt = it.recordedAt ?: LocalDate.now(),
+                            changedBy = it.user.username ?: ""
+                        )
+                    }
+                    "activitylevel" -> history.takeIf { it.oldActivityLevel != null || it.newActivityLevel != null }?.let {
+                        ParameterChangeResponse(
+                            parameterName = "activityLevel",
+                            oldValue = it.oldActivityLevel?.toString() ?: "",
+                            newValue = it.newActivityLevel?.toString() ?: "",
+                            changedAt = it.recordedAt ?: LocalDate.now(),
+                            changedBy = it.user.username ?: ""
+                        )
+                    }
+                    "appetitelevel" -> history.takeIf { it.oldAppetiteLevel != null || it.newAppetiteLevel != null }?.let {
+                        ParameterChangeResponse(
+                            parameterName = "appetiteLevel",
+                            oldValue = it.oldAppetiteLevel?.toString() ?: "",
+                            newValue = it.newAppetiteLevel?.toString() ?: "",
+                            changedAt = it.recordedAt ?: LocalDate.now(),
+                            changedBy = it.user.username ?: ""
+                        )
+                    }
+                    else -> null
+                }
+            }
+    }
 }

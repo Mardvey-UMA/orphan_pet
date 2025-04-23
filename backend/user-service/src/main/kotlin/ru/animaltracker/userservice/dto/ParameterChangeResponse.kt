@@ -2,9 +2,10 @@ package ru.animaltracker.userservice.dto
 
 import java.time.LocalDate
 
-data class AttributeHistoryResponse(
-    val attributeName: String,
-    val oldValue: String?,
+data class ParameterChangeResponse(
+    val parameterName: String,
+    val oldValue: String,
+    val newValue: String,
     val changedAt: LocalDate,
     val changedBy: String
 )

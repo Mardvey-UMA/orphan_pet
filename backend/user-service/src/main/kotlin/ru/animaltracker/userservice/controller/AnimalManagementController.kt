@@ -85,12 +85,4 @@ class AnimalManagementController(
         animalManagementService.deleteAttribute(username, animalId, attributeId)
         return ResponseEntity.noContent().build()
     }
-
-    @GetMapping("/{animalId}/attributes/history")
-    fun getAttributesHistory(
-        @RequestHeader("X-User-Name") username: String,
-        @PathVariable animalId: Long
-    ): ResponseEntity<List<AttributeHistoryResponse>> {
-        return ResponseEntity.ok(animalManagementService.getAnimalAttributesHistory(animalId))
-    }
 }
