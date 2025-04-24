@@ -8,9 +8,7 @@ import java.time.LocalDate
 data class StatusLogCreateRequest(
     @field:NotBlank
     val notes: String?,
-
     val logDate: LocalDate?,
-
     val massChange: BigDecimal?,
     val heightChange: BigDecimal?,
     val temperatureChange: BigDecimal?,

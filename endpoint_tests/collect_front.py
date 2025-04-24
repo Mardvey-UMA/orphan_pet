@@ -13,7 +13,8 @@ def find_and_copy_files(root_dir, output_file):
         '.tsx': 'typescript',
         '.conf': 'plaintext',
         '.json': 'json',
-        '.css': 'css'
+        '.css': 'css',
+        '.scss': 'scss',
     }
 
     with open(output_file, 'w', encoding='utf-8') as out_f:
@@ -42,7 +43,7 @@ def find_and_copy_files(root_dir, output_file):
 
 if __name__ == "__main__":
     project_directory = "/home/user/Projects/pets_calendar/frontend/src"
-    output_filename = "all_files_formatted3.txt"
+    output_filename = "all_files_formatted5.txt"
 
     if os.path.isdir(project_directory):
         find_and_copy_files(project_directory, output_filename)

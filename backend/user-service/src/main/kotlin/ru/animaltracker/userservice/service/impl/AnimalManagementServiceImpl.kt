@@ -31,6 +31,10 @@ class AnimalManagementServiceImpl(
             description = request.description
             birthDate = request.birthDate
             mass = request.mass
+            height = request.height
+            temperature = request.temperature
+            activityLevel = request.activityLevel
+            appetiteLevel = request.appetiteLevel
         }
 
         val savedAnimal = animalRepository.save(animal)
@@ -78,6 +82,10 @@ class AnimalManagementServiceImpl(
         request.description?.let { animal.description = it }
         request.birthDate?.let { animal.birthDate = it }
         request.mass?.let { animal.mass = it }
+        request.height?.let { animal.height = it }
+        request.temperature?.let { animal.temperature = it }
+        request.activityLevel?.let { animal.activityLevel = it }
+        request.appetiteLevel?.let { animal.appetiteLevel = it }
 
         return animalRepository.save(animal).toDto(s3Service)
     }

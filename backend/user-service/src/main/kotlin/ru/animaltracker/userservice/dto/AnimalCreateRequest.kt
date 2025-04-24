@@ -8,5 +8,9 @@ data class AnimalCreateRequest(
     val description: String?,
     val birthDate: LocalDate?,
     val mass: BigDecimal?,
-    val attributes: List<AttributeRequest>
+    val height: BigDecimal? = null,
+    val temperature: BigDecimal? = null,
+    val activityLevel: Int? = null,
+    val appetiteLevel: Int? = null,
+    val attributes: List<AttributeRequest> = emptyList()
 )

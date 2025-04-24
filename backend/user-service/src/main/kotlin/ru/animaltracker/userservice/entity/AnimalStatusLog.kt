@@ -1,5 +1,6 @@
 package ru.animaltracker.userservice.entity
 import jakarta.persistence.*
+import ru.animaltracker.userservice.dto.ParameterChangeResponse
 import ru.animaltracker.userservice.dto.StatusLogResponse
 import ru.animaltracker.userservice.service.interfaces.S3Service
 import java.math.BigDecimal
@@ -57,12 +58,68 @@ class AnimalStatusLog {
             id = id,
             logDate = logDate ?: LocalDate.now(),
             notes = notes,
-            photos = statusLogPhotos.mapNotNull { it.photo?.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
-            documents = statusLogDocuments.mapNotNull { it.document?.objectKey?.let { it1 ->
-                s3Service.generatePresignedUrl(
-                    it1
-                )
-            } }
+            massChange = massChange,
+            heightChange = heightChange,
+            temperatureChange = temperatureChange,
+            activityLevelChange = activityLevelChange,
+            appetiteLevelChange = appetiteLevelChange,
+            photos = statusLogPhotos.mapNotNull { it.photo?.objectKey?.let { key -> s3Service.generatePresignedUrl(key) } },
+            documents = statusLogDocuments.mapNotNull { it.document?.objectKey?.let { key -> s3Service.generatePresignedUrl(key) } },
+            parameterChanges = parameterHistories.map { history ->
+                val changes = mutableListOf<ParameterChangeResponse>()
+
+                if (history.oldMass != null || history.newMass != null) {
+                    changes.add(ParameterChangeResponse(
+                        parameterName = "mass",
+                        oldValue = history.oldMass?.toString() ?: "",
+                        newValue = history.newMass?.toString() ?: "",
+                        changedAt = history.recordedAt ?: LocalDate.now(),
+                        changedBy = history.user.username ?: ""
+                    ))
+                }
+
+                if (history.oldHeight != null || history.newHeight != null) {
+                    changes.add(ParameterChangeResponse(
+                        parameterName = "height",
+                        oldValue = history.oldHeight?.toString() ?: "",
+                        newValue = history.newHeight?.toString() ?: "",
+                        changedAt = history.recordedAt ?: LocalDate.now(),
+                        changedBy = history.user.username ?: ""
+                    ))
+                }
+
+                if (history.oldTemperature != null || history.newTemperature != null) {
+                    changes.add(ParameterChangeResponse(
+                        parameterName = "temperature",
+                        oldValue = history.oldTemperature?.toString() ?: "",
+                        newValue = history.newTemperature?.toString() ?: "",
+                        changedAt = history.recordedAt ?: LocalDate.now(),
+                        changedBy = history.user.username ?: ""
+                    ))
+                }
+
+                if (history.oldActivityLevel != null || history.newActivityLevel != null) {
+                    changes.add(ParameterChangeResponse(
+                        parameterName = "activityLevel",
+                        oldValue = history.oldActivityLevel?.toString() ?: "",
+                        newValue = history.newActivityLevel?.toString() ?: "",
+                        changedAt = history.recordedAt ?: LocalDate.now(),
+                        changedBy = history.user.username ?: ""
+                    ))
+                }
+
+                if (history.oldAppetiteLevel != null || history.newAppetiteLevel != null) {
+                    changes.add(ParameterChangeResponse(
+                        parameterName = "appetiteLevel",
+                        oldValue = history.oldAppetiteLevel?.toString() ?: "",
+                        newValue = history.newAppetiteLevel?.toString() ?: "",
+                        changedAt = history.recordedAt ?: LocalDate.now(),
+                        changedBy = history.user.username ?: ""
+                    ))
+                }
+
+                changes
+            }.flatten()
         )
     }
 

@@ -30,7 +30,8 @@ def find_and_copy_kt_files(root_dir, output_file):
 
 if __name__ == "__main__":
     project_directory = "/home/user/Projects/pets_calendar/backend/user-service/src/main/kotlin/ru/animaltracker/userservice"
-    output_filename = "all_kt_files4.txt"
+    #project_directory = "/home/user/Projects/pets_calendar/backend/user-service/src/main/kotlin/ru/animaltracker/userservice/service/impl"
+    output_filename = "all_kt_files_usr.txt"
 
     if os.path.isdir(project_directory):
         find_and_copy_kt_files(project_directory, output_filename)

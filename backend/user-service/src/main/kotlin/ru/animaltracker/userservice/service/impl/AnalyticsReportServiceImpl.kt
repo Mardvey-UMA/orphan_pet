@@ -4,64 +4,54 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import ru.animaltracker.userservice.dto.AnimalAnalyticsResponse
-import ru.animaltracker.userservice.dto.AttributeChange
-import ru.animaltracker.userservice.dto.AttributeStats
+import ru.animaltracker.userservice.dto.ParameterStats
 import ru.animaltracker.userservice.pdfexport.PdfExporter
-import ru.animaltracker.userservice.repository.AttributeRepository
 import ru.animaltracker.userservice.service.interfaces.AnalyticsReportService
 import ru.animaltracker.userservice.service.interfaces.AnimalValidationService
-import java.time.LocalDate
+import ru.animaltracker.userservice.service.interfaces.StatusLogService
+
 
 @Service
-class AnalyticsReportServiceImpl (
-    private val attributeRepository: AttributeRepository,
+class AnalyticsReportServiceImpl(
+    private val statusLogService: StatusLogService,
     private val animalValidationService: AnimalValidationService
-): AnalyticsReportService {
+) : AnalyticsReportService {
 
     @Autowired
     private lateinit var pdfExporter: PdfExporter
 
     @Transactional(readOnly = true)
     override fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
-        val attributes = attributeRepository.findByAnimalId(animalId)
+        val parameters = listOf("mass", "height", "temperature", "activityLevel", "appetiteLevel")
 
-        return attributes.map { attribute ->
-            val histories = attribute.valueHistories
-                .sortedBy { it.recordedAt }
-                .map { history ->
-                    AttributeChange(
-                        date = history.recordedAt ?: LocalDate.now(),
-                        value = history.value ?: "",
-                        changedBy = history.user.username ?: ""
-                    )
-                }
+        return parameters.map { parameterName ->
+            val changes = statusLogService.getParameterHistory("system", animalId, parameterName)
 
-            val numericValues = histories
-                .mapNotNull { it.value.toDoubleOrNull() }
+            val numericValues = changes
+                .mapNotNull { it.newValue.toDoubleOrNull() }
+                .takeIf { it.isNotEmpty() }
 
-            val stats = if (numericValues.isNotEmpty()) {
-                AttributeStats(
-                    minValue = numericValues.min().toString(),
-                    maxValue = numericValues.max().toString(),
-                    avgValue = numericValues.average()
+            val stats = numericValues?.let {
+                ParameterStats(
+                    minValue = it.min().toString(),
+                    maxValue = it.max().toString(),
+                    avgValue = it.average(),
+                    firstValue = changes.first().newValue,
+                    lastValue = changes.last().newValue
                 )
-            } else {
-                null
             }
 
             AnimalAnalyticsResponse(
-                attributeName = attribute.name ?: "Unknown",
-                changes = histories,
+                parameterName = parameterName,
+                changes = changes,
                 stats = stats
             )
         }
     }
 
-
     @Transactional(readOnly = true)
-    override  fun exportAnimalToPdf(username: String, animalId: Long): ByteArray {
+    override fun exportAnimalToPdf(username: String, animalId: Long): ByteArray {
         val (_, animal) = animalValidationService.validateUserAndAnimal(username, animalId)
-
         return pdfExporter.exportAnimal(animal)
     }
 }

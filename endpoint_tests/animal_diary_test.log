@@ -1,0 +1,1490 @@
+2025-04-24 09:44:25,624 - INFO - Успешная аутентификация. Токен получен: eyJhbGciOiJIUzM...
+2025-04-24 09:44:25,624 - INFO - Выполнение запроса: POST http://localhost:80/api/animals
+2025-04-24 09:44:25,624 - INFO - Тело запроса: {
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "attributes": [
+    {
+      "name": "Порода",
+      "value": "Дворняжка"
+    }
+  ]
+}
+2025-04-24 09:44:26,265 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,265 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": null,
+  "temperature": null,
+  "activityLevel": null,
+  "appetiteLevel": null,
+  "attributes": [],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 09:44:26,266 - INFO - Создано животное с ID: 1
+2025-04-24 09:44:26,266 - INFO - === Начальные параметры животного ===
+2025-04-24 09:44:26,266 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/status-logs
+2025-04-24 09:44:26,324 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,324 - INFO - Тело ответа: []
+2025-04-24 09:44:26,325 - INFO - === Добавление записи 2 недели назад ===
+2025-04-24 09:44:26,325 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 09:44:26,325 - INFO - Тело запроса: {
+  "logDate": "2025-04-10",
+  "notes": "Первичный осмотр",
+  "massChange": 0.5,
+  "heightChange": 0.1,
+  "temperatureChange": 0.2,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null
+}
+2025-04-24 09:44:26,668 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,668 - INFO - Тело ответа: {
+  "id": 1,
+  "logDate": "2025-04-10",
+  "notes": "Первичный осмотр",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 09:44:26,668 - INFO - === Добавление записи 1 неделю назад ===
+2025-04-24 09:44:26,668 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 09:44:26,668 - INFO - Тело запроса: {
+  "logDate": "2025-04-17",
+  "notes": "Плановый осмотр",
+  "massChange": 0.3,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": 2,
+  "appetiteLevelChange": 1
+}
+2025-04-24 09:44:26,699 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,700 - INFO - Тело ответа: {
+  "id": 2,
+  "logDate": "2025-04-17",
+  "notes": "Плановый осмотр",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 09:44:26,700 - INFO - === Добавление записи сегодня ===
+2025-04-24 09:44:26,700 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 09:44:26,700 - INFO - Тело запроса: {
+  "logDate": "2025-04-24",
+  "notes": "Текущий осмотр",
+  "massChange": -0.2,
+  "heightChange": null,
+  "temperatureChange": -0.1,
+  "activityLevelChange": null,
+  "appetiteLevelChange": -1
+}
+2025-04-24 09:44:26,730 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,730 - INFO - Тело ответа: {
+  "id": 3,
+  "logDate": "2025-04-24",
+  "notes": "Текущий осмотр",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 09:44:26,730 - INFO - === Все записи дневника ===
+2025-04-24 09:44:26,731 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/status-logs
+2025-04-24 09:44:26,762 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,762 - INFO - Тело ответа: [
+  {
+    "id": 1,
+    "logDate": "2025-04-10",
+    "notes": "Первичный осмотр",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  },
+  {
+    "id": 2,
+    "logDate": "2025-04-17",
+    "notes": "Плановый осмотр",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  },
+  {
+    "id": 3,
+    "logDate": "2025-04-24",
+    "notes": "Текущий осмотр",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  }
+]
+2025-04-24 09:44:26,762 - INFO - === История изменения массы ===
+2025-04-24 09:44:26,762 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/mass
+2025-04-24 09:44:26,805 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,805 - INFO - Тело ответа: [
+  {
+    "parameterName": "mass",
+    "oldValue": "6.00",
+    "newValue": "5.80",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "5.70",
+    "newValue": "6.00",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "5.20",
+    "newValue": "5.70",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 09:44:26,806 - INFO - === История изменения температуры ===
+2025-04-24 09:44:26,806 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/temperature
+2025-04-24 09:44:26,850 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,850 - INFO - Тело ответа: [
+  {
+    "parameterName": "temperature",
+    "oldValue": "0.20",
+    "newValue": "0.10",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "",
+    "newValue": "0.20",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 09:44:26,850 - INFO - === История изменения аппетита ===
+2025-04-24 09:44:26,850 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/appetiteLevel
+2025-04-24 09:44:26,888 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,889 - INFO - Тело ответа: [
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "1",
+    "newValue": "-1",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "",
+    "newValue": "1",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 09:44:26,889 - INFO - === Статистика по массе ===
+2025-04-24 09:44:26,889 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/mass
+2025-04-24 09:44:26,947 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,947 - INFO - Тело ответа: {
+  "minValue": "5.7",
+  "maxValue": "6.0",
+  "avgValue": 5.833333333333333,
+  "firstValue": "5.80",
+  "lastValue": "5.70"
+}
+2025-04-24 09:44:26,947 - INFO - === Статистика по температуре ===
+2025-04-24 09:44:26,947 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/temperature
+2025-04-24 09:44:26,979 - INFO - Статус ответа: 200
+2025-04-24 09:44:26,980 - INFO - Тело ответа: {
+  "minValue": "0.1",
+  "maxValue": "0.2",
+  "avgValue": 0.15000000000000002,
+  "firstValue": "0.10",
+  "lastValue": "0.20"
+}
+2025-04-24 09:44:26,980 - INFO - Выполнение запроса: DELETE http://localhost:80/api/animals/1
+2025-04-24 09:44:27,044 - INFO - Статус ответа: 204
+2025-04-24 09:44:27,044 - INFO - Животное 1 удалено
+2025-04-24 10:12:56,587 - INFO - Успешная аутентификация. Токен получен: eyJhbGciOiJIUzM...
+2025-04-24 10:12:56,587 - INFO - === Создание животного с начальными параметрами ===
+2025-04-24 10:12:56,587 - INFO - Выполнение запроса: POST http://localhost:80/api/animals
+2025-04-24 10:12:56,587 - INFO - Тело запроса: {
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [
+    {
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ]
+}
+2025-04-24 10:12:56,683 - INFO - Статус ответа: 200
+2025-04-24 10:12:56,683 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 10:12:56,683 - INFO - Создано животное с ID: 1
+2025-04-24 10:12:56,683 - INFO - Начальные параметры: масса=5.2, рост=0.5, температура=38.5, активность=3, аппетит=2
+2025-04-24 10:12:56,683 - INFO - === Текущие параметры животного ===
+2025-04-24 10:12:56,683 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1
+2025-04-24 10:12:56,720 - INFO - Статус ответа: 200
+2025-04-24 10:12:56,720 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 10:12:56,721 - INFO - Текущее состояние: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 10:12:56,721 - INFO - === Добавление записи месяц назад (первый осмотр) ===
+2025-04-24 10:12:56,721 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 10:12:56,721 - INFO - Тело запроса: {
+  "logDate": "2025-03-25",
+  "notes": "Первый осмотр у ветеринара",
+  "massChange": 0.8,
+  "heightChange": 0.15,
+  "temperatureChange": 0.3,
+  "activityLevelChange": 1,
+  "appetiteLevelChange": 1
+}
+2025-04-24 10:12:57,051 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,051 - INFO - Тело ответа: {
+  "id": 1,
+  "logDate": "2025-03-25",
+  "notes": "Первый осмотр у ветеринара",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 10:12:57,051 - INFO - === Добавление записи 2 недели назад ===
+2025-04-24 10:12:57,051 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 10:12:57,051 - INFO - Тело запроса: {
+  "logDate": "2025-04-10",
+  "notes": "Плановый осмотр после лечения",
+  "massChange": -0.2,
+  "heightChange": null,
+  "temperatureChange": -0.1,
+  "activityLevelChange": -1,
+  "appetiteLevelChange": -1
+}
+2025-04-24 10:12:57,084 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,084 - INFO - Тело ответа: {
+  "id": 2,
+  "logDate": "2025-04-10",
+  "notes": "Плановый осмотр после лечения",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 10:12:57,084 - INFO - === Добавление записи 1 неделю назад ===
+2025-04-24 10:12:57,085 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 10:12:57,085 - INFO - Тело запроса: {
+  "logDate": "2025-04-17",
+  "notes": "Улучшение состояния",
+  "massChange": 0.4,
+  "heightChange": 0.05,
+  "temperatureChange": 0.1,
+  "activityLevelChange": 2,
+  "appetiteLevelChange": 2
+}
+2025-04-24 10:12:57,111 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,111 - INFO - Тело ответа: {
+  "id": 3,
+  "logDate": "2025-04-17",
+  "notes": "Улучшение состояния",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 10:12:57,111 - INFO - === Добавление записи вчера ===
+2025-04-24 10:12:57,111 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 10:12:57,111 - INFO - Тело запроса: {
+  "logDate": "2025-04-23",
+  "notes": "Ежедневный осмотр",
+  "massChange": 0.1,
+  "heightChange": null,
+  "temperatureChange": -0.05,
+  "activityLevelChange": null,
+  "appetiteLevelChange": -1
+}
+2025-04-24 10:12:57,137 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,138 - INFO - Тело ответа: {
+  "id": 4,
+  "logDate": "2025-04-23",
+  "notes": "Ежедневный осмотр",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 10:12:57,138 - INFO - === Добавление записи сегодня ===
+2025-04-24 10:12:57,138 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 10:12:57,138 - INFO - Тело запроса: {
+  "logDate": "2025-04-24",
+  "notes": "Текущий осмотр перед прививкой",
+  "massChange": 0.05,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": 1,
+  "appetiteLevelChange": null
+}
+2025-04-24 10:12:57,182 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,182 - INFO - Тело ответа: {
+  "id": 5,
+  "logDate": "2025-04-24",
+  "notes": "Текущий осмотр перед прививкой",
+  "massChange": null,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": null,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 10:12:57,182 - INFO - === Все записи дневника ===
+2025-04-24 10:12:57,182 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/status-logs
+2025-04-24 10:12:57,219 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,220 - INFO - Тело ответа: [
+  {
+    "id": 1,
+    "logDate": "2025-03-25",
+    "notes": "Первый осмотр у ветеринара",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  },
+  {
+    "id": 2,
+    "logDate": "2025-04-10",
+    "notes": "Плановый осмотр после лечения",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  },
+  {
+    "id": 3,
+    "logDate": "2025-04-17",
+    "notes": "Улучшение состояния",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  },
+  {
+    "id": 4,
+    "logDate": "2025-04-23",
+    "notes": "Ежедневный осмотр",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  },
+  {
+    "id": 5,
+    "logDate": "2025-04-24",
+    "notes": "Текущий осмотр перед прививкой",
+    "massChange": null,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": null,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": []
+  }
+]
+2025-04-24 10:12:57,220 - INFO - === История изменения mass ===
+2025-04-24 10:12:57,221 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/mass
+2025-04-24 10:12:57,280 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,281 - INFO - Тело ответа: [
+  {
+    "parameterName": "mass",
+    "oldValue": "6.30",
+    "newValue": "6.35",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "6.20",
+    "newValue": "6.30",
+    "changedAt": "2025-04-23",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "5.80",
+    "newValue": "6.20",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "6.00",
+    "newValue": "5.80",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "5.20",
+    "newValue": "6.00",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 10:12:57,281 - INFO - === История изменения height ===
+2025-04-24 10:12:57,281 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/height
+2025-04-24 10:12:57,316 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,316 - INFO - Тело ответа: [
+  {
+    "parameterName": "height",
+    "oldValue": "0.65",
+    "newValue": "0.70",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "height",
+    "oldValue": "0.50",
+    "newValue": "0.65",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 10:12:57,316 - INFO - === История изменения temperature ===
+2025-04-24 10:12:57,316 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/temperature
+2025-04-24 10:12:57,357 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,357 - INFO - Тело ответа: [
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.80",
+    "newValue": "38.75",
+    "changedAt": "2025-04-23",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.70",
+    "newValue": "38.80",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.80",
+    "newValue": "38.70",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.50",
+    "newValue": "38.80",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 10:12:57,357 - INFO - === История изменения activityLevel ===
+2025-04-24 10:12:57,357 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/activityLevel
+2025-04-24 10:12:57,400 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,400 - INFO - Тело ответа: [
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "2",
+    "newValue": "1",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "-1",
+    "newValue": "2",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "1",
+    "newValue": "-1",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "3",
+    "newValue": "1",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 10:12:57,400 - INFO - === История изменения appetiteLevel ===
+2025-04-24 10:12:57,401 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/appetiteLevel
+2025-04-24 10:12:57,445 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,445 - INFO - Тело ответа: [
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "2",
+    "newValue": "-1",
+    "changedAt": "2025-04-23",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "-1",
+    "newValue": "2",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "1",
+    "newValue": "-1",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "2",
+    "newValue": "1",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 10:12:57,445 - INFO - === Статистика по mass ===
+2025-04-24 10:12:57,445 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/mass
+2025-04-24 10:12:57,508 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,508 - INFO - Тело ответа: {
+  "minValue": "5.8",
+  "maxValue": "6.35",
+  "avgValue": 6.13,
+  "firstValue": "6.35",
+  "lastValue": "6.00"
+}
+2025-04-24 10:12:57,508 - INFO - === Статистика по height ===
+2025-04-24 10:12:57,508 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/height
+2025-04-24 10:12:57,552 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,552 - INFO - Тело ответа: {
+  "minValue": "0.65",
+  "maxValue": "0.7",
+  "avgValue": 0.675,
+  "firstValue": "0.70",
+  "lastValue": "0.65"
+}
+2025-04-24 10:12:57,553 - INFO - === Статистика по temperature ===
+2025-04-24 10:12:57,553 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/temperature
+2025-04-24 10:12:57,587 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,587 - INFO - Тело ответа: {
+  "minValue": "38.7",
+  "maxValue": "38.8",
+  "avgValue": 38.7625,
+  "firstValue": "38.75",
+  "lastValue": "38.80"
+}
+2025-04-24 10:12:57,587 - INFO - === Статистика по activityLevel ===
+2025-04-24 10:12:57,587 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/activityLevel
+2025-04-24 10:12:57,616 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,616 - INFO - Тело ответа: {
+  "minValue": "-1.0",
+  "maxValue": "2.0",
+  "avgValue": 0.75,
+  "firstValue": "1",
+  "lastValue": "1"
+}
+2025-04-24 10:12:57,616 - INFO - === Статистика по appetiteLevel ===
+2025-04-24 10:12:57,616 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/appetiteLevel
+2025-04-24 10:12:57,642 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,642 - INFO - Тело ответа: {
+  "minValue": "-1.0",
+  "maxValue": "2.0",
+  "avgValue": 0.25,
+  "firstValue": "-1",
+  "lastValue": "1"
+}
+2025-04-24 10:12:57,642 - INFO - === Текущие параметры после всех изменений ===
+2025-04-24 10:12:57,643 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1
+2025-04-24 10:12:57,674 - INFO - Статус ответа: 200
+2025-04-24 10:12:57,674 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 6.35,
+  "height": 0.7,
+  "temperature": 38.75,
+  "activityLevel": 1,
+  "appetiteLevel": -1,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 10:12:57,674 - INFO - Финальное состояние: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 6.35,
+  "height": 0.7,
+  "temperature": 38.75,
+  "activityLevel": 1,
+  "appetiteLevel": -1,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 10:12:57,674 - INFO - === Сравнение начальных и конечных параметров ===
+2025-04-24 10:12:57,674 - INFO - Масса: 5.2 -> 6.35
+2025-04-24 10:12:57,674 - INFO - Рост: 0.5 -> 0.7
+2025-04-24 10:12:57,674 - INFO - Температура: 38.5 -> 38.75
+2025-04-24 10:12:57,675 - INFO - Активность: 3 -> 1
+2025-04-24 10:12:57,675 - INFO - Аппетит: 2 -> -1
+2025-04-24 10:12:57,675 - INFO - Тестирование завершено. Животное не удаляется для дальнейших проверок.
+2025-04-24 13:20:21,714 - INFO - Успешная аутентификация. Токен получен: eyJhbGciOiJIUzM...
+2025-04-24 13:20:21,714 - INFO - === Создание животного с начальными параметрами ===
+2025-04-24 13:20:21,714 - INFO - Выполнение запроса: POST http://localhost:80/api/animals
+2025-04-24 13:20:21,714 - INFO - Тело запроса: {
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [
+    {
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ]
+}
+2025-04-24 13:20:22,566 - INFO - Статус ответа: 200
+2025-04-24 13:20:22,566 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 13:20:22,566 - INFO - Создано животное с ID: 1
+2025-04-24 13:20:22,567 - INFO - Начальные параметры: масса=5.2, рост=0.5, температура=38.5, активность=3, аппетит=2
+2025-04-24 13:20:22,567 - INFO - === Текущие параметры животного ===
+2025-04-24 13:20:22,567 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1
+2025-04-24 13:20:22,621 - INFO - Статус ответа: 200
+2025-04-24 13:20:22,621 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 13:20:22,621 - INFO - Текущее состояние: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 5.2,
+  "height": 0.5,
+  "temperature": 38.5,
+  "activityLevel": 3,
+  "appetiteLevel": 2,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 13:20:22,621 - INFO - === Добавление записи месяц назад (первый осмотр) ===
+2025-04-24 13:20:22,621 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 13:20:22,622 - INFO - Тело запроса: {
+  "logDate": "2025-03-25",
+  "notes": "Первый осмотр у ветеринара",
+  "massChange": 0.8,
+  "heightChange": 0.15,
+  "temperatureChange": 0.3,
+  "activityLevelChange": 1,
+  "appetiteLevelChange": 1
+}
+2025-04-24 13:20:22,803 - INFO - Статус ответа: 200
+2025-04-24 13:20:22,803 - INFO - Тело ответа: {
+  "id": 1,
+  "logDate": "2025-03-25",
+  "notes": "Первый осмотр у ветеринара",
+  "massChange": 0.8,
+  "heightChange": 0.15,
+  "temperatureChange": 0.3,
+  "activityLevelChange": 1,
+  "appetiteLevelChange": 1,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 13:20:22,803 - INFO - === Добавление записи 2 недели назад ===
+2025-04-24 13:20:22,803 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 13:20:22,803 - INFO - Тело запроса: {
+  "logDate": "2025-04-10",
+  "notes": "Плановый осмотр после лечения",
+  "massChange": -0.2,
+  "heightChange": null,
+  "temperatureChange": -0.1,
+  "activityLevelChange": -1,
+  "appetiteLevelChange": -1
+}
+2025-04-24 13:20:22,866 - INFO - Статус ответа: 200
+2025-04-24 13:20:22,866 - INFO - Тело ответа: {
+  "id": 2,
+  "logDate": "2025-04-10",
+  "notes": "Плановый осмотр после лечения",
+  "massChange": -0.2,
+  "heightChange": null,
+  "temperatureChange": -0.1,
+  "activityLevelChange": -1,
+  "appetiteLevelChange": -1,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 13:20:22,866 - INFO - === Добавление записи 1 неделю назад ===
+2025-04-24 13:20:22,866 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 13:20:22,866 - INFO - Тело запроса: {
+  "logDate": "2025-04-17",
+  "notes": "Улучшение состояния",
+  "massChange": 0.4,
+  "heightChange": 0.05,
+  "temperatureChange": 0.1,
+  "activityLevelChange": 2,
+  "appetiteLevelChange": 2
+}
+2025-04-24 13:20:22,926 - INFO - Статус ответа: 200
+2025-04-24 13:20:22,926 - INFO - Тело ответа: {
+  "id": 3,
+  "logDate": "2025-04-17",
+  "notes": "Улучшение состояния",
+  "massChange": 0.4,
+  "heightChange": 0.05,
+  "temperatureChange": 0.1,
+  "activityLevelChange": 2,
+  "appetiteLevelChange": 2,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 13:20:22,926 - INFO - === Добавление записи вчера ===
+2025-04-24 13:20:22,928 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 13:20:22,928 - INFO - Тело запроса: {
+  "logDate": "2025-04-23",
+  "notes": "Ежедневный осмотр",
+  "massChange": 0.1,
+  "heightChange": null,
+  "temperatureChange": -0.05,
+  "activityLevelChange": null,
+  "appetiteLevelChange": -1
+}
+2025-04-24 13:20:22,972 - INFO - Статус ответа: 200
+2025-04-24 13:20:22,973 - INFO - Тело ответа: {
+  "id": 4,
+  "logDate": "2025-04-23",
+  "notes": "Ежедневный осмотр",
+  "massChange": 0.1,
+  "heightChange": null,
+  "temperatureChange": -0.05,
+  "activityLevelChange": null,
+  "appetiteLevelChange": -1,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 13:20:22,973 - INFO - === Добавление записи сегодня ===
+2025-04-24 13:20:22,973 - INFO - Выполнение запроса: POST http://localhost:80/api/animals/1/status-logs
+2025-04-24 13:20:22,973 - INFO - Тело запроса: {
+  "logDate": "2025-04-24",
+  "notes": "Текущий осмотр перед прививкой",
+  "massChange": 0.05,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": 1,
+  "appetiteLevelChange": null
+}
+2025-04-24 13:20:23,018 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,019 - INFO - Тело ответа: {
+  "id": 5,
+  "logDate": "2025-04-24",
+  "notes": "Текущий осмотр перед прививкой",
+  "massChange": 0.05,
+  "heightChange": null,
+  "temperatureChange": null,
+  "activityLevelChange": 1,
+  "appetiteLevelChange": null,
+  "photos": [],
+  "documents": [],
+  "parameterChanges": []
+}
+2025-04-24 13:20:23,019 - INFO - === Все записи дневника ===
+2025-04-24 13:20:23,019 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/status-logs
+2025-04-24 13:20:23,105 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,106 - INFO - Тело ответа: [
+  {
+    "id": 1,
+    "logDate": "2025-03-25",
+    "notes": "Первый осмотр у ветеринара",
+    "massChange": 0.8,
+    "heightChange": 0.15,
+    "temperatureChange": 0.3,
+    "activityLevelChange": 1,
+    "appetiteLevelChange": 1,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": [
+      {
+        "parameterName": "mass",
+        "oldValue": "5.20",
+        "newValue": "6.00",
+        "changedAt": "2025-03-25",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "height",
+        "oldValue": "0.50",
+        "newValue": "0.65",
+        "changedAt": "2025-03-25",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "temperature",
+        "oldValue": "38.50",
+        "newValue": "38.80",
+        "changedAt": "2025-03-25",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "activityLevel",
+        "oldValue": "3",
+        "newValue": "1",
+        "changedAt": "2025-03-25",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "appetiteLevel",
+        "oldValue": "2",
+        "newValue": "1",
+        "changedAt": "2025-03-25",
+        "changedBy": "chikernut213@gmail.com"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "logDate": "2025-04-10",
+    "notes": "Плановый осмотр после лечения",
+    "massChange": -0.2,
+    "heightChange": null,
+    "temperatureChange": -0.1,
+    "activityLevelChange": -1,
+    "appetiteLevelChange": -1,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": [
+      {
+        "parameterName": "mass",
+        "oldValue": "6.00",
+        "newValue": "5.80",
+        "changedAt": "2025-04-10",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "temperature",
+        "oldValue": "38.80",
+        "newValue": "38.70",
+        "changedAt": "2025-04-10",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "activityLevel",
+        "oldValue": "1",
+        "newValue": "-1",
+        "changedAt": "2025-04-10",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "appetiteLevel",
+        "oldValue": "1",
+        "newValue": "-1",
+        "changedAt": "2025-04-10",
+        "changedBy": "chikernut213@gmail.com"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "logDate": "2025-04-17",
+    "notes": "Улучшение состояния",
+    "massChange": 0.4,
+    "heightChange": 0.05,
+    "temperatureChange": 0.1,
+    "activityLevelChange": 2,
+    "appetiteLevelChange": 2,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": [
+      {
+        "parameterName": "mass",
+        "oldValue": "5.80",
+        "newValue": "6.20",
+        "changedAt": "2025-04-17",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "height",
+        "oldValue": "0.65",
+        "newValue": "0.70",
+        "changedAt": "2025-04-17",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "temperature",
+        "oldValue": "38.70",
+        "newValue": "38.80",
+        "changedAt": "2025-04-17",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "activityLevel",
+        "oldValue": "-1",
+        "newValue": "2",
+        "changedAt": "2025-04-17",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "appetiteLevel",
+        "oldValue": "-1",
+        "newValue": "2",
+        "changedAt": "2025-04-17",
+        "changedBy": "chikernut213@gmail.com"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "logDate": "2025-04-23",
+    "notes": "Ежедневный осмотр",
+    "massChange": 0.1,
+    "heightChange": null,
+    "temperatureChange": -0.05,
+    "activityLevelChange": null,
+    "appetiteLevelChange": -1,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": [
+      {
+        "parameterName": "mass",
+        "oldValue": "6.20",
+        "newValue": "6.30",
+        "changedAt": "2025-04-23",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "temperature",
+        "oldValue": "38.80",
+        "newValue": "38.75",
+        "changedAt": "2025-04-23",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "appetiteLevel",
+        "oldValue": "2",
+        "newValue": "-1",
+        "changedAt": "2025-04-23",
+        "changedBy": "chikernut213@gmail.com"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "logDate": "2025-04-24",
+    "notes": "Текущий осмотр перед прививкой",
+    "massChange": 0.05,
+    "heightChange": null,
+    "temperatureChange": null,
+    "activityLevelChange": 1,
+    "appetiteLevelChange": null,
+    "photos": [],
+    "documents": [],
+    "parameterChanges": [
+      {
+        "parameterName": "mass",
+        "oldValue": "6.30",
+        "newValue": "6.35",
+        "changedAt": "2025-04-24",
+        "changedBy": "chikernut213@gmail.com"
+      },
+      {
+        "parameterName": "activityLevel",
+        "oldValue": "2",
+        "newValue": "1",
+        "changedAt": "2025-04-24",
+        "changedBy": "chikernut213@gmail.com"
+      }
+    ]
+  }
+]
+2025-04-24 13:20:23,107 - INFO - === История изменения mass ===
+2025-04-24 13:20:23,107 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/mass
+2025-04-24 13:20:23,157 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,157 - INFO - Тело ответа: [
+  {
+    "parameterName": "mass",
+    "oldValue": "6.30",
+    "newValue": "6.35",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "6.20",
+    "newValue": "6.30",
+    "changedAt": "2025-04-23",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "5.80",
+    "newValue": "6.20",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "6.00",
+    "newValue": "5.80",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "mass",
+    "oldValue": "5.20",
+    "newValue": "6.00",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 13:20:23,157 - INFO - === История изменения height ===
+2025-04-24 13:20:23,157 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/height
+2025-04-24 13:20:23,192 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,193 - INFO - Тело ответа: [
+  {
+    "parameterName": "height",
+    "oldValue": "0.65",
+    "newValue": "0.70",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "height",
+    "oldValue": "0.50",
+    "newValue": "0.65",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 13:20:23,193 - INFO - === История изменения temperature ===
+2025-04-24 13:20:23,193 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/temperature
+2025-04-24 13:20:23,226 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,226 - INFO - Тело ответа: [
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.80",
+    "newValue": "38.75",
+    "changedAt": "2025-04-23",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.70",
+    "newValue": "38.80",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.80",
+    "newValue": "38.70",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "temperature",
+    "oldValue": "38.50",
+    "newValue": "38.80",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 13:20:23,226 - INFO - === История изменения activityLevel ===
+2025-04-24 13:20:23,226 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/activityLevel
+2025-04-24 13:20:23,262 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,262 - INFO - Тело ответа: [
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "2",
+    "newValue": "1",
+    "changedAt": "2025-04-24",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "-1",
+    "newValue": "2",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "1",
+    "newValue": "-1",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "activityLevel",
+    "oldValue": "3",
+    "newValue": "1",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 13:20:23,262 - INFO - === История изменения appetiteLevel ===
+2025-04-24 13:20:23,262 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/history/appetiteLevel
+2025-04-24 13:20:23,294 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,294 - INFO - Тело ответа: [
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "2",
+    "newValue": "-1",
+    "changedAt": "2025-04-23",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "-1",
+    "newValue": "2",
+    "changedAt": "2025-04-17",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "1",
+    "newValue": "-1",
+    "changedAt": "2025-04-10",
+    "changedBy": "chikernut213@gmail.com"
+  },
+  {
+    "parameterName": "appetiteLevel",
+    "oldValue": "2",
+    "newValue": "1",
+    "changedAt": "2025-03-25",
+    "changedBy": "chikernut213@gmail.com"
+  }
+]
+2025-04-24 13:20:23,294 - INFO - === Статистика по mass ===
+2025-04-24 13:20:23,294 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/mass
+2025-04-24 13:20:23,344 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,345 - INFO - Тело ответа: {
+  "minValue": "5.8",
+  "maxValue": "6.35",
+  "avgValue": 6.13,
+  "firstValue": "6.35",
+  "lastValue": "6.00"
+}
+2025-04-24 13:20:23,345 - INFO - === Статистика по height ===
+2025-04-24 13:20:23,345 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/height
+2025-04-24 13:20:23,375 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,375 - INFO - Тело ответа: {
+  "minValue": "0.65",
+  "maxValue": "0.7",
+  "avgValue": 0.675,
+  "firstValue": "0.70",
+  "lastValue": "0.65"
+}
+2025-04-24 13:20:23,376 - INFO - === Статистика по temperature ===
+2025-04-24 13:20:23,376 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/temperature
+2025-04-24 13:20:23,411 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,411 - INFO - Тело ответа: {
+  "minValue": "38.7",
+  "maxValue": "38.8",
+  "avgValue": 38.7625,
+  "firstValue": "38.75",
+  "lastValue": "38.80"
+}
+2025-04-24 13:20:23,411 - INFO - === Статистика по activityLevel ===
+2025-04-24 13:20:23,411 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/activityLevel
+2025-04-24 13:20:23,455 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,455 - INFO - Тело ответа: {
+  "minValue": "-1.0",
+  "maxValue": "2.0",
+  "avgValue": 0.75,
+  "firstValue": "1",
+  "lastValue": "1"
+}
+2025-04-24 13:20:23,455 - INFO - === Статистика по appetiteLevel ===
+2025-04-24 13:20:23,455 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1/parameters/stats/appetiteLevel
+2025-04-24 13:20:23,489 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,489 - INFO - Тело ответа: {
+  "minValue": "-1.0",
+  "maxValue": "2.0",
+  "avgValue": 0.25,
+  "firstValue": "-1",
+  "lastValue": "1"
+}
+2025-04-24 13:20:23,489 - INFO - === Текущие параметры после всех изменений ===
+2025-04-24 13:20:23,489 - INFO - Выполнение запроса: GET http://localhost:80/api/animals/1
+2025-04-24 13:20:23,510 - INFO - Статус ответа: 200
+2025-04-24 13:20:23,510 - INFO - Тело ответа: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 6.35,
+  "height": 0.7,
+  "temperature": 38.75,
+  "activityLevel": 1,
+  "appetiteLevel": -1,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 13:20:23,510 - INFO - Финальное состояние: {
+  "id": 1,
+  "name": "Тестовый питомец",
+  "description": "Тестовое описание",
+  "birthDate": "2020-01-15",
+  "mass": 6.35,
+  "height": 0.7,
+  "temperature": 38.75,
+  "activityLevel": 1,
+  "appetiteLevel": -1,
+  "attributes": [
+    {
+      "id": 1,
+      "name": "Порода",
+      "value": "Дворняжка"
+    },
+    {
+      "id": 2,
+      "name": "Окрас",
+      "value": "Рыжий"
+    }
+  ],
+  "photos": [],
+  "documents": []
+}
+2025-04-24 13:20:23,510 - INFO - === Сравнение начальных и конечных параметров ===
+2025-04-24 13:20:23,510 - INFO - Масса: 5.2 -> 6.35
+2025-04-24 13:20:23,510 - INFO - Рост: 0.5 -> 0.7
+2025-04-24 13:20:23,510 - INFO - Температура: 38.5 -> 38.75
+2025-04-24 13:20:23,510 - INFO - Активность: 3 -> 1
+2025-04-24 13:20:23,510 - INFO - Аппетит: 2 -> -1
+2025-04-24 13:20:23,510 - INFO - Тестирование завершено. Животное не удаляется для дальнейших проверок.

@@ -1,0 +1,35 @@
+// components/ParameterHistory/ParameterHistory.module.scss
+.historyContainer {
+	margin-top: 1.5rem;
+	border: 1px solid #f0f0f0;
+	border-radius: 8px;
+	padding: 1rem;
+
+	h3 {
+		margin-bottom: 1rem;
+		color: #1890ff;
+		font-size: 1.1rem;
+	}
+}
+
+.historyItem {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	gap: 1rem;
+	padding: 0.5rem 0;
+	border-bottom: 1px solid #f0f0f0;
+
+	&:last-child {
+		border-bottom: none;
+	}
+
+	div {
+		font-size: 0.9rem;
+		color: #666;
+
+		&:nth-child(2) {
+			color: #1890ff;
+			font-weight: 500;
+		}
+	}
+}

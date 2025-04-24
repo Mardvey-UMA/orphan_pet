@@ -22,6 +22,7 @@ import {
 	Form,
 	Image,
 	Input,
+	InputNumber,
 	message,
 	Modal,
 	Space,
@@ -235,6 +236,21 @@ export const AnimalPage = () => {
 							</Form.Item>
 							<Form.Item name='mass' label='Вес (кг)'>
 								<Input type='number' />
+							</Form.Item>
+							<Form.Item name='height' label='Рост (см)'>
+								<Input type='number' step='0.1' />
+							</Form.Item>
+
+							<Form.Item name='temperature' label='Температура (°C)'>
+								<Input type='number' step='0.1' />
+							</Form.Item>
+
+							<Form.Item name='activityLevel' label='Уровень активности (1-10)'>
+								<InputNumber min={1} max={10} />
+							</Form.Item>
+
+							<Form.Item name='appetiteLevel' label='Уровень аппетита (1-10)'>
+								<InputNumber min={1} max={10} />
 							</Form.Item>
 							<Space>
 								<Button type='primary' onClick={handleSave}>

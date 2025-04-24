@@ -12,9 +12,13 @@ export interface AnimalResponse {
 	description?: string
 	birthDate?: string
 	mass?: number
-	attributes: AttributeResponse[]
+	height?: number 
+	temperature?: number 
+	activityLevel?: number 
+	appetiteLevel?: number 
 	photos: string[]
 	documents: string[]
+	attributes: AttributeResponse[]
 }
 
 export interface DocumentResponse {
@@ -38,6 +42,10 @@ export interface AnimalUpdateRequest {
 	description?: string
 	birthDate?: string
 	mass?: number
+	height?: number
+	temperature?: number
+	activityLevel?: number
+	appetiteLevel?: number
 }
 export interface S3UploadResponse {
 	objectKey: string
@@ -49,4 +57,20 @@ export interface AnimalPhotoUploadResponse {
 
 export interface AnimalDocumentUploadResponse {
 	url: string // Прямая ссылка на документ
+}
+export interface ParameterChangeResponse {
+	parameterName: string
+	oldValue: string
+	newValue: string
+	changedAt: string // Дата в формате ISO
+	changedBy: string // Имя пользователя
+}
+export interface AnimalAnalyticsResponse {
+	parameterName: string
+	changes: ParameterChangeResponse[]
+	stats?: {
+		minValue: string
+		maxValue: string
+		avgValue: number
+	}
 }

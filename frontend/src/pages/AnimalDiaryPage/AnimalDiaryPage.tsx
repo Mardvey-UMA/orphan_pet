@@ -1,9 +1,8 @@
+// pages/AnimalDiaryPage/AnimalDiaryPage.tsx
 import { FileUpload } from '@/components/FileUpload/FileUpload'
-import { animalApi } from '@/features/animal/api/animalApi'
-import { AnimalResponse, DocumentResponse } from '@/features/animal/api/types'
+import { ParameterHistory } from '@/components/ParametrHistory/ParameterHistory'
 import { diaryApi } from '@/features/diary/api/diaryApi'
-import { StatusLogResponse } from '@/features/diary/api/types'
-import { DeleteOutlined, PlusOutlined, UploadOutlined } from '@ant-design/icons'
+import { StatusLogCreateRequest } from '@/features/diary/api/types'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	Button,
@@ -21,7 +20,7 @@ import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import styles from './AnimalDiaryPage.module.scss'
 
-const { Title, Text } = Typography
+const { Title } = Typography
 
 export const AnimalDiaryPage = () => {
 	const { id } = useParams<{ id: string }>()
@@ -31,417 +30,243 @@ export const AnimalDiaryPage = () => {
 	const [selectedDate, setSelectedDate] = useState<Dayjs>(dayjs())
 	const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false)
 	const [selectedPhotoIndex, setSelectedPhotoIndex] = useState(0)
-	//const [newAttribute, setNewAttribute] = useState({ name: '', value: '' })
-	const [newAttribute, setNewAttribute] = useState<{
-		name: string
-		value: string
-	}>({ name: '', value: '' })
 
-	const { data: animal } = useQuery<AnimalResponse>({
-		queryKey: ['animal', id],
-		queryFn: () => animalApi.getAnimal(Number(id!)),
-	})
-
-	const { data: diaryEntriesResponse } = useQuery({
-		queryKey: ['animalDiary', id],
+	// Получение записей дневника
+	const { data: diaryEntries } = useQuery({
+		queryKey: ['diaryEntries', id],
 		queryFn: () => diaryApi.getStatusLogs(Number(id!)),
 	})
 
-	const diaryEntries: StatusLogResponse[] = diaryEntriesResponse?.data || []
-	const currentEntry = diaryEntries.find((entry: StatusLogResponse) =>
-		dayjs(entry.logDate).isSame(selectedDate, 'day')
-	)
-
-	const photos = currentEntry?.photos || []
-	const documents = currentEntry?.documents || []
-	//const attributes = currentEntry?.attributes || []
-
 	// Мутации
-	const createEntry = useMutation({
-		mutationFn: (notes: string) =>
-			diaryApi.createStatusLog(Number(id!), {
-				notes,
-				logDate: selectedDate.format('YYYY-MM-DD'),
-			}),
+	const createMutation = useMutation({
+		mutationFn: (data: StatusLogCreateRequest) =>
+			diaryApi.createStatusLog(Number(id!), data),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-			form.resetFields()
-			message.success('Запись создана')
+			queryClient.invalidateQueries({ queryKey: ['diaryEntries', id] })
 		},
 	})
 
-	const updateEntry = useMutation({
-		mutationFn: (notes: string) => {
-			if (!currentEntry?.id) throw new Error('Entry ID is missing')
-			return diaryApi.updateStatusLog(Number(id!), currentEntry.id, { notes })
+	const updateMutation = useMutation({
+		mutationFn: (data: StatusLogCreateRequest) => {
+			const entry = diaryEntries?.data?.find(e =>
+				dayjs(e.logDate).isSame(selectedDate, 'day')
+			)
+			if (!entry) throw new Error('Запись не найдена')
+			return diaryApi.updateStatusLog(Number(id!), entry.id, data)
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-			message.success('Запись обновлена')
+			queryClient.invalidateQueries({ queryKey: ['diaryEntries', id] })
 		},
 	})
 
-	const addPhoto = useMutation({
-		mutationFn: (file: File) => {
-			if (!currentEntry?.id) throw new Error('Entry ID is missing')
-			return diaryApi.addStatusLogPhoto(Number(id!), currentEntry.id, file)
+	const addPhotoMutation = useMutation({
+		mutationFn: async (file: File) => {
+			const entry = diaryEntries?.data?.find(e =>
+				dayjs(e.logDate).isSame(selectedDate, 'day')
+			)
+			if (!entry) throw new Error('Запись не найдена')
+			return diaryApi.addStatusLogPhoto(Number(id!), entry.id, file)
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-			message.success('Фото добавлено')
+			queryClient.invalidateQueries({ queryKey: ['diaryEntries', id] })
 		},
 	})
 
-	const addDocument = useMutation({
-		mutationFn: (file: File) => {
-			if (!currentEntry?.id) throw new Error('Entry ID is missing')
+	const currentEntry = diaryEntries?.data?.find(e =>
+		dayjs(e.logDate).isSame(selectedDate, 'day')
+	)
+	const addDocumentMutation = useMutation({
+		mutationFn: async (file: File) => {
+			const entry = diaryEntries?.data?.find(e =>
+				dayjs(e.logDate).isSame(selectedDate, 'day')
+			)
+
+			if (!entry?.id) {
+				throw new Error('Не найдена запись для добавления документа')
+			}
+
 			return diaryApi.addStatusLogDocument(
 				Number(id!),
-				currentEntry.id,
+				entry.id,
 				file,
-				'OTHER'
+				'MEDICAL'
 			)
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-			message.success('Документ добавлен')
+			queryClient.invalidateQueries({ queryKey: ['diaryEntries', id] })
 		},
 	})
+	const handleSave = async (values: StatusLogCreateRequest) => {
+		try {
+			const data = {
+				...values,
+				logDate: selectedDate.format('YYYY-MM-DD'),
+			}
 
-	// const addAttribute = useMutation({
-	// 	mutationFn: (data: { name: string; value: string }) => {
-	// 		if (!currentEntry?.id) throw new Error('Entry ID is missing')
-	// 		return diaryApi.addStatusLogAttribute(Number(id!), currentEntry.id, data)
-	// 	},
-	// 	onSuccess: () => {
-	// 		queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-	// 		setNewAttribute({ name: '', value: '' })
-	// 		message.success('Атрибут добавлен')
-	// 	},
-	// })
-
-	// const updateAttribute = useMutation({
-	// 	mutationFn: ({
-	// 		id: attrId,
-	// 		name,
-	// 		value,
-	// 	}: {
-	// 		id: number
-	// 		name: string
-	// 		value: string
-	// 	}) => {
-	// 		if (!currentEntry?.id) throw new Error('Entry ID is missing')
-	// 		return diaryApi.updateStatusLogAttribute(
-	// 			Number(id!),
-	// 			currentEntry.id,
-	// 			attrId,
-	// 			{ name, value }
-	// 		)
-	// 	},
-	// 	onSuccess: () => {
-	// 		queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-	// 		message.success('Атрибут обновлен')
-	// 	},
-	// })
-
-	// const deleteAttribute = useMutation({
-	// 	mutationFn: (attrId: number) => {
-	// 		if (!currentEntry?.id) throw new Error('Entry ID is missing')
-	// 		return diaryApi.deleteStatusLogAttribute(
-	// 			Number(id!),
-	// 			currentEntry.id,
-	// 			attrId
-	// 		)
-	// 	},
-	// 	onSuccess: () => {
-	// 		queryClient.invalidateQueries({ queryKey: ['animalDiary', id] })
-	// 		message.success('Атрибут удален')
-	// 	},
-	// })
-	// Мутации для работы с атрибутами животного
-	const addAttribute = useMutation({
-		mutationFn: (data: { name: string; value: string }) =>
-			animalApi.addAttribute(Number(id!), data),
-		onSuccess: () => {
-			message.success('Атрибут добавлен!')
-			queryClient.invalidateQueries({ queryKey: ['animal', id] })
-			setNewAttribute({ name: '', value: '' })
-		},
-	})
-
-	const deleteAttribute = useMutation({
-		mutationFn: (attributeId: number) =>
-			animalApi.deleteAttribute(Number(id!), attributeId),
-		onSuccess: () => {
-			message.success('Атрибут удален!')
-			queryClient.invalidateQueries({ queryKey: ['animal', id] })
-		},
-	})
-	const handleSave = () => {
-		const notes = form.getFieldValue('notes')
-		if (currentEntry) {
-			updateEntry.mutate(notes)
-		} else {
-			createEntry.mutate(notes || 'Новая запись')
+			if (
+				diaryEntries?.data?.some(e =>
+					dayjs(e.logDate).isSame(selectedDate, 'day')
+				)
+			) {
+				await updateMutation.mutateAsync(data)
+			} else {
+				await createMutation.mutateAsync(data)
+			}
+			message.success('Запись сохранена')
+		} catch (error) {
+			message.error('Ошибка сохранения')
+			console.log(error)
 		}
 	}
 
-	const handleAddAttribute = () => {
-		if (!newAttribute.name || !newAttribute.value) {
-			message.warning('Заполните название и значение атрибута')
-			return
-		}
-		addAttribute.mutate(newAttribute)
-	}
-
-	const dateCellRender = (value: Dayjs) => {
-		const hasEntry = diaryEntries.some((entry: StatusLogResponse) =>
-			dayjs(entry.logDate).isSame(value, 'day')
+	const dateCellRender = (date: Dayjs) => {
+		const hasEntry = diaryEntries?.data?.some(e =>
+			dayjs(e.logDate).isSame(date, 'day')
 		)
-		return hasEntry ? <div className={styles.calendarDayWithEntry} /> : null
+		return hasEntry ? <div className={styles.calendarDot} /> : null
 	}
-
-	if (!animal) return <div>Животное не найдено</div>
 
 	return (
 		<div className={styles.container}>
-			<Button
-				onClick={() => navigate(`/animals/${id}`)}
-				className={styles.backButton}
-			>
+			<Button onClick={() => navigate(-1)} className={styles.backButton}>
 				Назад к животному
 			</Button>
 
-			<Title level={2}>Дневник: {animal.name}</Title>
-			<div className={styles.layoutContainer}>
-				<div className={styles.calendarContainer}>
+			<Title level={2} className={styles.title}>
+				Дневник наблюдений
+			</Title>
+
+			<div className={styles.layout}>
+				<div className={styles.calendarSection}>
 					<Calendar
 						value={selectedDate}
 						onChange={setSelectedDate}
-						onPanelChange={setSelectedDate}
 						dateCellRender={dateCellRender}
 						className={styles.calendar}
 					/>
 				</div>
-				<div className={styles.entryContainer}>
-					<Card
-						title={`Запись за ${selectedDate.format('DD.MM.YYYY')}`}
-						className={styles.entryCard}
+
+				<Card className={styles.entryCard}>
+					<Form
+						form={form}
+						initialValues={currentEntry}
+						onFinish={handleSave}
+						layout='vertical'
 					>
-						{currentEntry ? (
-							<>
-								<Form
-									form={form}
-									initialValues={{ notes: currentEntry.notes }}
-									layout='vertical'
-								>
-									<Form.Item name='notes' label='Заметки'>
-										<Input.TextArea
-											rows={4}
-											placeholder='Опишите состояние животного...'
-										/>
-									</Form.Item>
+						<Form.Item label='Дата записи'>
+							<Input disabled value={selectedDate.format('DD.MM.YYYY')} />
+						</Form.Item>
 
-									{/* Секция атрибутов */}
-									{/* Атрибуты животного */}
-									<Card
-										title={
-											<div className={styles.cardTitleWithButton}>
-												<span>Атрибуты животного</span>
-											</div>
-										}
-										className={styles.section}
-									>
-										<div className={styles.newAttribute}>
-											<Input
-												placeholder='Название атрибута'
-												value={newAttribute.name}
-												onChange={e =>
-													setNewAttribute({
-														...newAttribute,
-														name: e.target.value,
-													})
-												}
-											/>
-											<Input
-												placeholder='Значение'
-												value={newAttribute.value}
-												onChange={e =>
-													setNewAttribute({
-														...newAttribute,
-														value: e.target.value,
-													})
-												}
-											/>
-											<Button
-												type='primary'
-												icon={<PlusOutlined />}
-												onClick={handleAddAttribute}
-												//loading={addAttribute.isPending}
-											>
-												Добавить
-											</Button>
-											<Text type='secondary' className={styles.tip}>
-												Примеры: Порода, Цвет, Особенности, Аллергии
-											</Text>
-										</div>
+						<Form.Item label='Заметки' name='notes'>
+							<Input.TextArea
+								rows={4}
+								placeholder='Введите ваши наблюдения...'
+							/>
+						</Form.Item>
 
-										<div className={styles.attributesList}>
-											{animal.attributes.map(attr => (
-												<div key={attr.id} className={styles.attributeItem}>
-													<div className={styles.attributeContent}>
-														<Text strong>{attr.name}:</Text> {attr.value || '—'}
-													</div>
-													<Button
-														type='text'
-														danger
-														icon={<DeleteOutlined />}
-														onClick={() => deleteAttribute.mutate(attr.id)}
-														loading={deleteAttribute.isPending}
-													/>
-												</div>
-											))}
-											{animal.attributes.length === 0 && (
-												<Text type='secondary'>Нет добавленных атрибутов</Text>
-											)}
-										</div>
-									</Card>
+						<div className={styles.parametersGrid}>
+							<Form.Item label='Изменение веса (кг)' name='massChange'>
+								<Input type='number' step='0.1' />
+							</Form.Item>
 
-									{/* Секция фото */}
-									<div className={styles.photosSection}>
-										<h3>Фото</h3>
-										<FileUpload
-											beforeUpload={(file: File) => {
-												addPhoto.mutate(file)
-												return false
-											}}
-											accept='image/*'
-											showUploadList={false}
-											buttonText='Добавить фото'
-											buttonIcon={<UploadOutlined />}
-										/>
+							<Form.Item label='Изменение роста (см)' name='heightChange'>
+								<Input type='number' step='0.1' />
+							</Form.Item>
 
-										<div className={styles.photosGrid}>
-											{photos.map((photo: string, index: number) => (
-												<div key={index} className={styles.photoWrapper}>
-													<Image
-														src={photo}
-														width={100}
-														height={100}
-														preview={{ visible: false }}
-														onClick={() => {
-															setSelectedPhotoIndex(index)
-															setIsPhotoModalOpen(true)
-														}}
-													/>
-												</div>
-											))}
-										</div>
-									</div>
+							<Form.Item
+								label='Изменение температуры (°C)'
+								name='temperatureChange'
+							>
+								<Input type='number' step='0.1' />
+							</Form.Item>
 
-									{/* Секция документов */}
-									<div className={styles.documentsSection}>
-										<h3>Документы</h3>
-										<FileUpload
-											beforeUpload={(file: File) => {
-												addDocument.mutate(file)
-												return false
-											}}
-											accept='.pdf,.doc,.docx'
-											showUploadList={false}
-											buttonText='Добавить документ'
-											buttonIcon={<UploadOutlined />}
-										/>
+							<Form.Item
+								label='Уровень активности (1-10)'
+								name='activityLevelChange'
+							>
+								<Input type='number' min={1} max={10} />
+							</Form.Item>
 
-										<div className={styles.documentsList}>
-											{documents.map((doc: DocumentResponse, index: number) => (
-												<div key={index} className={styles.documentItem}>
-													<a
-														href={doc.url}
-														target='_blank'
-														rel='noopener noreferrer'
-													>
-														Документ {index + 1}
-													</a>
-												</div>
-											))}
-										</div>
-									</div>
+							<Form.Item
+								label='Уровень аппетита (1-10)'
+								name='appetiteLevelChange'
+							>
+								<Input type='number' min={1} max={10} />
+							</Form.Item>
+						</div>
 
-									{/* Кнопка сохранения внизу */}
-									<div className={styles.saveButton}>
-										<Button
-											type='primary'
-											onClick={handleSave}
-											loading={updateEntry.isPending || createEntry.isPending}
-											block
-										>
-											Сохранить запись
-										</Button>
-									</div>
-								</Form>
-							</>
-						) : (
-							<div className={styles.noEntry}>
-								<Text type='secondary'>Запись на эту дату отсутствует</Text>
-								<Button
-									type='primary'
-									icon={<PlusOutlined />}
-									onClick={() => createEntry.mutate('Новая запись')}
-									loading={createEntry.isPending}
-								>
-									Создать запись
-								</Button>
-							</div>
-						)}
-					</Card>
-
-					{/* Модальное окно просмотра фото */}
-					<Modal
-						open={isPhotoModalOpen}
-						footer={null}
-						onCancel={() => setIsPhotoModalOpen(false)}
-						width='80vw'
-						bodyStyle={{ padding: 0 }}
-					>
 						{currentEntry && currentEntry?.photos?.length > 0 && (
-							<div className={styles.photoModal}>
-								<Image
-									src={currentEntry.photos[selectedPhotoIndex]}
-									style={{ maxHeight: '80vh', objectFit: 'contain' }}
-								/>
-								{currentEntry.photos.length > 1 && (
-									<div className={styles.photoNavigation}>
-										<Button
-											onClick={() =>
-												setSelectedPhotoIndex(
-													prev =>
-														(prev - 1 + currentEntry.photos.length) %
-														currentEntry.photos.length
-												)
-											}
-										>
-											Назад
-										</Button>
-										<span>
-											{selectedPhotoIndex + 1} / {currentEntry.photos.length}
-										</span>
-										<Button
-											onClick={() =>
-												setSelectedPhotoIndex(
-													prev => (prev + 1) % currentEntry.photos.length
-												)
-											}
-										>
-											Вперед
-										</Button>
-									</div>
-								)}
+							<div className={styles.photosSection}>
+								<h3>Прикреплённые фото</h3>
+								<div className={styles.photosGrid}>
+									{currentEntry.photos.map((photo: string, index: number) => (
+										<div key={index} className={styles.photoItem}>
+											<Image
+												src={photo}
+												preview={{ visible: false }}
+												onClick={() => {
+													setSelectedPhotoIndex(index)
+													setIsPhotoModalOpen(true)
+												}}
+											/>
+										</div>
+									))}
+								</div>
 							</div>
 						)}
-					</Modal>
-				</div>
+
+						<div className={styles.uploadSection}>
+							<FileUpload
+								beforeUpload={(file: File) => {
+									addPhotoMutation.mutate(file)
+									return false
+								}}
+								accept='image/*'
+								buttonText='Добавить фото'
+								buttonIcon={undefined}
+							/>
+						</div>
+						<div className={styles.uploadSection}>
+							<FileUpload
+								beforeUpload={(file: File) => {
+									addDocumentMutation.mutate(file)
+									return false
+								}}
+								accept='.pdf,.doc,.docx'
+								buttonText='Добавить документ'
+								buttonIcon={undefined}
+							/>
+						</div>
+						{currentEntry?.parameterChanges && (
+							<ParameterHistory changes={currentEntry.parameterChanges} />
+						)}
+
+						<Button
+							type='primary'
+							htmlType='submit'
+							loading={createMutation.isPending || updateMutation.isPending}
+							className={styles.saveButton}
+						>
+							Сохранить изменения
+						</Button>
+					</Form>
+				</Card>
 			</div>
+
+			<Modal
+				open={isPhotoModalOpen}
+				footer={null}
+				onCancel={() => setIsPhotoModalOpen(false)}
+				width='80vw'
+				destroyOnClose
+			>
+				{currentEntry?.photos?.[selectedPhotoIndex] && (
+					<Image
+						src={currentEntry.photos[selectedPhotoIndex]}
+						style={{ maxHeight: '80vh', objectFit: 'contain' }}
+					/>
+				)}
+			</Modal>
 		</div>
 	)
 }

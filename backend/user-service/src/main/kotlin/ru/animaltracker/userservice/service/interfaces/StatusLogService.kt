@@ -17,9 +17,11 @@ interface StatusLogService {
     statusLogId: Long,
     request: StatusLogUpdateRequest
     ): StatusLogResponse
+
     fun deleteStatusLog(username: String, animalId: Long, statusLogId: Long)
     fun getStatusLogs(username: String, animalId: Long): List<StatusLogResponse>
     fun getStatusLog(id: Long): StatusLogResponse
+
     fun getParameterHistory(
         username: String,
         animalId: Long,

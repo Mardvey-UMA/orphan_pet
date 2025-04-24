@@ -9,13 +9,14 @@ import ru.animaltracker.userservice.dto.AnimalResponse
 import ru.animaltracker.userservice.dto.S3FileResponse
 import ru.animaltracker.userservice.dto.UserResponse
 import ru.animaltracker.userservice.dto.UserUpdateRequest
+import ru.animaltracker.userservice.service.interfaces.AnimalManagementService
 import ru.animaltracker.userservice.service.interfaces.UserService
 
 @RestController
 @RequestMapping("/api/users")
 class UserController(
     private val userService: UserService,
-    private val animalService: AnimalService
+    private val animalService: AnimalManagementService
 ) {
 
     @GetMapping("/me")

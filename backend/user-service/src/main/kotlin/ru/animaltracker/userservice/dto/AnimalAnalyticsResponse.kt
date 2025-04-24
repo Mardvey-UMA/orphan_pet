@@ -1,7 +1,7 @@
 package ru.animaltracker.userservice.dto
 
 data class AnimalAnalyticsResponse(
-    val attributeName: String,
+    val parameterName: String,
     val changes: List<ParameterChangeResponse>,
-    val stats: AttributeStats?
+    val stats: ParameterStats?
 )

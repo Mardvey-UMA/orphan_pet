@@ -29,7 +29,7 @@ export const animalApi = {
 		formData.append('file', file)
 		return apiClient
 			.post<AnimalPhotoUploadResponse>(
-				`/animals/${animalId}/photos`,
+				`/animals/${animalId}/media/photos`,
 				formData,
 				{ headers: { 'Content-Type': 'multipart/form-data' } }
 			)
@@ -42,7 +42,7 @@ export const animalApi = {
 		formData.append('type', type)
 		return apiClient
 			.post<AnimalDocumentUploadResponse>(
-				`/animals/${animalId}/documents`,
+				`/animals/${animalId}/media/documents`,
 				formData,
 				{ headers: { 'Content-Type': 'multipart/form-data' } }
 			)

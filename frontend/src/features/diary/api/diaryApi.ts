@@ -4,28 +4,28 @@ import {
 	AttributeHistoryResponse,
 	StatusLogCreateRequest,
 	StatusLogResponse,
-	StatusLogWithHistory,
+	StatusLogUpdateRequest,
 } from './types'
 
 export const diaryApi = {
-	// Основные операции с записями
-	createStatusLog: (animalId: number, data: StatusLogCreateRequest) =>
-		apiClient
-			.post<StatusLogResponse>(`/animals/${animalId}/status-logs`, data)
-			.then(r => r.data),
+	getStatusLogs: (animalId: number) =>
+		apiClient.get<StatusLogResponse[]>(`/animals/${animalId}/status-logs`),
 
-	getStatusLog: (animalId: number, statusLogId: number) =>
-		apiClient
-			.get<StatusLogWithHistory>(
-				`/animals/${animalId}/status-logs/${statusLogId}`
-			)
-			.then(r => r.data),
+	createStatusLog: (animalId: number, data: StatusLogCreateRequest) =>
+		apiClient.post<StatusLogResponse>(`/animals/${animalId}/status-logs`, data),
+
+	updateStatusLog: (
+		animalId: number,
+		statusLogId: number,
+		data: StatusLogUpdateRequest
+	) =>
+		apiClient.put<StatusLogResponse>(
+			`/animals/${animalId}/status-logs/${statusLogId}`,
+			data
+		),
 
 	deleteStatusLog: (animalId: number, statusLogId: number) =>
-		apiClient
-			.delete(`/animals/${animalId}/status-logs/${statusLogId}`)
-			.then(r => r.data),
-
+		apiClient.delete(`/animals/${animalId}/status-logs/${statusLogId}`),
 	deleteStatusLogPhoto: (photoId: number) =>
 		apiClient
 			.delete(`/animals/status-logs/photos/${photoId}`)
@@ -54,27 +54,14 @@ export const diaryApi = {
 			)
 			.then(r => r.data),
 
-	getStatusLogs: (animalId: number) =>
-		apiClient.get<StatusLogResponse[]>(`/animals/${animalId}/status-logs`),
-
 	addStatusLog: (animalId: number, data: { notes: string; logDate: string }) =>
 		apiClient.post<StatusLogResponse>(`/animals/${animalId}/status-logs`, data),
-
-	updateStatusLog: (
-		animalId: number,
-		statusLogId: number,
-		data: { notes: string }
-	) =>
-		apiClient.put<StatusLogResponse>(
-			`/animals/${animalId}/status-logs/${statusLogId}`,
-			data
-		),
 
 	addStatusLogPhoto: (animalId: number, statusLogId: number, file: File) => {
 		const formData = new FormData()
 		formData.append('file', file)
-		return apiClient.post<string>(
-			`/animals/${animalId}/status-logs/${statusLogId}/photos`,
+		return apiClient.post(
+			`/animals/${animalId}/status-logs/${statusLogId}/media/photos`,
 			formData,
 			{ headers: { 'Content-Type': 'multipart/form-data' } }
 		)
@@ -90,7 +77,7 @@ export const diaryApi = {
 		formData.append('file', file)
 		formData.append('type', type)
 		return apiClient.post<string>(
-			`/animals/${animalId}/status-logs/${statusLogId}/documents`,
+			`/animals/${animalId}/status-logs/${statusLogId}/media/documents`,
 			formData,
 			{ headers: { 'Content-Type': 'multipart/form-data' } }
 		)
@@ -116,4 +103,7 @@ export const diaryApi = {
 			`/animals/${animalId}/status-logs/${statusLogId}/attributes/${attributeId}`,
 			data
 		),
+
+	getAnalytics: (animalId: number) =>
+		apiClient.get(`/animals/${animalId}/analytics`),
 }
