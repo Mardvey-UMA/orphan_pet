@@ -7,7 +7,12 @@ import {
 	StatusLogCreateRequest,
 	StatusLogResponse,
 } from '@/features/diary/api/types'
-import { BookOutlined } from '@ant-design/icons'
+import {
+	BookOutlined,
+	FileImageOutlined,
+	FilePdfOutlined,
+	FileWordOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	Button,
@@ -42,7 +47,6 @@ export const AnimalDiaryPage = () => {
 		documents: File[]
 	}>({ photos: [], documents: [] })
 
-	// Получение данных с явным указанием типов
 	const { data: animal } = useQuery({
 		queryKey: ['animal', id],
 		queryFn: () => animalApi.getAnimal(Number(id!)),
@@ -53,7 +57,6 @@ export const AnimalDiaryPage = () => {
 		queryFn: () => diaryApi.getStatusLogs(Number(id!)),
 	})
 
-	// Обработка данных ответа
 	const diaryEntries = useMemo(
 		() => diaryEntriesResponse?.data || [],
 		[diaryEntriesResponse]
@@ -67,7 +70,6 @@ export const AnimalDiaryPage = () => {
 		[diaryEntries, selectedDate]
 	)
 
-	// Инициализация формы
 	useEffect(() => {
 		if (currentEntry) {
 			form.setFieldsValue(currentEntry)
@@ -75,8 +77,33 @@ export const AnimalDiaryPage = () => {
 			form.resetFields()
 		}
 	}, [currentEntry, form])
+	const renderFileIcon = (type: 'photo' | 'document', fileName?: string) => {
+		if (type === 'photo') {
+			return (
+				<div className={styles.fileIconWrapper}>
+					<FileImageOutlined className={styles.fileTypeIcon} />
+					<span className={styles.fileTypeLabel}>Фото</span>
+				</div>
+			)
+		}
 
-	// Мутации с явными типами
+		const ext = fileName?.split('.').pop()?.toLowerCase()
+		return (
+			<div className={styles.fileIconWrapper}>
+				{ext === 'pdf' ? (
+					<>
+						<FilePdfOutlined className={styles.fileTypeIcon} />
+						<span className={styles.fileTypeLabel}>PDF</span>
+					</>
+				) : (
+					<>
+						<FileWordOutlined className={styles.fileTypeIcon} />
+					</>
+				)}
+			</div>
+		)
+	}
+
 	const createMutation = useMutation({
 		mutationFn: (data: StatusLogCreateRequest) =>
 			diaryApi.createStatusLog(Number(id!), data),
@@ -191,6 +218,13 @@ export const AnimalDiaryPage = () => {
 		return false
 	}
 
+	const getFileIcon = (fileName: string) => {
+		const ext = fileName.split('.').pop()?.toLowerCase()
+		if (ext === 'pdf') return <FilePdfOutlined />
+		if (['doc', 'docx'].includes(ext || '')) return <FileWordOutlined />
+		return <FileImageOutlined />
+	}
+
 	return (
 		<div className={styles.container}>
 			<Button
@@ -294,63 +328,71 @@ export const AnimalDiaryPage = () => {
 						</div>
 
 						<div className={styles.actionsSection}>
-							<FileUpload
-								beforeUpload={file => handleFileUpload(file, 'photo')}
-								accept='image/*'
-								buttonText='Добавить фото'
-								showUploadList={false}
-								buttonIcon={undefined}
-							/>
+							<div className={styles.uploadButtons}>
+								<FileUpload
+									beforeUpload={file => handleFileUpload(file, 'photo')}
+									accept='image/*'
+									buttonText='Добавить фото'
+									showUploadList={false}
+									buttonIcon={<FileImageOutlined />}
+								/>
 
-							<FileUpload
-								beforeUpload={file => handleFileUpload(file, 'document')}
-								accept='.pdf,.doc,.docx'
-								buttonText='Добавить документ'
-								showUploadList={false}
-								buttonIcon={undefined}
-							/>
+								<FileUpload
+									beforeUpload={file => handleFileUpload(file, 'document')}
+									accept='.pdf,.doc,.docx'
+									buttonText='Добавить документ'
+									showUploadList={false}
+									buttonIcon={<FilePdfOutlined />}
+								/>
+							</div>
+
 							{(filesToUpload.photos.length > 0 ||
 								filesToUpload.documents.length > 0) && (
 								<div className={styles.uploadPreview}>
 									<h4>Файлы для загрузки:</h4>
-									{filesToUpload.photos.map((file, index) => (
-										<div key={`photo-${index}`} className={styles.fileItem}>
-											<span>{file.name}</span>
-											<Button
-												type='link'
-												danger
-												onClick={() =>
-													setFilesToUpload(prev => ({
-														...prev,
-														photos: prev.photos.filter((_, i) => i !== index),
-													}))
-												}
-											>
-												Удалить
-											</Button>
-										</div>
-									))}
-									{filesToUpload.documents.map((file, index) => (
-										<div key={`doc-${index}`} className={styles.fileItem}>
-											<span>{file.name}</span>
-											<Button
-												type='link'
-												danger
-												onClick={() =>
-													setFilesToUpload(prev => ({
-														...prev,
-														documents: prev.documents.filter(
-															(_, i) => i !== index
-														),
-													}))
-												}
-											>
-												Удалить
-											</Button>
-										</div>
-									))}
+									<div className={styles.filesGrid}>
+										{filesToUpload.photos.map((file, index) => (
+											<div key={`photo-${index}`} className={styles.fileCard}>
+												<FileImageOutlined className={styles.fileIcon} />
+												<span className={styles.fileName}>{file.name}</span>
+												<Button
+													type='link'
+													danger
+													onClick={() =>
+														setFilesToUpload(prev => ({
+															...prev,
+															photos: prev.photos.filter((_, i) => i !== index),
+														}))
+													}
+												>
+													Удалить
+												</Button>
+											</div>
+										))}
+										{filesToUpload.documents.map((file, index) => (
+											<div key={`doc-${index}`} className={styles.fileCard}>
+												{getFileIcon(file.name)}
+												<span className={styles.fileName}>{file.name}</span>
+												<Button
+													type='link'
+													danger
+													onClick={() =>
+														setFilesToUpload(prev => ({
+															...prev,
+															documents: prev.documents.filter(
+																(_, i) => i !== index
+															),
+														}))
+													}
+												>
+													Удалить
+												</Button>
+											</div>
+										))}
+									</div>
 								</div>
 							)}
+
 							<Button
 								type='primary'
 								htmlType='submit'
@@ -361,39 +403,46 @@ export const AnimalDiaryPage = () => {
 							</Button>
 						</div>
 
-						{currentEntry && currentEntry?.photos?.length > 0 && (
-							<div className={styles.photosSection}>
-								<h3>Прикрепленные фото</h3>
-								<div className={styles.photosGrid}>
-									{currentEntry.photos.map((photo: string, index: number) => (
-										<div key={index} className={styles.photoItem}>
-											<Image
-												src={photo}
-												preview={{ visible: false }}
-												onClick={() => {
-													setSelectedPhotoIndex(index)
-													setIsPhotoModalOpen(true)
-												}}
-											/>
-										</div>
-									))}
+						{((currentEntry && currentEntry?.photos?.length > 0) ||
+							(currentEntry && currentEntry?.documents?.length > 0)) && (
+							<div className={styles.attachmentsSection}>
+								<h3>Прикрепленные файлы</h3>
+								<div className={styles.attachmentsGrid}>
+									{currentEntry &&
+										currentEntry.photos.map((photo: string, index: number) => (
+											<div key={index} className={styles.fileCard}>
+												<Image
+													src={photo}
+													preview={{ visible: false }}
+													className={styles.fileThumbnail}
+													onClick={() => {
+														setSelectedPhotoIndex(index)
+														setIsPhotoModalOpen(true)
+													}}
+												/>
+												<span className={styles.fileName}>
+													Фото {index + 1}
+												</span>
+											</div>
+										))}
+									{currentEntry &&
+										currentEntry.documents.map((doc, index) => (
+											<div key={`doc-${index}`} className={styles.fileCard}>
+												{renderFileIcon('document', doc)}
+												<a
+													href={doc}
+													target='_blank'
+													rel='noopener noreferrer'
+													className={styles.fileLink}
+												>
+													Документ {index + 1}
+												</a>
+											</div>
+										))}
 								</div>
 							</div>
 						)}
-						{currentEntry?.documents && currentEntry.documents.length > 0 && (
-							<div className={styles.documentsSection}>
-								<h3>Прикрепленные документы</h3>
-								<div className={styles.documentsList}>
-									{currentEntry.documents.map((doc, index) => (
-										<div key={index} className={styles.documentItem}>
-											<a href={doc} target='_blank' rel='noopener noreferrer'>
-												Документ {index + 1}
-											</a>
-										</div>
-									))}
-								</div>
-							</div>
-						)}
+
 						{currentEntry?.parameterChanges && (
 							<ParameterHistory changes={currentEntry.parameterChanges} />
 						)}

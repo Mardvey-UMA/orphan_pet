@@ -1,10 +1,77 @@
 // pages/AnimalDiaryPage/AnimalDiaryPage.module.scss
 .container {
 	padding: 24px;
-	max-width: 1200px;
+	max-width: 1400px;
 	margin: 0 auto;
 }
+// Добавим стили в AnimalDiaryPage.module.scss
+.fileIconWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 8px;
+	padding: 12px;
+	background: #f8f9fa;
+	border-radius: 8px;
+	width: 100%;
+}
 
+.fileTypeIcon {
+	font-size: 32px;
+	color: #1890ff;
+	margin-bottom: 4px;
+}
+
+.fileTypeLabel {
+	font-size: 12px;
+	color: #666;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.fileCard {
+	border: 1px solid #f0f0f0;
+	border-radius: 8px;
+	padding: 16px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transition: all 0.3s;
+	min-height: 140px;
+	justify-content: center;
+
+	&:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	}
+}
+
+.fileThumbnail {
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+	border-radius: 4px;
+	margin: 12px 0;
+	cursor: pointer;
+	transition: transform 0.3s;
+
+	&:hover {
+		transform: scale(1.05);
+	}
+}
+
+.fileLink {
+	color: #1890ff;
+	text-decoration: none;
+	font-weight: 500;
+	text-align: center;
+	margin-top: 8px;
+
+	&:hover {
+		color: #40a9ff;
+		text-decoration: underline;
+	}
+}
 .backButton {
 	margin-bottom: 16px;
 }
@@ -16,8 +83,9 @@
 
 .layout {
 	display: grid;
-	grid-template-columns: 350px 1fr;
-	gap: 24px;
+	grid-template-columns: 1.5fr 1fr;
+	gap: 32px;
+	align-items: start;
 }
 
 .calendarSection {
@@ -39,18 +107,18 @@
 	}
 }
 
-.calendarDot {
+.entryIndicator {
 	position: absolute;
-	bottom: 2px;
-	width: 6px;
-	height: 6px;
-	background: #1890ff;
-	border-radius: 50%;
+	top: 12px;
+	left: 17px;
+	color: #1890ff;
+	font-size: 12px;
 }
 
 .entryCard {
 	border-radius: 8px;
 	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+	padding: 24px;
 }
 
 .parametersGrid {
@@ -60,64 +128,100 @@
 	margin: 16px 0;
 }
 
-.photosSection {
-	margin: 24px 0;
+.actionsSection {
+	margin-top: 24px;
+}
+
+.uploadButtons {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: 16px;
+
+	:global(.ant-upload) {
+		width: 48%;
+	}
+}
+
+.uploadPreview {
+	margin: 16px 0;
+	padding: 16px;
+	border: 1px dashed #d9d9d9;
+	border-radius: 8px;
+
+	h4 {
+		margin-bottom: 12px;
+		color: #666;
+	}
+}
+
+.filesGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	gap: 12px;
+}
+
+.attachmentsSection {
+	margin-top: 24px;
+	padding-top: 24px;
+	border-top: 1px solid #f0f0f0;
 
 	h3 {
-		margin-bottom: 12px;
+		margin-bottom: 16px;
 		color: #1890ff;
 	}
 }
 
-.photosGrid {
+.attachmentsGrid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-	gap: 12px;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+	gap: 16px;
 }
 
-.photoItem {
-	border: 1px solid #f0f0f0;
-	border-radius: 4px;
-	overflow: hidden;
-	cursor: pointer;
-	transition: transform 0.2s;
-
-	&:hover {
-		transform: scale(1.05);
-	}
-
-	img {
-		width: 100%;
-		height: 120px;
-		object-fit: cover;
-	}
-}
-.documentsSection {
-	margin-top: 1rem;
-	padding: 1rem;
+.fileCard {
 	border: 1px solid #f0f0f0;
 	border-radius: 8px;
-}
+	padding: 12px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	transition: box-shadow 0.3s;
 
-.documentItem {
-	padding: 8px;
-	border-bottom: 1px solid #eee;
-	&:last-child {
-		border-bottom: none;
+	&:hover {
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 	}
 }
-.uploadSection {
-	margin: 16px 0;
-}
-.entryIndicator {
-	position: absolute;
-	top: 2px;
-	right: 2px;
+
+.fileIcon {
+	font-size: 32px;
 	color: #1890ff;
-	font-size: 12px;
+	margin-bottom: 8px;
 }
+
+.fileThumbnail {
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+	border-radius: 4px;
+	margin-bottom: 8px;
+}
+
+.fileName {
+	text-align: center;
+	word-break: break-word;
+	margin-bottom: 8px;
+}
+
+.fileLink {
+	color: #1890ff;
+	text-decoration: underline;
+
+	&:hover {
+		color: #40a9ff;
+	}
+}
+
 .saveButton {
 	width: 100%;
-	margin-top: 24px;
 	height: 40px;
+	margin-top: 16px;
 }
