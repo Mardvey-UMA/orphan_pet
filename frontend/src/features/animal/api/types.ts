@@ -12,10 +12,10 @@ export interface AnimalResponse {
 	description?: string
 	birthDate?: string
 	mass?: number
-	height?: number 
-	temperature?: number 
-	activityLevel?: number 
-	appetiteLevel?: number 
+	height?: number
+	temperature?: number
+	activityLevel?: number
+	appetiteLevel?: number
 	photos: string[]
 	documents: string[]
 	attributes: AttributeResponse[]
@@ -62,8 +62,8 @@ export interface ParameterChangeResponse {
 	parameterName: string
 	oldValue: string
 	newValue: string
-	changedAt: string // Дата в формате ISO
-	changedBy: string // Имя пользователя
+	changedAt: string
+	changedBy: string
 }
 export interface AnimalAnalyticsResponse {
 	parameterName: string

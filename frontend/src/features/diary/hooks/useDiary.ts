@@ -1,3 +1,4 @@
+import { useAnimalParameters } from '@/features/animal/hooks/useAnimalParameters'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToken } from '../../auth/hooks/useToken'
 import { diaryApi } from '../api/diaryApi'
@@ -5,6 +6,7 @@ import { StatusLogCreateRequest, StatusLogUpdateRequest } from '../api/types'
 
 export const useDiary = (animalId: number) => {
 	const queryClient = useQueryClient()
+	const { parameters } = useAnimalParameters(animalId)
 	const { getAccessToken } = useToken()
 
 	// Получение всех записей
@@ -12,6 +14,21 @@ export const useDiary = (animalId: number) => {
 		queryKey: ['animalStatusLogs', animalId],
 		queryFn: () => diaryApi.getStatusLogs(animalId),
 		enabled: !!animalId && !!getAccessToken(),
+	})
+	const createEntry = useMutation({
+		mutationFn: (data: StatusLogCreateRequest) =>
+			diaryApi.createStatusLog(animalId, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({queryKey : ['diaryEntries', animalId]})
+			queryClient.invalidateQueries({queryKey :['animal', animalId]})
+		},
+	})
+	const updateEntry = useMutation({
+		mutationFn: (data: StatusLogUpdateRequest & { id: number }) =>
+			diaryApi.updateStatusLog(animalId, data.id, data),
+		onSuccess: () => {
+			queryClient.invalidateQueries({queryKey :['diaryEntries', animalId]})
+		},
 	})
 
 	// Создание записи
@@ -53,6 +70,9 @@ export const useDiary = (animalId: number) => {
 	})
 
 	return {
+		parameters,
+		createEntry,
+		updateEntry,
 		statusLogs: statusLogsQuery.data,
 		isLoading: statusLogsQuery.isLoading,
 		refetchStatusLogs: statusLogsQuery.refetch,

@@ -222,6 +222,10 @@ export const AnimalPage = () => {
 								description: animal.description,
 								birthDate: animal.birthDate ? dayjs(animal.birthDate) : null,
 								mass: animal.mass,
+								height: animal.height,
+								temperature: animal.temperature,
+								activityLevel: animal.activityLevel,
+								appetiteLevel: animal.appetiteLevel,
 							}}
 							layout='vertical'
 						>
