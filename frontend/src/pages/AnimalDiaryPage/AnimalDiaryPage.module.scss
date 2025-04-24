@@ -92,11 +92,30 @@
 		object-fit: cover;
 	}
 }
+.documentsSection {
+	margin-top: 1rem;
+	padding: 1rem;
+	border: 1px solid #f0f0f0;
+	border-radius: 8px;
+}
 
+.documentItem {
+	padding: 8px;
+	border-bottom: 1px solid #eee;
+	&:last-child {
+		border-bottom: none;
+	}
+}
 .uploadSection {
 	margin: 16px 0;
 }
-
+.entryIndicator {
+	position: absolute;
+	top: 2px;
+	right: 2px;
+	color: #1890ff;
+	font-size: 12px;
+}
 .saveButton {
 	width: 100%;
 	margin-top: 24px;

@@ -275,6 +275,22 @@ export const AnimalPage = () => {
 								<Text strong>Вес:</Text>{' '}
 								{animal.mass ? `${animal.mass} кг` : '—'}
 							</p>
+							<p>
+								<Text strong>Рост:</Text>{' '}
+								{animal.height ? `${animal.height} см` : '—'}
+							</p>
+							<p>
+								<Text strong>Температура:</Text>{' '}
+								{animal.temperature ? `${animal.temperature} °C` : '—'}
+							</p>
+							<p>
+								<Text strong>Уровень активности:</Text>{' '}
+								{animal.activityLevel ?? '—'}
+							</p>
+							<p>
+								<Text strong>Уровень аппетита:</Text>{' '}
+								{animal.appetiteLevel ?? '—'}
+							</p>
 						</>
 					)}
 				</Card>

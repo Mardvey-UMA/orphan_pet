@@ -7,7 +7,7 @@ import {
 	StatusLogCreateRequest,
 	StatusLogResponse,
 } from '@/features/diary/api/types'
-import { BookOutlined, PlusOutlined } from '@ant-design/icons'
+import { BookOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
 	Button,
@@ -174,15 +174,10 @@ export const AnimalDiaryPage = () => {
 				className={styles.calendarCell}
 				onClick={() => handleDateSelect(date)}
 			>
-				{hasEntry ? (
-					<BookOutlined className={styles.entryIcon} />
-				) : (
-					<Button
-						type='dashed'
-						size='small'
-						className={styles.newEntryButton}
-						icon={<PlusOutlined />}
-					/>
+				{hasEntry && (
+					<div className={styles.entryIndicator}>
+						<BookOutlined className={styles.entryIcon} />
+					</div>
 				)}
 			</div>
 		)
@@ -314,7 +309,48 @@ export const AnimalDiaryPage = () => {
 								showUploadList={false}
 								buttonIcon={undefined}
 							/>
-
+							{(filesToUpload.photos.length > 0 ||
+								filesToUpload.documents.length > 0) && (
+								<div className={styles.uploadPreview}>
+									<h4>Файлы для загрузки:</h4>
+									{filesToUpload.photos.map((file, index) => (
+										<div key={`photo-${index}`} className={styles.fileItem}>
+											<span>{file.name}</span>
+											<Button
+												type='link'
+												danger
+												onClick={() =>
+													setFilesToUpload(prev => ({
+														...prev,
+														photos: prev.photos.filter((_, i) => i !== index),
+													}))
+												}
+											>
+												Удалить
+											</Button>
+										</div>
+									))}
+									{filesToUpload.documents.map((file, index) => (
+										<div key={`doc-${index}`} className={styles.fileItem}>
+											<span>{file.name}</span>
+											<Button
+												type='link'
+												danger
+												onClick={() =>
+													setFilesToUpload(prev => ({
+														...prev,
+														documents: prev.documents.filter(
+															(_, i) => i !== index
+														),
+													}))
+												}
+											>
+												Удалить
+											</Button>
+										</div>
+									))}
+								</div>
+							)}
 							<Button
 								type='primary'
 								htmlType='submit'
@@ -344,7 +380,20 @@ export const AnimalDiaryPage = () => {
 								</div>
 							</div>
 						)}
-
+						{currentEntry?.documents && currentEntry.documents.length > 0 && (
+							<div className={styles.documentsSection}>
+								<h3>Прикрепленные документы</h3>
+								<div className={styles.documentsList}>
+									{currentEntry.documents.map((doc, index) => (
+										<div key={index} className={styles.documentItem}>
+											<a href={doc} target='_blank' rel='noopener noreferrer'>
+												Документ {index + 1}
+											</a>
+										</div>
+									))}
+								</div>
+							</div>
+						)}
 						{currentEntry?.parameterChanges && (
 							<ParameterHistory changes={currentEntry.parameterChanges} />
 						)}
