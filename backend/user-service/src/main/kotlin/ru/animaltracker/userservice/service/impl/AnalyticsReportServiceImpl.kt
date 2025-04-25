@@ -21,11 +21,11 @@ class AnalyticsReportServiceImpl(
     private lateinit var pdfExporter: PdfExporter
 
     @Transactional(readOnly = true)
-    override fun getAnimalAnalytics(animalId: Long): List<AnimalAnalyticsResponse> {
+    override fun getAnimalAnalytics(username : String, animalId: Long): List<AnimalAnalyticsResponse> {
         val parameters = listOf("mass", "height", "temperature", "activityLevel", "appetiteLevel")
 
         return parameters.map { parameterName ->
-            val changes = statusLogService.getParameterHistory("system", animalId, parameterName)
+            val changes = statusLogService.getParameterHistory(username, animalId, parameterName)
 
             val numericValues = changes
                 .mapNotNull { it.newValue.toDoubleOrNull() }

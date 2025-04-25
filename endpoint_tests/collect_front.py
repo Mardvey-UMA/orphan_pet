@@ -43,7 +43,7 @@ def find_and_copy_files(root_dir, output_file):
 
 if __name__ == "__main__":
     project_directory = "/home/user/Projects/pets_calendar/frontend/src"
-    output_filename = "all_files_formatted5.txt"
+    output_filename = "all_files_formatted8.txt"
 
     if os.path.isdir(project_directory):
         find_and_copy_files(project_directory, output_filename)

@@ -1,0 +1,5 @@
+./.venv
+./symptom_classifier
+symptom_classifier
+.venv
+best_model.bin

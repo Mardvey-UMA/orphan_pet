@@ -29,9 +29,9 @@ def find_and_copy_kt_files(root_dir, output_file):
                         print(f"Ошибка при обработке файла {file_path}: {str(e)}")
 
 if __name__ == "__main__":
-    project_directory = "/home/user/Projects/pets_calendar/backend/user-service/src/main/kotlin/ru/animaltracker/userservice"
-    #project_directory = "/home/user/Projects/pets_calendar/backend/user-service/src/main/kotlin/ru/animaltracker/userservice/service/impl"
-    output_filename = "all_kt_files_usr.txt"
+    #project_directory = "/home/user/Projects/pets_calendar/backend/user-service/src/main/kotlin/ru/animaltracker/userservice"
+    project_directory = "/home/user/Projects/pets_calendar/backend/user-service/src/main/kotlin/ru/animaltracker/userservice/dto"
+    output_filename = "all_kt_files_dto.txt"
 
     if os.path.isdir(project_directory):
         find_and_copy_kt_files(project_directory, output_filename)

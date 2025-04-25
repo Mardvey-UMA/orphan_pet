@@ -17,7 +17,7 @@ class AnalyticsReportController(
         @RequestHeader("X-User-Name") username: String,
         @PathVariable animalId: Long
     ): ResponseEntity<List<AnimalAnalyticsResponse>> {
-        return ResponseEntity.ok(analyticsReportService.getAnimalAnalytics(animalId))
+        return ResponseEntity.ok(analyticsReportService.getAnimalAnalytics(username, animalId))
     }
 
     @GetMapping("/export/pdf")

@@ -1,660 +1,282 @@
-=== Файл: Photo.kt ===
+=== Файл: AttributeChange.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
+package ru.animaltracker.userservice.dto
 
-import jakarta.persistence.*
-import org.springframework.data.annotation.CreatedDate
-import org.springframework.data.jpa.domain.support.AuditingEntityListener
-import java.time.LocalDateTime
-import jakarta.persistence.*
 import java.time.LocalDate
-@Entity
-@Table(name = "photo")
-class Photo {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
 
-    @Column(name = "object_key", length = 512, unique = true)
-    var objectKey: String? = null
-
-    @Column(name = "created_at")
-    var createdAt: LocalDate? = null
-
-    @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var userPhotos: MutableSet<UserPhoto> = mutableSetOf()
-
-    @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf()
-
-    @OneToMany(mappedBy = "photo", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf()
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Photo) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "Photo(id=$id)"
-}
+data class AttributeChange(
+    val date: LocalDate,
+    val value: String,
+    val changedBy: String
+)
 ```
 
-=== Файл: AnimalStatusLog.kt ===
+=== Файл: AttributeStats.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
-import ru.animaltracker.userservice.dto.StatusLogResponse
-import ru.animaltracker.userservice.service.interfaces.S3Service
+package ru.animaltracker.userservice.dto
+
+data class AttributeStats(
+    val minValue: String?,
+    val maxValue: String?,
+    val avgValue: Double?
+)
+```
+
+=== Файл: S3FileResponse.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+data class S3FileResponse(
+    val objectKey: String,
+    val presignedUrl: String
+)
+```
+
+=== Файл: StatusLogResponse.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
 import java.math.BigDecimal
 import java.time.LocalDate
-@Entity
-@Table(name = "animal_status_log")
-class AnimalStatusLog {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
 
-    @Column(name = "log_date")
-    var logDate: LocalDate? = null
-
-    @Column(columnDefinition = "text")
-    var notes: String? = null
-
-    @Column(name = "updated_at")
-    var updatedAt: LocalDate? = null
-
-    @Column(name = "mass_change")
-    var massChange: BigDecimal? = null
-
-    @Column(name = "height_change")
-    var heightChange: BigDecimal? = null
-
-    @Column(name = "temperature_change")
-    var temperatureChange: BigDecimal? = null
-
-    @Column(name = "activity_level_change")
-    var activityLevelChange: Int? = null
-
-    @Column(name = "appetite_level_change")
-    var appetiteLevelChange: Int? = null
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "animal_id")
-    lateinit var animal: Animal
-
-    @OneToMany(mappedBy = "animalStatusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var statusLogPhotos: MutableSet<StatusLogPhoto> = mutableSetOf()
-
-    @OneToMany(mappedBy = "animalStatusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf()
-
-    @OneToMany(mappedBy = "statusLog", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var parameterHistories: MutableSet<AnimalParameterHistory> = mutableSetOf()
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    lateinit var user: User
-
-    fun toDto(s3Service: S3Service): StatusLogResponse {
-        return StatusLogResponse(
-            id = id,
-            logDate = logDate ?: LocalDate.now(),
-            notes = notes,
-            photos = statusLogPhotos.mapNotNull { it.photo?.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
-            documents = statusLogDocuments.mapNotNull { it.document?.objectKey?.let { it1 ->
-                s3Service.generatePresignedUrl(
-                    it1
-                )
-            } }
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is AnimalStatusLog) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "AnimalStatusLog(id=$id)"
-}
+data class StatusLogResponse(
+    var id: Long = 0,
+    var logDate: LocalDate = LocalDate.now(),
+    var notes: String? = null,
+    var massChange: BigDecimal? = null,
+    var heightChange: BigDecimal? = null,
+    var temperatureChange: BigDecimal? = null,
+    var activityLevelChange: Int? = null,
+    var appetiteLevelChange: Int? = null,
+    var photos: List<String> = emptyList(),
+    var documents: List<String> = emptyList(),
+    var parameterChanges: List<ParameterChangeResponse> = emptyList()
+)
 ```
 
-=== Файл: AnimalPhoto.kt ===
+=== Файл: AnimalResponse.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
+package ru.animaltracker.userservice.dto
+
+import java.math.BigDecimal
 import java.time.LocalDate
 
-@Entity
-@Table(name = "animal_photo")
-class AnimalPhoto {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_id")
-    var animal: Animal? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "photo_id")
-    var photo: Photo? = null
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is AnimalPhoto) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "AnimalPhoto(id=$id)"
-}
+data class AnimalResponse(
+    var id: Long = 0,
+    var name: String? = null,
+    var description: String? = null,
+    var birthDate: LocalDate? = null,
+    var mass: BigDecimal? = null,
+    var height: BigDecimal? = null,
+    var temperature: BigDecimal? = null,
+    var activityLevel: Int? = null,
+    var appetiteLevel: Int? = null,
+    var attributes: List<AttributeResponse> = emptyList(),
+    var photos: List<String> = emptyList(),
+    var documents: List<String> = emptyList(),
+)
 ```
 
-=== Файл: User.kt ===
+=== Файл: UserResponse.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
+package ru.animaltracker.userservice.dto
 
-import jakarta.persistence.*
-import ru.animaltracker.userservice.dto.UserResponse
-import ru.animaltracker.userservice.service.interfaces.S3Service
-import java.time.LocalDate
-
-@Entity
-@Table(name = "users")
-class User {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
-
-    @Column(length = 255)
-    var email: String? = null
-
-    @Column(length = 255)
-    var username: String? = null
-
-    @Column(name = "first_name", length = 255)
-    var firstName: String? = null
-
-    @Column(name = "last_name", length = 255)
-    var lastName: String? = null
-
-    @Column(length = 255)
-    var city: String? = null
-
-    @Column(name = "about_me", length = 255)
-    var aboutMe: String? = null
-
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var userPhotos: MutableSet<UserPhoto> = mutableSetOf()
-
-    @OneToMany(mappedBy = "user", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var animalUsers: MutableSet<AnimalUser> = mutableSetOf()
-
-    fun addAnimal(animal: Animal) {
-        val animalUser = AnimalUser().apply {
-            this.user = this@User
-            this.animal = animal
-        }
-        animalUsers.add(animalUser)
-        animal.animalUsers.add(animalUser)
-    }
-
-    fun getAnimals(): List<Animal> = animalUsers.mapNotNull { it.animal }
-
-    fun toDto(s3Service : S3Service): UserResponse {
-        return UserResponse(
-            username = username ?: "",
-            firstName = firstName,
-            lastName = lastName,
-            city = city,
-            aboutMe = aboutMe,
-            photoUrl = userPhotos.firstOrNull()?.photo?.objectKey?.let { s3Service.generatePresignedUrl(it) }
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is User) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "User(id=$id, username=$username)"
-}
+data class UserResponse(
+    val username: String,
+    val firstName: String?,
+    val lastName: String?,
+    val city: String?,
+    val aboutMe: String?,
+    var photoUrl: String?
+)
 ```
 
-=== Файл: StatusLogPhoto.kt ===
+=== Файл: ParameterStats.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
-import java.time.LocalDate
-@Entity
-@Table(name = "status_log_photo")
-class StatusLogPhoto {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
+package ru.animaltracker.userservice.dto
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "photo_id")
-    var photo: Photo? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_status_log_id")
-    var animalStatusLog: AnimalStatusLog? = null
-
-    constructor()
-
-    constructor(statusLog: AnimalStatusLog, photo: Photo) : this() {
-        this.animalStatusLog = statusLog
-        this.photo = photo
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is StatusLogPhoto) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "StatusLogPhoto(id=$id)"
-}
+data class ParameterStats(
+    val minValue: String?,
+    val maxValue: String?,
+    val avgValue: Double?,
+    val firstValue: String?,
+    val lastValue: String?
+)
 ```
 
-=== Файл: StatusLogDocument.kt ===
+=== Файл: AttributeRequest.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
-import java.time.LocalDate
-@Entity
-@Table(name = "status_log_document")
-class StatusLogDocument {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
+package ru.animaltracker.userservice.dto
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "document_id")
-    var document: Document? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_status_log_id")
-    var animalStatusLog: AnimalStatusLog? = null
-
-    constructor()
-
-    constructor(statusLog: AnimalStatusLog, document: Document) : this() {
-        this.animalStatusLog = statusLog
-        this.document = document
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is StatusLogDocument) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "StatusLogDocument(id=$id)"
-}
+data class AttributeRequest(
+    val name: String,
+    val value: String
+)
 ```
 
-=== Файл: Attribute.kt ===
+=== Файл: UserCreatedEvent.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
-import ru.animaltracker.userservice.dto.AttributeResponse
-import java.time.LocalDate
+package ru.animaltracker.userservice.dto
 
-@Entity
-@Table(name = "attribute")
-class Attribute {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Short = 0
-
-    @Column(length = 255)
-    var name: String? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_id")
-    var animal: Animal? = null
-
-    @OneToMany(mappedBy = "attribute", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var values: MutableSet<Value> = mutableSetOf()
-
-    fun addValue(valueStr: String) {
-        val value = Value().apply {
-            this.value = valueStr
-            this.attribute = this@Attribute
-        }
-        values.add(value)
-    }
-
-    fun toDto(): AttributeResponse {
-        return AttributeResponse(
-            id = id,
-            name = name,
-            value = values.firstOrNull()?.value
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Attribute) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "Attribute(id=$id)"
-}
+data class UserCreatedEvent(
+    val email: String,
+    val username: String
+)
 ```
 
-=== Файл: UserPhoto.kt ===
+=== Файл: AnimalUpdateRequest.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
+package ru.animaltracker.userservice.dto
+
+import java.math.BigDecimal
 import java.time.LocalDate
-@Entity
-@Table(name = "user_photo")
-class UserPhoto {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    lateinit var user: User
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "photo_id")
-    var photo: Photo? = null
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is UserPhoto) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "UserPhoto(id=$id)"
-}
+data class AnimalUpdateRequest(
+    val name: String?,
+    val description: String?,
+    val birthDate: LocalDate?,
+    val mass: BigDecimal?,
+    val height: BigDecimal? = null,
+    val temperature: BigDecimal? = null,
+    val activityLevel: Int? = null,
+    val appetiteLevel: Int? = null
+)
 ```
 
-=== Файл: Value.kt ===
+=== Файл: StatusLogUpdateRequest.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
+package ru.animaltracker.userservice.dto
+
 import java.time.LocalDate
 
-@Entity
-@Table(name = "value")
-class Value{
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
+data class StatusLogUpdateRequest(
+    val notes: String?,
+    val logDate: LocalDate?
+)
+```
 
-    @Column(length = 1024)
+=== Файл: AnimalParametersUpdateRequest.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+import java.math.BigDecimal
+
+data class AnimalParametersUpdateRequest(
+    val mass: BigDecimal?,
+    val height: BigDecimal?,
+    val temperature: BigDecimal?,
+    val activityLevel: Int?,
+    val appetiteLevel: Int?
+)
+```
+
+=== Файл: StatusLogCreateRequest.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.PastOrPresent
+import java.math.BigDecimal
+import java.time.LocalDate
+
+data class StatusLogCreateRequest(
+    @field:NotBlank
+    val notes: String?,
+    val logDate: LocalDate?,
+    val massChange: BigDecimal?,
+    val heightChange: BigDecimal?,
+    val temperatureChange: BigDecimal?,
+    val activityLevelChange: Int?,
+    val appetiteLevelChange: Int?
+)
+```
+
+=== Файл: UserUpdateRequest.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+import jakarta.validation.constraints.Size
+
+data class UserUpdateRequest(
+    @field:Size(max = 255)
+    val firstName: String?,
+
+    @field:Size(max = 255)
+    val lastName: String?,
+
+    @field:Size(max = 255)
+    val city: String?,
+
+    @field:Size(max = 255)
+    val aboutMe: String?
+)
+
+```
+
+=== Файл: AnimalCreateRequest.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+import java.math.BigDecimal
+import java.time.LocalDate
+
+data class AnimalCreateRequest(
+    val name: String,
+    val description: String?,
+    val birthDate: LocalDate?,
+    val mass: BigDecimal?,
+    val height: BigDecimal? = null,
+    val temperature: BigDecimal? = null,
+    val activityLevel: Int? = null,
+    val appetiteLevel: Int? = null,
+    val attributes: List<AttributeRequest> = emptyList()
+)
+```
+
+=== Файл: AnimalAnalyticsResponse.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+data class AnimalAnalyticsResponse(
+    val parameterName: String,
+    val changes: List<ParameterChangeResponse>,
+    val stats: ParameterStats?
+)
+```
+
+=== Файл: AttributeResponse.kt ===
+```kotlin
+package ru.animaltracker.userservice.dto
+
+data class AttributeResponse(
+    var id: Short = 0,
+    var name: String? = null,
     var value: String? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "attribute_id")
-    var attribute: Attribute? = null
-
-override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Value) return false
-    return id == other.id
-}
-
-override fun hashCode(): Int = id.hashCode()
-
-override fun toString(): String = "Value(id=$id, value=$value)"
-}
+)
 ```
 
-=== Файл: AnimalUser.kt ===
+=== Файл: ParameterChangeResponse.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
+package ru.animaltracker.userservice.dto
+
 import java.time.LocalDate
-@Entity
-@Table(name = "animal_user")
-class AnimalUser {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    var user: User? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_id")
-    var animal: Animal? = null
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is AnimalUser) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "AnimalUser(id=$id)"
-}
+data class ParameterChangeResponse(
+    val parameterName: String,
+    val oldValue: String,
+    val newValue: String,
+    val changedAt: LocalDate,
+    val changedBy: String
+)
 ```
 
-=== Файл: Animal.kt ===
+=== Файл: AttributeUpdateRequest.kt ===
 ```kotlin
-package ru.animaltracker.userservice.entity
+package ru.animaltracker.userservice.dto
 
-import jakarta.persistence.*
-import ru.animaltracker.userservice.dto.AnimalResponse
-import ru.animaltracker.userservice.service.interfaces.S3Service
-import java.math.BigDecimal
-import java.time.LocalDate
-
-@Entity
-@Table(name = "animal")
-class Animal {
-        @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        var id: Long = 0
-
-        @Column(name = "body_mass")
-        var mass: BigDecimal? = null
-
-        @Column(name = "height")
-        var height: BigDecimal? = null
-
-        @Column(name = "temperature")
-        var temperature: BigDecimal? = null
-
-        @Column(name = "activity_level")
-        var activityLevel: Int? = null
-
-        @Column(name = "appetite_level")
-        var appetiteLevel: Int? = null
-
-        @Column(name = "birth_date")
-        var birthDate: LocalDate? = null
-
-        @Column(name = "created_at")
-        var createdAt: LocalDate? = null
-
-        @Column(length = 255)
-        var name: String? = null
-
-        @Column(columnDefinition = "text")
-        var description: String? = null
-
-        @OneToMany(mappedBy = "animal", orphanRemoval = true)
-        var attributes: MutableSet<Attribute> = mutableSetOf()
-
-        @OneToMany(mappedBy = "animal", orphanRemoval = true)
-        var animalPhotos: MutableSet<AnimalPhoto> = mutableSetOf()
-
-        @OneToMany(mappedBy = "animal", orphanRemoval = true)
-        var animalUsers: MutableSet<AnimalUser> = mutableSetOf()
-
-        @OneToMany(mappedBy = "animal", orphanRemoval = true)
-        var documents: MutableSet<Document> = mutableSetOf()
-
-        @OneToMany(mappedBy = "animal", orphanRemoval = true)
-        var statusLogs: MutableSet<AnimalStatusLog> = mutableSetOf()
-
-        @OneToMany(mappedBy = "animal", orphanRemoval = true)
-        var parameterHistories: MutableSet<AnimalParameterHistory> = mutableSetOf()
-
-    fun toDto(s3Service: S3Service): AnimalResponse {
-        return AnimalResponse(
-            id = id,
-            name = name,
-            description = description,
-            birthDate = birthDate,
-            mass = mass,
-            height = height,
-            temperature = temperature,
-            activityLevel = activityLevel,
-            appetiteLevel = appetiteLevel,
-            attributes = attributes.map { it.toDto() },
-            photos = animalPhotos.mapNotNull { it.photo?.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
-            documents = documents.mapNotNull { it.objectKey?.let { it1 -> s3Service.generatePresignedUrl(it1) } },
-        )
-    }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Animal) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "Animal(id=$id, name=$name)"
-}
-```
-
-=== Файл: AnimalParameterHistory.kt ===
-```kotlin
-package ru.animaltracker.userservice.entity
-
-import jakarta.persistence.*
-import java.math.BigDecimal
-import java.time.LocalDate
-
-@Entity
-@Table(name = "animal_parameter_history")
-class AnimalParameterHistory {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
-
-    @Column(name = "recorded_at")
-    var recordedAt: LocalDate? = null
-
-    @Column(name = "old_mass")
-    var oldMass: BigDecimal? = null
-
-    @Column(name = "new_mass")
-    var newMass: BigDecimal? = null
-
-    @Column(name = "old_height")
-    var oldHeight: BigDecimal? = null
-
-    @Column(name = "new_height")
-    var newHeight: BigDecimal? = null
-
-    @Column(name = "old_temperature")
-    var oldTemperature: BigDecimal? = null
-
-    @Column(name = "new_temperature")
-    var newTemperature: BigDecimal? = null
-
-    @Column(name = "old_activity_level")
-    var oldActivityLevel: Int? = null
-
-    @Column(name = "new_activity_level")
-    var newActivityLevel: Int? = null
-
-    @Column(name = "old_appetite_level")
-    var oldAppetiteLevel: Int? = null
-
-    @Column(name = "new_appetite_level")
-    var newAppetiteLevel: Int? = null
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "animal_id")
-    lateinit var animal: Animal
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id")
-    lateinit var user: User
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_log_id")
-    var statusLog: AnimalStatusLog? = null
-
-    fun hasChanges(): Boolean {
-        return oldMass != null || newMass != null ||
-                oldHeight != null || newHeight != null ||
-                oldTemperature != null || newTemperature != null ||
-                oldActivityLevel != null || newActivityLevel != null ||
-                oldAppetiteLevel != null || newAppetiteLevel != null
-    }
-}
-```
-
-=== Файл: Document.kt ===
-```kotlin
-package ru.animaltracker.userservice.entity
-import jakarta.persistence.*
-import java.time.LocalDate
-@Entity
-@Table(name = "document")
-class Document {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
-
-    @Column(length = 255)
-    var type: String? = null
-
-    @Column(name = "object_key", length = 512)
-    var objectKey: String? = null
-
-    @Column(name = "document_name", length = 255)
-    var documentName: String? = null
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_id")
-    var animal: Animal? = null
-
-    @OneToMany(mappedBy = "document", cascade = [CascadeType.ALL], orphanRemoval = true)
-    var statusLogDocuments: MutableSet<StatusLogDocument> = mutableSetOf()
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other !is Document) return false
-        return id == other.id
-    }
-
-    override fun hashCode(): Int = id.hashCode()
-
-    override fun toString(): String = "Document(id=$id)"
-}
+data class AttributeUpdateRequest(
+    val name: String?,
+    val value: String?
+)
 ```
 
