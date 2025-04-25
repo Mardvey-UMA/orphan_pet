@@ -128,7 +128,6 @@ export const AnimalPage = () => {
 			link.click()
 			document.body.removeChild(link)
 
-			// Освобождаем память
 			setTimeout(() => {
 				window.URL.revokeObjectURL(url)
 			}, 100)
@@ -138,19 +137,7 @@ export const AnimalPage = () => {
 			message.error('Не удалось экспортировать в PDF')
 		},
 	})
-	// const exportToPdf = useMutation({
-	// 	mutationFn: () => exportApi.exportAnimalToPdf(Number(id!)),
-	// 	onSuccess: pdfData => {
-	// 		const blob = new Blob([pdfData], { type: 'application/pdf' })
-	// 		const url = window.URL.createObjectURL(blob)
-	// 		const link = document.createElement('a')
-	// 		link.href = url
-	// 		link.setAttribute('download', `animal_${animal?.name}_report.pdf`)
-	// 		document.body.appendChild(link)
-	// 		link.click()
-	// 		document.body.removeChild(link)
-	// 	},
-	// })
+
 	const handleSave = () => {
 		const values = form.getFieldsValue()
 		updateAnimal.mutate({

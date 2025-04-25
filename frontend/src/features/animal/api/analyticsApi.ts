@@ -1,19 +1,5 @@
 import { apiClient } from '../../../api/client'
-import { AnimalResponse } from './types'
-
-export interface AnimalAnalyticsResponse {
-	attributeName: string
-	changes: {
-		date: string
-		value: string
-		changedBy: string
-	}[]
-	stats?: {
-		minValue: string
-		maxValue: string
-		avgValue: number
-	}
-}
+import { AnimalAnalyticsResponse, AnimalResponse } from './types'
 
 export const analyticsApi = {
 	getAnimalAnalytics: (animalId: number) =>

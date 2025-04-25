@@ -5,7 +5,6 @@ export const useExport = () => {
 	return useMutation({
 		mutationFn: exportApi.exportAnimalToPdf,
 		onSuccess: () => {
-			// Можно добавить уведомление об успешном экспорте
 			console.log('PDF exported successfully')
 		},
 		onError: error => {

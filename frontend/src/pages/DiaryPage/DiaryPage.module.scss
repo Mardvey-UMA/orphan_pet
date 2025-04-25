@@ -1,0 +1,100 @@
+// DiaryPage.module.scss
+
+.container {
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 24px;
+
+	.noImage {
+		height: 200px;
+		background: #f8f9fa;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		position: relative;
+		border: 2px dashed #dee2e6;
+		border-radius: 8px 8px 0 0; // Совпадает с радиусом карточки
+
+		// Контейнер для иконки
+		&-icon {
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			text-align: center;
+
+			.ant-icon {
+				font-size: 64px;
+				color: #ced4da;
+				display: block;
+				margin-bottom: 8px;
+			}
+
+			span {
+				color: #868e96;
+				font-style: italic;
+			}
+		}
+
+		&:hover &-icon .anticon {
+			color: #adb5bd;
+			transform: scale(1.05);
+		}
+	}
+}
+
+.ant-typography {
+	text-align: center;
+	margin-bottom: 24px !important;
+}
+
+.animalsGrid {
+	margin-top: 24px;
+
+	// Кастомизация карточек
+	.ant-card {
+		border-radius: 8px;
+		overflow: hidden;
+		transition: transform 0.2s;
+
+		&:hover {
+			transform: translateY(-4px);
+		}
+
+		&-meta {
+			padding: 12px;
+
+			.ant-card-meta-title {
+				font-weight: 600;
+				margin-bottom: 8px !important;
+			}
+		}
+
+		&-actions {
+			background: #fafafa;
+			padding: 12px;
+		}
+	}
+}
+
+.animalImage {
+	width: 100%;
+	height: 200px;
+	object-fit: cover;
+	object-position: center;
+}
+
+// Стили для кнопки в actions
+.ant-btn-link {
+	color: #1890ff !important;
+	padding: 0 !important;
+
+	&:hover {
+		color: #40a9ff !important;
+		background: transparent !important;
+	}
+
+	.ant-icon-calendar {
+		margin-right: 6px;
+	}
+}

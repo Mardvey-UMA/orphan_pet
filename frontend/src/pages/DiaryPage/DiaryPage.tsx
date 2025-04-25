@@ -1,5 +1,5 @@
 import { useUserAnimals } from '@/features/animal/hooks/useUserAnimals'
-import { CalendarOutlined } from '@ant-design/icons'
+import { CalendarOutlined, PictureOutlined } from '@ant-design/icons'
 import { Button, Card, Col, Row, Typography } from 'antd'
 import dayjs from 'dayjs'
 import { useNavigate } from 'react-router-dom'
@@ -30,7 +30,12 @@ export default function DiaryPage() {
 										className={styles.animalImage}
 									/>
 								) : (
-									<div className={styles.noImage}>Нет фото</div>
+									<div className={styles.noImage}>
+										<div className={styles.noImageIcon}>
+											<PictureOutlined />
+											<span> Нет фото</span>
+										</div>
+									</div>
 								)
 							}
 							actions={[

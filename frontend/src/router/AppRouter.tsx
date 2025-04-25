@@ -4,6 +4,7 @@ import { AuthLayout } from '@/layouts/AuthLayout/AuthLayout'
 import { MainLayout } from '@/layouts/MainLayout/MainLayout'
 
 import ActivateAccountPage from '@/pages/ActivateAccountPage/ActivateAccountPage'
+import { AnalyticsPage } from '@/pages/AnalyticsPage/AnalyticsPage'
 import { AnimalDiaryPage } from '@/pages/AnimalDiaryPage/AnimalDiaryPage'
 import { AnimalPage } from '@/pages/AnimalPage/AnimalPage'
 import DiaryPage from '@/pages/DiaryPage/DiaryPage'
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
 		element: <MainLayout />,
 		children: [
 			{ index: true, element: <HomePage /> },
+			{
+				path: 'analytics/:animalId?',
+				element: <AnalyticsPage />,
+			},
 			{
 				path: 'animals/:id/diary',
 				element: <AnimalDiaryPage />,

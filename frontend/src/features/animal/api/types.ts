@@ -65,9 +65,23 @@ export interface ParameterChangeResponse {
 	changedAt: string
 	changedBy: string
 }
+// export interface AnimalAnalyticsResponse {
+// 	parameterName: string
+// 	changes: ParameterChangeResponse[]
+// 	stats?: {
+// 		minValue: string
+// 		maxValue: string
+// 		avgValue: number
+// 	}
+// }
 export interface AnimalAnalyticsResponse {
 	parameterName: string
-	changes: ParameterChangeResponse[]
+	changes: {
+		oldValue: string
+		newValue: string
+		changedAt: string
+		changedBy: string
+	}[]
 	stats?: {
 		minValue: string
 		maxValue: string

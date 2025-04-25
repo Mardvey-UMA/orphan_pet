@@ -2,6 +2,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
 	BookOutlined,
 	HomeOutlined,
+	LineChartOutlined,
 	LogoutOutlined,
 	MenuOutlined,
 	UserOutlined,
@@ -48,6 +49,11 @@ export function MainLayout() {
 			icon: <LogoutOutlined />,
 			label: 'Выход',
 			onClick: handleLogout,
+		},
+		{
+			key: 'analytics',
+			icon: <LineChartOutlined />,
+			label: <Link to='/analytics'>Аналитика</Link>,
 		},
 	]
 
