@@ -1,6 +1,5 @@
 import { FileUpload } from '@/components/FileUpload/FileUpload'
 import { animalApi } from '@/features/animal/api/animalApi'
-import { exportApi } from '@/features/animal/api/exportApi'
 import {
 	AnimalResponse,
 	AnimalUpdateRequest,
@@ -10,7 +9,6 @@ import {
 	DeleteOutlined,
 	EditOutlined,
 	EyeOutlined,
-	FilePdfOutlined,
 	PlusOutlined,
 	UploadOutlined,
 } from '@ant-design/icons'
@@ -117,26 +115,26 @@ export const AnimalPage = () => {
 			queryClient.invalidateQueries({ queryKey: ['animal', id] })
 		},
 	})
-	const exportToPdf = useMutation({
-		mutationFn: () => exportApi.exportAnimalToPdf(Number(id!)),
-		onSuccess: (pdfBlob: Blob) => {
-			const url = window.URL.createObjectURL(pdfBlob)
-			const link = document.createElement('a')
-			link.href = url
-			link.setAttribute('download', `animal_${animal?.name}_report.pdf`)
-			document.body.appendChild(link)
-			link.click()
-			document.body.removeChild(link)
+	// const exportToPdf = useMutation({
+	// 	mutationFn: () => exportApi.exportAnimalToPdf(Number(id!)),
+	// 	onSuccess: (pdfBlob: Blob) => {
+	// 		const url = window.URL.createObjectURL(pdfBlob)
+	// 		const link = document.createElement('a')
+	// 		link.href = url
+	// 		link.setAttribute('download', `animal_${animal?.name}_report.pdf`)
+	// 		document.body.appendChild(link)
+	// 		link.click()
+	// 		document.body.removeChild(link)
 
-			setTimeout(() => {
-				window.URL.revokeObjectURL(url)
-			}, 100)
-		},
-		onError: error => {
-			console.error('Export failed:', error)
-			message.error('Не удалось экспортировать в PDF')
-		},
-	})
+	// 		setTimeout(() => {
+	// 			window.URL.revokeObjectURL(url)
+	// 		}, 100)
+	// 	},
+	// 	onError: error => {
+	// 		console.error('Export failed:', error)
+	// 		message.error('Не удалось экспортировать в PDF')
+	// 	},
+	// })
 
 	const handleSave = () => {
 		const values = form.getFieldsValue()
@@ -179,14 +177,14 @@ export const AnimalPage = () => {
 				>
 					Дневник
 				</Button>
-				<Button
+				{/* <Button
 					type='primary'
 					icon={<FilePdfOutlined />}
 					onClick={() => exportToPdf.mutate()}
 					loading={exportToPdf.isPending}
 				>
 					Экспорт в PDF
-				</Button>
+				</Button> */}
 			</Space>
 			<Title level={2}>{animal.name}</Title>
 

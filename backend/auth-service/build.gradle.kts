@@ -64,6 +64,8 @@ dependencies {
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+
+
     runtimeOnly("org.postgresql:postgresql")
 }
 
