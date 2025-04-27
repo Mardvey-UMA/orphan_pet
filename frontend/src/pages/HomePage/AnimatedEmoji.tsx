@@ -9,6 +9,9 @@ interface AnimatedEmojiProps {
 	style?: CSSProperties
 }
 
+// Глобальный флаг для отслеживания добавленных стилей
+const isStylesAdded = { current: false }
+
 export const AnimatedEmoji = ({
 	emoji,
 	size = 24,
@@ -16,60 +19,59 @@ export const AnimatedEmoji = ({
 	speed = 2,
 	style = {},
 }: AnimatedEmojiProps) => {
-	const [key, setKey] = useState(0) // Для принудительного ререндера
+	const [key, setKey] = useState(0)
 
-	// Анимации
-	const animations = {
-		bounce: `
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-15px); }
-      }
-      animation: bounce ${speed}s infinite;
-    `,
-		pulse: `
-      @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.2); }
-      }
-      animation: pulse ${speed}s infinite;
-    `,
-		spin: `
-      @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-      }
-      animation: spin ${speed}s linear infinite;
-    `,
-		float: `
-      @keyframes float {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        25% { transform: translateY(-10px) rotate(5deg); }
-        75% { transform: translateY(-10px) rotate(-5deg); }
-      }
-      animation: float ${speed}s ease-in-out infinite;
-    `,
-	}
+	useEffect(() => {
+		if (!isStylesAdded.current) {
+			const styleTag = document.createElement('style')
+			styleTag.textContent = `
+        @keyframes bounce {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-15px); }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.2); }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0) rotate(0deg); }
+          25% { transform: translateY(-10px) rotate(5deg); }
+          75% { transform: translateY(-10px) rotate(-5deg); }
+        }
+      `
+			document.head.appendChild(styleTag)
+			isStylesAdded.current = true
+		}
+	}, [])
 
-	// Принудительный ререндер при изменении свойств
 	useEffect(() => {
 		setKey(prev => prev + 1)
 	}, [emoji, size, animation, speed])
+
+	const animationConfig = {
+		bounce: { name: 'bounce', timing: 'ease' },
+		pulse: { name: 'pulse', timing: 'ease' },
+		spin: { name: 'spin', timing: 'linear' },
+		float: { name: 'float', timing: 'ease-in-out' },
+	}[animation]
 
 	return (
 		<div
 			key={key}
 			style={{
 				display: 'inline-block',
+				animationName: animationConfig.name,
+				animationDuration: `${speed}s`,
+				animationIterationCount: 'infinite',
+				animationTimingFunction: animationConfig.timing,
 				...style,
-				cssText: animations[animation],
 			}}
 		>
-			<Emoji
-				unified={emoji}
-				size={size}
-				emojiStyle={EmojiStyle.APPLE} // Или TWITTER, GOOGLE и др.
-			/>
+			<Emoji unified={emoji} size={size} emojiStyle={EmojiStyle.APPLE} />
 		</div>
 	)
 }

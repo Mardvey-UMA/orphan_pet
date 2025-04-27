@@ -7,11 +7,9 @@ import styles from './HomePage.module.scss'
 
 export default function HomePage() {
 	const navigate = useNavigate()
-	// Анимации
 
 	return (
 		<div className={styles.homeContainer}>
-			{/* Герой-секция */}
 			<section className={styles.heroSection}>
 				<div className={styles.heroContent}>
 					<h1>
@@ -53,7 +51,6 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{/* Преимущества */}
 			<section className={styles.featuresSection}>
 				<h2>
 					Почему выбирают нас? <span className={styles.emoji}>✨</span>
@@ -105,7 +102,6 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{/* Как это работает */}
 			<section className={styles.howItWorks}>
 				<h2>
 					Как это работает? <span className={styles.emoji}>🤔</span>
@@ -138,7 +134,6 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{/* Отзывы */}
 			<section className={styles.testimonials}>
 				<h2>
 					Что говорят наши пользователи?{' '}
@@ -164,7 +159,6 @@ export default function HomePage() {
 				</div>
 			</section>
 
-			{/* Финальный CTA */}
 			<section className={styles.finalCta}>
 				<h2>
 					Готовы начать заботиться о питомце проще?{' '}

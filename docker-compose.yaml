@@ -172,13 +172,13 @@ services:
     container_name: frontend-client
     build: ./frontend
     ports:
-      - '3000:3000'
+      - '3000:80'
     depends_on:
       - auth-service
       - user-service
       - animal-advice-service
     environment:
-      - VITE_API_URL=http://localhost:80/api
+      - VITE_API_URL=http://api-gateway/api
     networks:
       - animals-network
 
