@@ -1,0 +1,171 @@
+.container {
+	padding: 24px;
+	max-width: 1600px;
+	margin: 0 auto;
+	min-height: 100vh;
+}
+
+.title {
+	text-align: center;
+	margin-bottom: 32px !important;
+	color: #1890ff;
+}
+
+.sideCard {
+	.ant-card-head-title {
+		font-weight: 600;
+		font-size: 18px;
+	}
+}
+
+.mainCard {
+	border-radius: 12px;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+	.ant-card-body {
+		padding: 24px;
+	}
+}
+
+.animalCard {
+	padding: 16px;
+	margin: 8px 0;
+	border: 1px solid #e8e8e8;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	background: #fff;
+
+	&:hover {
+		transform: translateX(4px);
+		border-color: #1890ff;
+		box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+	}
+
+	&.selected {
+		border-color: #1890ff;
+		background-color: #e6f7ff;
+	}
+}
+
+.warningAlert {
+	margin-bottom: 24px;
+
+	.ant-alert-message {
+		font-weight: 500;
+	}
+}
+
+.form {
+	.ant-form-item-label {
+		font-weight: 500;
+		padding-bottom: 8px !important;
+	}
+
+	.ant-input {
+		border-radius: 8px;
+		padding: 12px;
+	}
+
+	textarea.ant-input {
+		min-height: 120px !important;
+	}
+}
+
+.actionButton {
+	width: 100%;
+	height: 48px;
+	font-weight: 500;
+	margin-top: 24px;
+}
+
+.resultAlert {
+	margin-top: 24px;
+
+	.ant-alert-description {
+		font-size: 14px;
+		line-height: 1.6;
+	}
+}
+
+.consultationContent {
+	padding: 16px 0;
+}
+
+.consultationResult {
+	margin-top: 24px;
+	padding: 24px;
+	background: #fafafa;
+	border-radius: 8px;
+}
+
+.errorAlert {
+	margin-top: 24px;
+}
+
+.emptyPrompt {
+	padding: 48px 0;
+	background: #fff;
+	border-radius: 8px;
+}
+
+// Loading spinner animation
+.loadingIcon {
+	display: inline-block;
+	width: 24px;
+	height: 24px;
+	border: 3px solid #1890ff;
+	border-radius: 50%;
+	border-top-color: transparent;
+	animation: spin 1s linear infinite;
+}
+
+.loadingContainer {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	padding: 24px;
+	min-height: 200px; // Минимальная высота для контейнера
+}
+
+.loadingGif {
+	width: 120px; // Увеличиваем размер
+	height: 120px;
+	background-image: url('https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2Vsczk3Mmk3YThqNjhwcHFmMGhnZTV1ZWRmMGtkajJ3MmxzbmhneCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/1k1ytCiReJMZWVtjXd/giphy.gif');
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+	margin-bottom: 16px; // Отступ снизу
+}
+
+.loadingText {
+	font-size: 16px;
+	color: #666;
+	margin-top: 8px;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.tabs {
+	.ant-tabs-nav {
+		margin-bottom: 24px;
+	}
+
+	.ant-tabs-tab {
+		padding: 12px 24px;
+		font-size: 16px;
+	}
+
+	.ant-tabs-tab-active {
+		font-weight: 600;
+	}
+}

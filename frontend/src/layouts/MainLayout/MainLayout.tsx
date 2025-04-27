@@ -1,6 +1,7 @@
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
 	BookOutlined,
+	CommentOutlined,
 	HomeOutlined,
 	LineChartOutlined,
 	LogoutOutlined,
@@ -24,8 +25,8 @@ export function MainLayout() {
 	}
 
 	const handleLogout = () => {
-		logout() // Вызываем функцию выхода
-		navigate('/auth/login') // Перенаправляем на страницу входа
+		logout()
+		navigate('/auth/login')
 	}
 
 	const menuItems = [
@@ -45,15 +46,20 @@ export function MainLayout() {
 			label: <Link to='/profile'>Профиль</Link>,
 		},
 		{
+			key: 'analytics',
+			icon: <LineChartOutlined />,
+			label: <Link to='/analytics'>Аналитика</Link>,
+		},
+		{
+			key: 'advice',
+			icon: <CommentOutlined />,
+			label: <Link to='/advice'>Консультация ИИ</Link>,
+		},
+		{
 			key: 'logout',
 			icon: <LogoutOutlined />,
 			label: 'Выход',
 			onClick: handleLogout,
-		},
-		{
-			key: 'analytics',
-			icon: <LineChartOutlined />,
-			label: <Link to='/analytics'>Аналитика</Link>,
 		},
 	]
 

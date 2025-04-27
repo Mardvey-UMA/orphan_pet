@@ -21,7 +21,7 @@ export default function LoginPage() {
 				password: values.password,
 			})
 			message.success('Авторизация прошла успешно!')
-			navigate('/')
+			navigate('/profile')
 		} catch (error: unknown) {
 			if (axios.isAxiosError(error)) {
 				const serverMsg = error.response?.data?.error || error.message

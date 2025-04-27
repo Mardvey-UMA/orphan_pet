@@ -33,6 +33,12 @@ spring:
           uri: http://localhost:${server.port}
           predicates:
             - Path=/v3/api-docs/
+
+        - id: animal-advice-service
+          uri: lb://animal-advice-service
+          predicates:
+            - Path=/api/advice/**
+            - Method=GET, POST
       default-filters:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Methods Access-Control-Allow-Headers RETAIN_FIRST
 

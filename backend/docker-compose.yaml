@@ -159,6 +159,25 @@ services:
     networks:
       - animals-network
 
+  animal-advice-service:
+    container_name: animal-advice-service
+    build:
+      context: ./animal-advice-service
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8086"
+    environment:
+      - POSTGRES_SERVER=main_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=main_db
+      - DEEPSEEK_API_KEY=sk-caf1d8be739f4e2ea2da177bd37e5c01
+      - EUREKA_SERVER=http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+      - main_db
+    networks:
+      - animals-network
 networks:
   animals-network:
     driver: bridge

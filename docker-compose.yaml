@@ -32,8 +32,8 @@ services:
       KAFKA_JMX_PORT: 9997
       KAFKA_JMX_HOSTNAME: kafka
     ports:
-      - '9092:9092' # внутри докера
-      - '29092:29092' # извне
+      - '9092:9092'
+      - '29092:29092'
     networks:
       - animals-network
 
@@ -113,7 +113,7 @@ services:
       SPRING_R2DBC_PASSWORD: 'postgres'
     networks:
       - animals-network
-  # микросервис входа
+
   auth-service:
     container_name: auth-service
     restart: always
@@ -134,7 +134,7 @@ services:
       SPRING_JDBC_PASSWORD: 'postgres'
     networks:
       - animals-network
-  # микросервис взаимодействия пользователя
+
   user-service:
     container_name: user-service
     restart: always
@@ -147,6 +147,25 @@ services:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: 'kafka:9092'
       SERVER_PORT: '8082'
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: 'http://eureka-server:8761/eureka/'
+    networks:
+      - animals-network
+  animal-advice-service:
+    container_name: animal-advice-service
+    build:
+      context: ./backend/animal-advice-service
+      dockerfile: Dockerfile
+    ports:
+      - '8086:8086'
+    environment:
+      - POSTGRES_SERVER=main_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=main_db
+      - DEEPSEEK_API_KEY=sk-caf1d8be739f4e2ea2da177bd37e5c01
+      - EUREKA_SERVER=http://eureka-server:8761/eureka
+    depends_on:
+      - eureka-server
+      - main_db
     networks:
       - animals-network
   frontend:

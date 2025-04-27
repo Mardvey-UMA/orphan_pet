@@ -15,7 +15,6 @@ apiClient.interceptors.response.use(
 	}
 )
 
-// Инициализация токена при старте
 const token = localStorage.getItem('accessToken')
 if (token) {
 	apiClient.defaults.headers['Authorization'] = `Bearer ${token}`
