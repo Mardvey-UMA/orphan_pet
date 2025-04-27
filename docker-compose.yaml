@@ -174,7 +174,9 @@ services:
     ports:
       - '3000:3000'
     depends_on:
-      - backend
+      - auth-service
+      - user-service
+      - animal-advice-service
     environment:
       - VITE_API_URL=http://localhost:80/api
     networks:
